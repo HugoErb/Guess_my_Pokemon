@@ -34,8 +34,7 @@ const TYPE_COLORS: Record<string, string> = {
         <img
           [src]="pokemon().sprite"
           [alt]="pokemon().name"
-          class="w-40 h-40 object-contain pixelated"
-          style="image-rendering: pixelated; image-rendering: crisp-edges;"
+          class="w-40 h-40 object-contain"
         />
         <div class="text-center">
           <p class="text-xs text-slate-400">#{{ pokemon().id.toString().padStart(3, '0') }}</p>

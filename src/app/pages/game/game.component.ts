@@ -29,7 +29,7 @@ import { environment } from '../../../environments/environment';
 					<!-- DEV: Pokémon adverse -->
 					@if (isDev && devOpponentPokemon) {
 						<div style="display:flex;align-items:center;gap:6px;background:rgba(234,179,8,0.15);border:1px solid rgba(234,179,8,0.5);border-radius:999px;padding:2px 10px 2px 4px;font-size:12px;color:#fde68a;">
-							<img [src]="devOpponentPokemon.sprite" [alt]="devOpponentPokemon.name" style="width:28px;height:28px;object-fit:contain;image-rendering:pixelated;" />
+							<img [src]="devOpponentPokemon.sprite" [alt]="devOpponentPokemon.name" style="width:28px;height:28px;object-fit:contain;" />
 							<span style="font-weight:600;text-transform:capitalize;">{{ devOpponentPokemon.name }}</span>
 							<span style="font-size:10px;opacity:0.6;">[DEV]</span>
 						</div>
@@ -108,7 +108,6 @@ import { environment } from '../../../environments/environment';
 									[src]="opponentPokemon.sprite"
 									[alt]="opponentPokemon.name"
 									class="w-24 h-24 object-contain"
-									style="image-rendering: pixelated;"
 								/>
 								<p class="font-bold text-white capitalize">{{ opponentPokemon.name }}</p>
 							</div>

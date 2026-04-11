@@ -102,7 +102,7 @@ import { ICONS } from '../../constants/icons';
 								<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Ton Pokémon</h3>
 								@if (selectedPokemon) {
 									<div class="bg-slate-700 rounded-xl p-3 flex flex-col items-center gap-2 border-2 border-red-500">
-										<img [src]="selectedPokemon.sprite" [alt]="selectedPokemon.name" class="w-20 h-20 object-contain pixelated" />
+										<img [src]="selectedPokemon.sprite" [alt]="selectedPokemon.name" class="w-20 h-20 object-contain" />
 										<span class="text-sm font-medium capitalize">{{ selectedPokemon.name }}</span>
 									</div>
 								} @else {
@@ -179,7 +179,7 @@ import { ICONS } from '../../constants/icons';
 											<img
 												[src]="pokemon.sprite"
 												[alt]="pokemon.name"
-												class="w-16 h-16 object-contain pixelated"
+												class="w-16 h-16 object-contain"
 												loading="lazy"
 											/>
 											<span class="text-xs text-center capitalize leading-tight">{{ pokemon.name }}</span>
@@ -239,14 +239,7 @@ import { ICONS } from '../../constants/icons';
 			}
 		</div>
 	`,
-	styles: [
-		`
-			.pixelated {
-				image-rendering: pixelated;
-				image-rendering: crisp-edges;
-			}
-		`,
-	],
+	styles: [],
 })
 export class LobbyComponent implements OnInit, OnDestroy {
 	protected readonly ICONS = ICONS;

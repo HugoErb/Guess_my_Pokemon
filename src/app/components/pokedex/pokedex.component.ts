@@ -112,7 +112,6 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
                   [src]="pokemon.sprite"
                   [alt]="pokemon.name"
                   class="w-12 h-12 object-contain"
-                  style="image-rendering: pixelated; image-rendering: crisp-edges;"
                   loading="lazy"
                 />
                 <span class="text-xs text-center capitalize leading-tight text-slate-300 truncate w-full">
