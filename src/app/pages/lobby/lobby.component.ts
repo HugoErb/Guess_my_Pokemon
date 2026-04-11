@@ -206,7 +206,7 @@ import { ICONS } from '../../constants/icons';
 					}
 
 					<!-- Footer : bouton Je suis prêt -->
-					<div class="bg-slate-800 border-t border-slate-700 px-6 py-4 flex justify-center">
+					<div class="bg-slate-800 border-t border-slate-700 px-6 py-4 flex flex-col items-center gap-2">
 						<button
 							(click)="setReady()"
 							[disabled]="!selectedPokemon || isSettingReady || isReady"
@@ -225,6 +225,15 @@ import { ICONS } from '../../constants/icons';
 								Je suis prêt !
 							}
 						</button>
+						@if (devMode && isReady && !opponentReady()) {
+							<button
+								(click)="simulateOpponentReady()"
+								[disabled]="isSimulatingReady"
+								class="bg-amber-800/50 hover:bg-amber-700/50 border border-amber-600 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-2 rounded-lg text-sm font-medium text-amber-300 transition-colors"
+							>
+								{{ isSimulatingReady ? 'Simulation…' : '⚙ Simuler adversaire prêt [DEV]' }}
+							</button>
+						}
 					</div>
 				</div>
 			}
@@ -277,6 +286,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	// Annulation / mode dev
 	isCancelling = false;
 	isSimulating = false;
+	isSimulatingReady = false;
 	readonly devMode = environment.devMode;
 
 	private pokemonsSub?: Subscription;
@@ -350,6 +360,10 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		try {
 			await this.gameService.setReady(this.roomId());
 			this.isReady = true;
+			// Navigation directe si la partie démarre (ne pas attendre le Realtime)
+			if (this.room()?.status === 'playing') {
+				void this.router.navigate(['/game', this.roomId()]);
+			}
 		} finally {
 			this.isSettingReady = false;
 		}
@@ -379,8 +393,28 @@ export class LobbyComponent implements OnInit, OnDestroy {
 			if (pokemons.length === 0) return;
 			const randomPokemon = pokemons[Math.floor(Math.random() * pokemons.length)];
 			await this.gameService.simulateOpponent(this.roomId(), randomPokemon.id);
+			// Navigation directe : simulateOpponent passe toujours à 'playing'
+			void this.router.navigate(['/game', this.roomId()]);
 		} finally {
 			this.isSimulating = false;
+		}
+	}
+
+	async simulateOpponentReady(): Promise<void> {
+		if (this.isSimulatingReady) return;
+		this.isSimulatingReady = true;
+		try {
+			let pokemons = this.allPokemons;
+			if (pokemons.length === 0) {
+				pokemons = await firstValueFrom(this.pokemonService.loadAll());
+			}
+			if (pokemons.length === 0) return;
+			const randomPokemon = pokemons[Math.floor(Math.random() * pokemons.length)];
+			await this.gameService.simulateOpponentReady(this.roomId(), randomPokemon.id);
+			// Navigation directe : simulateOpponentReady passe toujours à 'playing'
+			void this.router.navigate(['/game', this.roomId()]);
+		} finally {
+			this.isSimulatingReady = false;
 		}
 	}
 

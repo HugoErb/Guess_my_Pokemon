@@ -40,6 +40,18 @@ export class GameService implements OnDestroy {
     this.currentRoom.set(null);
   }
 
+  async simulateOpponentReady(roomId: string, pokemonId: number): Promise<void> {
+    const room = this.currentRoom();
+    if (!room) throw new Error('Aucune room active');
+
+    await this.updateAndRefresh(roomId, {
+      pokemon_p2: pokemonId,
+      p2_ready: true,
+      status: 'playing',
+      current_turn: room.player1_id,
+    });
+  }
+
   async simulateOpponent(roomId: string, pokemonId: number): Promise<void> {
     const user = this.supabaseService.getCurrentUser();
     if (!user) throw new Error('Utilisateur non connecté');
@@ -47,7 +59,7 @@ export class GameService implements OnDestroy {
     const room = this.currentRoom();
     if (!room) throw new Error('Aucune room active');
 
-    await this.supabaseService.updateRoom(roomId, {
+    await this.updateAndRefresh(roomId, {
       player2_id: user.id,
       status: 'playing',
       pokemon_p2: pokemonId,
@@ -100,7 +112,7 @@ export class GameService implements OnDestroy {
       } satisfies Partial<Room>);
     }
 
-    await this.supabaseService.updateRoom(roomId, patch);
+    await this.updateAndRefresh(roomId, patch);
   }
 
   async guess(roomId: string, pokemonId: number): Promise<'correct' | 'incorrect'> {
@@ -133,6 +145,18 @@ export class GameService implements OnDestroy {
       });
       return 'incorrect';
     }
+  }
+
+  // ─── Helpers internes ─────────────────────────────────────────────────────────
+
+  /**
+   * Met à jour la room en base ET rafraîchit immédiatement le signal local.
+   * Cela garantit que le watcher réagit même si le Realtime Supabase est lent ou absent.
+   */
+  private async updateAndRefresh(roomId: string, patch: RoomPatch): Promise<void> {
+    await this.supabaseService.updateRoom(roomId, patch);
+    const refreshed = await this.supabaseService.getRoomById(roomId);
+    this.currentRoom.set(refreshed);
   }
 
   // ─── Helpers d'état ──────────────────────────────────────────────────────────
