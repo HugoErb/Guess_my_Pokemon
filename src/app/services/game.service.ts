@@ -61,11 +61,8 @@ export class GameService implements OnDestroy {
 
     await this.updateAndRefresh(roomId, {
       player2_id: user.id,
-      status: 'playing',
       pokemon_p2: pokemonId,
-      p1_ready: true,
       p2_ready: true,
-      current_turn: room.player1_id,
     });
   }
 

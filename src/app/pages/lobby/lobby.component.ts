@@ -455,8 +455,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		if (this.isSimulating) return;
 		this.isSimulating = true;
 		try {
-			// Utilise les Pokémon déjà chargés dans le composant si disponibles,
-			// sinon attend le premier chargement
 			let pokemons = this.allPokemons;
 			if (pokemons.length === 0) {
 				pokemons = await firstValueFrom(this.pokemonService.loadAll());
@@ -464,8 +462,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
 			if (pokemons.length === 0) return;
 			const randomPokemon = pokemons[Math.floor(Math.random() * pokemons.length)];
 			await this.gameService.simulateOpponent(this.roomId(), randomPokemon.id);
-			// Navigation directe : simulateOpponent passe toujours à 'playing'
-			void this.router.navigate(['/game', this.roomId()]);
 		} finally {
 			this.isSimulating = false;
 		}
