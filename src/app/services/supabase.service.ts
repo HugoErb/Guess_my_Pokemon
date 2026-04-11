@@ -1,5 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { filter, skipUntil } from 'rxjs/operators';
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 import { Profile, Room, RoomPatch } from '../models/room.model';
@@ -9,15 +10,22 @@ export class SupabaseService implements OnDestroy {
   private supabase: SupabaseClient;
   private userSubject = new BehaviorSubject<User | null>(null);
   private authSubscription: { unsubscribe: () => void } | null = null;
+  private readonly isInitializedSubject = new BehaviorSubject<boolean>(false);
 
   currentUser$: Observable<User | null> = this.userSubject.asObservable();
+  readonly authReady$: Observable<User | null>;
 
   constructor() {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
 
+    this.authReady$ = this.userSubject.pipe(
+      skipUntil(this.isInitializedSubject.pipe(filter(v => v)))
+    );
+
     // Initialise avec la session courante
     this.supabase.auth.getSession().then(({ data }) => {
       this.userSubject.next(data.session?.user ?? null);
+      this.isInitializedSubject.next(true);
     });
 
     // Écoute les changements d'état d'authentification
