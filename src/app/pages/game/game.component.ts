@@ -26,14 +26,7 @@ import { environment } from '../../../environments/environment';
 
 				<!-- Statut du tour -->
 				<div class="flex items-center gap-3">
-					<!-- DEV: Pokémon adverse -->
-					@if (isDev && devOpponentPokemon) {
-						<div style="display:flex;align-items:center;gap:6px;background:rgba(234,179,8,0.15);border:1px solid rgba(234,179,8,0.5);border-radius:999px;padding:2px 10px 2px 4px;font-size:12px;color:#fde68a;">
-							<img [src]="devOpponentPokemon.sprite" [alt]="devOpponentPokemon.name" style="width:28px;height:28px;object-fit:contain;" />
-							<span style="font-weight:600;text-transform:capitalize;">{{ devOpponentPokemon.name }}</span>
-							<span style="font-size:10px;opacity:0.6;">[DEV]</span>
-						</div>
-					}
+
 					@if (room()?.status === 'playing') {
 						@if (isMyTurn()) {
 							<span
@@ -64,7 +57,7 @@ import { environment } from '../../../environments/environment';
 			<!-- Contenu principal : deux colonnes -->
 			<div class="flex-1 flex overflow-hidden">
 				<!-- Colonne gauche : Ton Pokémon -->
-				<div class="w-72 shrink-0 bg-slate-850 border-r border-slate-700 overflow-y-auto p-4 flex flex-col gap-4">
+				<div class="w-80 shrink-0 bg-slate-850 border-r border-slate-700 overflow-y-auto p-4 flex flex-col gap-6">
 					<div>
 						<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Ton Pokémon</h3>
 						@if (myPokemon) {
@@ -76,6 +69,17 @@ import { environment } from '../../../environments/environment';
 							</div>
 						}
 					</div>
+
+					<!-- DEV: Pokémon adverse -->
+					@if (isDev && devOpponentPokemon) {
+						<div class="border-t border-slate-700 pt-6">
+							<h3 class="text-xs font-bold uppercase tracking-wider text-amber-500 mb-3 flex items-center gap-2">
+								<iconify-icon [icon]="ICONS.shield" class="text-amber-500"></iconify-icon>
+								Adversaire [DEV]
+							</h3>
+							<app-pokemon-card [pokemon]="devOpponentPokemon" />
+						</div>
+					}
 				</div>
 
 				<!-- Colonne droite : Pokédex -->

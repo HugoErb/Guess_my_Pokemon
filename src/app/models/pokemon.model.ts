@@ -3,8 +3,8 @@ export interface Pokemon {
   name: string;
   types: string[];
   generation: number;
-  category: 'normal' | 'starter' | 'legendaire' | 'fabuleux';
-  evolution_stage: 1 | 2 | 3 | null;
+  category: 'normal' | 'starter' | 'légendaire' | 'fabuleux';
+  evolution_stage: string;
   sprite: string;
   stats: {
     pv: number;

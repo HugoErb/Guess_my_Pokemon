@@ -119,13 +119,31 @@ const TYPE_COLORS: Record<string, string> = {
       <!-- Taille & Poids -->
       <div class="flex justify-around text-sm border-t border-slate-700 pt-3">
         <div class="text-center">
-          <p class="text-slate-400 text-xs">Taille</p>
+          <p class="text-slate-400 text-[10px] uppercase tracking-wider">Taille</p>
           <p class="text-white font-medium">{{ (pokemon().height / 10).toFixed(1) }}m</p>
         </div>
         <div class="text-center">
-          <p class="text-slate-400 text-xs">Poids</p>
+          <p class="text-slate-400 text-[10px] uppercase tracking-wider">Poids</p>
           <p class="text-white font-medium">{{ (pokemon().weight / 10).toFixed(1) }}kg</p>
         </div>
+      </div>
+
+      <!-- Métadonnées (Génération, Catégorie, Évo) -->
+      <div class="grid grid-cols-2 gap-2 text-sm border-t border-slate-700 pt-3">
+        <div class="bg-slate-700/30 p-1.5 rounded-lg text-center">
+          <p class="text-slate-400 text-[10px] uppercase tracking-wider">Génération</p>
+          <p class="text-white font-medium text-sm">{{ pokemon().generation }}</p>
+        </div>
+        <div class="bg-slate-700/30 p-1.5 rounded-lg text-center">
+          <p class="text-slate-400 text-[10px] uppercase tracking-wider">Catégorie</p>
+          <p class="text-white font-medium text-sm capitalize">{{ pokemon().category }}</p>
+        </div>
+        @if (pokemon().evolution_stage) {
+          <div class="bg-slate-700/30 p-1.5 rounded-lg text-center col-span-2">
+            <p class="text-slate-400 text-[10px] uppercase tracking-wider">Stade d'évolution</p>
+            <p class="text-white font-medium text-sm">{{ pokemon().evolution_stage }}</p>
+          </div>
+        }
       </div>
 
       <!-- Capacités -->

@@ -125,66 +125,58 @@ function getNameFr(names, fallback) {
 }
 
 /**
- * Extrait le numéro de génération depuis l'URL de génération.
- * Ex : ".../generation-i" → 1
- * @param {string} generationUrl
+ * Extrait le numéro de génération depuis le nom (ex: "generation-i").
+ * Ex : "generation-i" → 1
+ * @param {string} generationName
  * @returns {number}
  */
-function extractGeneration(generationUrl) {
-  const segments = generationUrl.replace(/\/$/, '').split('/');
-  const key = segments[segments.length - 1];
-  return GENERATION_MAP[key] ?? 0;
+function extractGeneration(generationName) {
+  return GENERATION_MAP[generationName] ?? 0;
 }
 
 /**
  * Détermine la catégorie du Pokémon.
- * Priorité : legendaire > fabuleux > starter > normal
+ * Priorité : légendaire > fabuleux > starter > normal
  * @param {object} species Données de l'espèce PokéAPI
  * @param {number} id
- * @returns {'legendaire'|'fabuleux'|'starter'|'normal'}
+ * @returns {'légendaire'|'fabuleux'|'starter'|'normal'}
  */
 function getCategory(species, id) {
-  if (species.is_legendary) return 'legendaire';
+  if (species.is_legendary) return 'légendaire';
   if (species.is_mythical)  return 'fabuleux';
   if (STARTER_IDS.has(id))  return 'starter';
   return 'normal';
 }
 
 /**
- * Détermine le stade d'évolution.
- *
- * Algorithme :
- *  - Si evolves_from_species est non-null :
- *    - Récupère l'espèce parente pour voir si elle-même évolue → stade 3
- *    - Sinon → stade 2
- *  - Sinon (stade 1 potentiel) :
- *    - Fetch la chaîne d'évolution pour voir si chain.evolves_to.length > 0
- *    - Oui → stade 1 / Non → null (pas d'évolution)
- *
+ * Détermine le stade d'évolution sous forme 'actuel/max' (ex: '1/3', '2/2').
  * @param {object} species Données de l'espèce PokéAPI
- * @returns {Promise<number|null>}
+ * @returns {Promise<string>}
  */
 async function getEvolutionStage(species) {
-  if (species.evolves_from_species !== null) {
-    // Ce Pokémon évolue depuis quelqu'un → au moins stade 2
-    try {
-      const parentSpecies = await fetchWithRetry(species.evolves_from_species.url);
-      // Si le parent évolue lui-même depuis quelqu'un, ce Pokémon est au stade 3
-      return parentSpecies.evolves_from_species !== null ? 3 : 2;
-    } catch {
-      // En cas d'erreur, on suppose stade 2
-      return 2;
-    }
-  }
-
-  // Ce Pokémon est le premier de sa ligne → stade 1 ou pas d'évolution
   try {
-    const chain = await fetchWithRetry(species.evolution_chain.url);
-    const hasEvolutions = chain.chain.evolves_to.length > 0;
-    return hasEvolutions ? 1 : null;
+    const chainData = await fetchWithRetry(species.evolution_chain.url);
+
+    function analyzeChain(node, targetName, currentDepth = 1) {
+      let myDepth = node.species.name === targetName ? currentDepth : -1;
+      let maxDepth = currentDepth;
+      
+      for (const child of node.evolves_to) {
+        const childResult = analyzeChain(child, targetName, currentDepth + 1);
+        if (childResult.myDepth !== -1) myDepth = childResult.myDepth;
+        if (childResult.maxDepth > maxDepth) maxDepth = childResult.maxDepth;
+      }
+      
+      return { myDepth, maxDepth };
+    }
+
+    const result = analyzeChain(chainData.chain, species.name);
+    const stage = result.myDepth === -1 ? 1 : result.myDepth;
+    const max = result.maxDepth;
+
+    return `${stage}/${max}`;
   } catch {
-    // En cas d'erreur, on renvoie stade 1 par défaut
-    return 1;
+    return '1/1';
   }
 }
 
@@ -266,7 +258,7 @@ async function processPokemon(id, index, total) {
       .map((t) => TYPE_FR[t.type.name] ?? t.type.name);
 
     // Génération
-    const generation = extractGeneration(species.generation.url);
+    const generation = extractGeneration(species.generation.name);
 
     // Catégorie
     const category = getCategory(species, id);

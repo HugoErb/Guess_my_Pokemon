@@ -31,6 +31,7 @@ export const ICONS = {
   clock: 'mdi:clock-outline',   // animé : animate-spin [animation-duration:3s]
   share: 'mdi:share-variant',
   sword: 'mdi:sword-cross',
+  shield: 'mdi:shield-outline',
 } as const;
 
 export type IconName = keyof typeof ICONS;
