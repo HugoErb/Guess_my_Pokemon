@@ -1,6 +1,6 @@
 import { inject, Injectable, OnDestroy, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Room } from '../models/room.model';
+import { Room, RoomPatch } from '../models/room.model';
 import { SupabaseService } from './supabase.service';
 
 @Injectable({ providedIn: 'root' })
@@ -15,17 +15,16 @@ export class GameService implements OnDestroy {
   // ─── Watch de la room ────────────────────────────────────────────────────────
 
   async joinAndWatch(roomId: string): Promise<void> {
-    // 1. Charger l'état initial
-    const room = await this.supabaseService.getRoomById(roomId);
-    this.currentRoom.set(room);
-
-    // 2. S'abonner aux mises à jour Realtime
-    this.stopWatching(); // nettoyer une éventuelle subscription précédente
+    this.stopWatching();
+    // 1. S'abonner d'abord pour ne rater aucune mise à jour
     this.roomSubscription = this.supabaseService
       .subscribeToRoom(roomId)
       .subscribe(updatedRoom => {
         this.currentRoom.set(updatedRoom);
       });
+    // 2. Charger l'état initial ensuite
+    const room = await this.supabaseService.getRoomById(roomId);
+    this.currentRoom.set(room);
   }
 
   stopWatching(): void {
@@ -48,7 +47,7 @@ export class GameService implements OnDestroy {
     const room = this.currentRoom();
     if (!room) throw new Error('Aucune room active');
 
-    const patch: Partial<Room> = user.id === room.player1_id
+    const patch: RoomPatch = user.id === room.player1_id
       ? { pokemon_p1: pokemonId }
       : { pokemon_p2: pokemonId };
 
@@ -63,8 +62,11 @@ export class GameService implements OnDestroy {
     if (!room) throw new Error('Aucune room active');
 
     const isPlayer1 = user.id === room.player1_id;
-    const patch: Partial<Room> = isPlayer1 ? { p1_ready: true } : { p2_ready: true };
+    const patch: RoomPatch = isPlayer1 ? { p1_ready: true } : { p2_ready: true };
 
+    // NOTE: Cette logique de transition est calculée côté client depuis le signal currentRoom.
+    // Si deux joueurs appellent setReady() simultanément, une course est possible.
+    // Idéalement, cette transition devrait être gérée par une Postgres Function côté Supabase.
     // Vérifier si l'adversaire est déjà prêt
     const otherReady = isPlayer1 ? room.p2_ready : room.p1_ready;
     if (otherReady) {

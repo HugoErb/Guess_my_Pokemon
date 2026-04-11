@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, Observable, shareReplay } from 'rxjs';
+import { catchError, map, shareReplay } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
 import { Pokemon } from '../models/pokemon.model';
 
 @Injectable({ providedIn: 'root' })
@@ -10,7 +11,13 @@ export class PokemonService {
   /** Cache partagé : le fichier JSON n'est chargé qu'une seule fois. */
   private all$: Observable<Pokemon[]> = this.http
     .get<Pokemon[]>('/assets/pokemon.json')
-    .pipe(shareReplay(1));
+    .pipe(
+      catchError(err => {
+        console.error('[PokemonService] Impossible de charger pokemon.json', err);
+        return of([]);
+      }),
+      shareReplay(1)
+    );
 
   // ─── API publique ────────────────────────────────────────────────────────────
 
@@ -26,7 +33,10 @@ export class PokemonService {
 
   random(): Observable<Pokemon> {
     return this.all$.pipe(
-      map(pokemons => pokemons[Math.floor(Math.random() * pokemons.length)])
+      map(pokemons => {
+        if (pokemons.length === 0) throw new Error('[PokemonService] Aucun Pokémon disponible');
+        return pokemons[Math.floor(Math.random() * pokemons.length)];
+      })
     );
   }
 

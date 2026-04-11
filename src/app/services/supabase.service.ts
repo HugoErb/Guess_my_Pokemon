@@ -1,13 +1,14 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
-import { Profile, Room } from '../models/room.model';
+import { Profile, Room, RoomPatch } from '../models/room.model';
 
 @Injectable({ providedIn: 'root' })
-export class SupabaseService {
+export class SupabaseService implements OnDestroy {
   private supabase: SupabaseClient;
   private userSubject = new BehaviorSubject<User | null>(null);
+  private authSubscription: { unsubscribe: () => void } | null = null;
 
   currentUser$: Observable<User | null> = this.userSubject.asObservable();
 
@@ -20,9 +21,14 @@ export class SupabaseService {
     });
 
     // Écoute les changements d'état d'authentification
-    this.supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = this.supabase.auth.onAuthStateChange((_event, session) => {
       this.userSubject.next(session?.user ?? null);
     });
+    this.authSubscription = subscription;
+  }
+
+  ngOnDestroy(): void {
+    this.authSubscription?.unsubscribe();
   }
 
   // ─── Auth ────────────────────────────────────────────────────────────────────
@@ -132,7 +138,7 @@ export class SupabaseService {
     });
   }
 
-  async updateRoom(roomId: string, patch: Partial<Room>): Promise<void> {
+  async updateRoom(roomId: string, patch: RoomPatch): Promise<void> {
     const { error } = await this.supabase
       .from('rooms')
       .update(patch)

@@ -14,6 +14,8 @@ export interface Room {
   created_at: string;
 }
 
+export type RoomPatch = Partial<Omit<Room, 'id' | 'created_at' | 'player1_id'>>;
+
 export interface Profile {
   id: string;
   username: string;
