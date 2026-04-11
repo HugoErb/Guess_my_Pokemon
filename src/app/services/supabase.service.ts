@@ -32,10 +32,15 @@ export class SupabaseService implements OnDestroy {
     });
 
     // Écoute les changements d'état d'authentification
-    const { data: { subscription } } = this.supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = this.supabase.auth.onAuthStateChange((event, session) => {
       const user = session?.user ?? null;
       this.userSubject.next(user);
       this.currentUserSignal.set(user);
+
+      // Crée le profil à la première connexion (cas confirmation email activée)
+      if (event === 'SIGNED_IN' && user) {
+        this.ensureProfile(user.id, user.user_metadata?.['username']);
+      }
     });
     this.authSubscription = subscription;
   }
@@ -47,17 +52,38 @@ export class SupabaseService implements OnDestroy {
   // ─── Auth ────────────────────────────────────────────────────────────────────
 
   async signUp(email: string, password: string, username: string): Promise<void> {
-    const { data, error } = await this.supabase.auth.signUp({ email, password });
+    const { data, error } = await this.supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { username } },
+    });
     if (error) throw error;
 
     const user = data.user;
     if (!user) throw new Error('Aucun utilisateur retourné après l\'inscription');
 
+    if (!data.session) {
+      // Confirmation email requise : le profil sera créé à la première connexion
+      throw new Error('Un email de confirmation a été envoyé. Clique sur le lien dans ta boîte mail pour activer ton compte.');
+    }
+
     const { error: profileError } = await this.supabase
       .from('profiles')
       .insert({ id: user.id, username });
 
-    if (profileError) throw profileError;
+    if (profileError) throw new Error(profileError.message);
+  }
+
+  private async ensureProfile(userId: string, username?: string): Promise<void> {
+    const { data } = await this.supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (!data && username) {
+      await this.supabase.from('profiles').insert({ id: userId, username });
+    }
   }
 
   async signIn(email: string, password: string): Promise<void> {

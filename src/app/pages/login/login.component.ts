@@ -18,6 +18,7 @@ function passwordMatchValidator(group: AbstractControl): ValidationErrors | null
 export class LoginComponent {
   mode: 'login' | 'register' = 'login';
   errorMessage = '';
+  infoMessage = '';
   isLoading = false;
 
   loginForm: FormGroup;
@@ -48,6 +49,7 @@ export class LoginComponent {
   setMode(mode: 'login' | 'register'): void {
     this.mode = mode;
     this.errorMessage = '';
+    this.infoMessage = '';
   }
 
   async onLogin(): Promise<void> {
@@ -80,7 +82,12 @@ export class LoginComponent {
       const redirect = rawRedirect?.startsWith('/') ? rawRedirect : '/home';
       this.router.navigateByUrl(redirect);
     } catch (err: unknown) {
-      this.errorMessage = err instanceof Error ? err.message : 'Une erreur est survenue.';
+      const message = err instanceof Error ? err.message : 'Une erreur est survenue.';
+      if (message.startsWith('Un email de confirmation')) {
+        this.infoMessage = message;
+      } else {
+        this.errorMessage = message;
+      }
     } finally {
       this.isLoading = false;
     }
