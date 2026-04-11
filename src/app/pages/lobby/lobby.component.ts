@@ -261,21 +261,15 @@ import { ICONS } from '../../constants/icons';
 			<!-- Modal Pokédex -->
 			@if (selectedPokemonDetails) {
 				<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closePokemonDetails()">
-					<div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-md w-full shadow-2xl relative flex flex-col gap-4 max-h-[90vh]" (click)="$event.stopPropagation()">
+					<div class="bg-slate-800 border border-slate-600 rounded-2xl p-3 max-w-md w-full shadow-2xl relative flex flex-col gap-3 max-h-[95vh]" (click)="$event.stopPropagation()">
 						
-						<!-- Header -->
-						<div class="flex items-center justify-between">
-							<h2 class="text-xl font-bold flex items-center gap-2">
-								<span class="text-slate-400">#{{ selectedPokemonDetails.id.toString().padStart(3, '0') }}</span>
-								<span class="capitalize text-white">{{ selectedPokemonDetails.name }}</span>
-							</h2>
-							<button (click)="closePokemonDetails()" class="text-slate-400 hover:text-white transition-colors p-1">
-								<iconify-icon [icon]="ICONS.close" class="text-2xl"></iconify-icon>
-							</button>
-						</div>
+						<!-- Bouton Fermer Absolu -->
+						<button (click)="closePokemonDetails()" class="absolute top-5 right-5 z-10 bg-slate-900/60 hover:bg-red-600 rounded-full w-8 h-8 flex items-center justify-center text-slate-300 hover:text-white transition-colors backdrop-blur-sm">
+							<iconify-icon [icon]="ICONS.close" class="text-lg"></iconify-icon>
+						</button>
 
 						<!-- Contenu scrollable si nécessaire -->
-						<div class="overflow-y-auto pr-2">
+						<div class="overflow-y-auto flex-1">
 							<app-pokemon-card [pokemon]="selectedPokemonDetails" />
 						</div>
 

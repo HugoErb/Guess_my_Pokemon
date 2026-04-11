@@ -53,66 +53,66 @@ const TYPE_COLORS: Record<string, string> = {
       </div>
 
       <!-- Stats -->
-      <div class="flex flex-col gap-1.5">
+      <div class="flex flex-col gap-1.5 mx-auto transition-all" [class]="variant() === 'sidebar' ? 'w-full px-1' : 'w-5/6 sm:w-3/4'">
         <div class="flex items-center gap-2">
           <span class="w-12 text-xs text-slate-400 text-right shrink-0">PV</span>
-          <div class="flex-1 bg-slate-700 rounded-full h-2 overflow-hidden">
+          <div class="flex-1 bg-slate-700 rounded-full overflow-hidden transition-all" [class]="variant() === 'sidebar' ? 'h-1.5' : 'h-2'">
             <div
               class="h-full bg-green-500 rounded-full transition-all"
               [style.width]="getStatWidth(pokemon().stats.pv)"
             ></div>
           </div>
-          <span class="w-8 text-xs text-slate-300 text-right shrink-0">{{ pokemon().stats.pv }}</span>
+          <span class="w-7 text-xs text-slate-300 text-left shrink-0">{{ pokemon().stats.pv }}</span>
         </div>
         <div class="flex items-center gap-2">
           <span class="w-12 text-xs text-slate-400 text-right shrink-0">ATQ</span>
-          <div class="flex-1 bg-slate-700 rounded-full h-2 overflow-hidden">
+          <div class="flex-1 bg-slate-700 rounded-full overflow-hidden transition-all" [class]="variant() === 'sidebar' ? 'h-1.5' : 'h-2'">
             <div
               class="h-full bg-red-500 rounded-full transition-all"
               [style.width]="getStatWidth(pokemon().stats.attaque)"
             ></div>
           </div>
-          <span class="w-8 text-xs text-slate-300 text-right shrink-0">{{ pokemon().stats.attaque }}</span>
+          <span class="w-7 text-xs text-slate-300 text-left shrink-0">{{ pokemon().stats.attaque }}</span>
         </div>
         <div class="flex items-center gap-2">
           <span class="w-12 text-xs text-slate-400 text-right shrink-0">DEF</span>
-          <div class="flex-1 bg-slate-700 rounded-full h-2 overflow-hidden">
+          <div class="flex-1 bg-slate-700 rounded-full overflow-hidden transition-all" [class]="variant() === 'sidebar' ? 'h-1.5' : 'h-2'">
             <div
               class="h-full bg-blue-500 rounded-full transition-all"
               [style.width]="getStatWidth(pokemon().stats.defense)"
             ></div>
           </div>
-          <span class="w-8 text-xs text-slate-300 text-right shrink-0">{{ pokemon().stats.defense }}</span>
+          <span class="w-7 text-xs text-slate-300 text-left shrink-0">{{ pokemon().stats.defense }}</span>
         </div>
         <div class="flex items-center gap-2">
           <span class="w-12 text-xs text-slate-400 text-right shrink-0">ATQ S</span>
-          <div class="flex-1 bg-slate-700 rounded-full h-2 overflow-hidden">
+          <div class="flex-1 bg-slate-700 rounded-full overflow-hidden transition-all" [class]="variant() === 'sidebar' ? 'h-1.5' : 'h-2'">
             <div
               class="h-full bg-purple-500 rounded-full transition-all"
               [style.width]="getStatWidth(pokemon().stats.atq_spe)"
             ></div>
           </div>
-          <span class="w-8 text-xs text-slate-300 text-right shrink-0">{{ pokemon().stats.atq_spe }}</span>
+          <span class="w-7 text-xs text-slate-300 text-left shrink-0">{{ pokemon().stats.atq_spe }}</span>
         </div>
         <div class="flex items-center gap-2">
           <span class="w-12 text-xs text-slate-400 text-right shrink-0">DEF S</span>
-          <div class="flex-1 bg-slate-700 rounded-full h-2 overflow-hidden">
+          <div class="flex-1 bg-slate-700 rounded-full overflow-hidden transition-all" [class]="variant() === 'sidebar' ? 'h-1.5' : 'h-2'">
             <div
               class="h-full bg-indigo-500 rounded-full transition-all"
               [style.width]="getStatWidth(pokemon().stats.def_spe)"
             ></div>
           </div>
-          <span class="w-8 text-xs text-slate-300 text-right shrink-0">{{ pokemon().stats.def_spe }}</span>
+          <span class="w-7 text-xs text-slate-300 text-left shrink-0">{{ pokemon().stats.def_spe }}</span>
         </div>
         <div class="flex items-center gap-2">
           <span class="w-12 text-xs text-slate-400 text-right shrink-0">VIT</span>
-          <div class="flex-1 bg-slate-700 rounded-full h-2 overflow-hidden">
+          <div class="flex-1 bg-slate-700 rounded-full overflow-hidden transition-all" [class]="variant() === 'sidebar' ? 'h-1.5' : 'h-2'">
             <div
               class="h-full bg-yellow-400 rounded-full transition-all"
               [style.width]="getStatWidth(pokemon().stats.vitesse)"
             ></div>
           </div>
-          <span class="w-8 text-xs text-slate-300 text-right shrink-0">{{ pokemon().stats.vitesse }}</span>
+          <span class="w-7 text-xs text-slate-300 text-left shrink-0">{{ pokemon().stats.vitesse }}</span>
         </div>
       </div>
 
@@ -166,12 +166,13 @@ const TYPE_COLORS: Record<string, string> = {
 })
 export class PokemonCardComponent {
   readonly pokemon = input.required<Pokemon>();
+  readonly variant = input<'modal' | 'sidebar'>('modal');
 
   getTypeColor(type: string): string {
     return TYPE_COLORS[type] ?? 'bg-gray-500';
   }
 
   getStatWidth(value: number): string {
-    return `${Math.round((value / 255) * 100)}%`;
+    return `${Math.min(100, Math.round((value / 200) * 100))}%`;
   }
 }

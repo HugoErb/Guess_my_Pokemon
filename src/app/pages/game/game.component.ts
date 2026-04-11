@@ -16,7 +16,7 @@ import { environment } from '../../../environments/environment';
 	imports: [PokemonCardComponent, PokedexComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
 	template: `
-		<div class="min-h-screen bg-slate-900 text-white flex flex-col">
+		<div class="h-screen bg-slate-900 text-white flex flex-col overflow-hidden">
 			<!-- Header -->
 			<header class="bg-slate-800 border-b border-slate-700 px-6 py-3 flex items-center justify-between">
 				<div class="flex items-center gap-3">
@@ -65,7 +65,7 @@ import { environment } from '../../../environments/environment';
 					<div>
 						<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Ton Pokémon</h3>
 						@if (myPokemon) {
-							<app-pokemon-card [pokemon]="myPokemon" />
+							<app-pokemon-card [pokemon]="myPokemon" variant="sidebar" />
 						} @else {
 							<div class="bg-slate-800 rounded-2xl p-8 flex flex-col items-center gap-3 border border-slate-700">
 								<div class="w-20 h-20 flex items-center justify-center text-5xl text-slate-600">?</div>
@@ -81,7 +81,7 @@ import { environment } from '../../../environments/environment';
 								<iconify-icon [icon]="ICONS.shield" class="text-amber-500"></iconify-icon>
 								Adversaire [DEV]
 							</h3>
-							<app-pokemon-card [pokemon]="devOpponentPokemon" />
+							<app-pokemon-card [pokemon]="devOpponentPokemon" variant="sidebar" />
 						</div>
 					}
 				</div>
