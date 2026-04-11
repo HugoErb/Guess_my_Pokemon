@@ -1,6 +1,7 @@
 import { Component, input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { SupabaseService } from '../../services/supabase.service';
 
 @Component({
@@ -42,7 +43,7 @@ export class InviteComponent implements OnInit {
         return;
       }
 
-      const currentUser = this.supabaseService.getCurrentUser();
+      const currentUser = await firstValueFrom(this.supabaseService.authReady$);
       if (currentUser?.id === room.player1_id) {
         this.router.navigate(['/lobby', this.roomId()]);
         return;

@@ -12,6 +12,8 @@ import { SupabaseService } from '../../services/supabase.service';
 export class HomeComponent implements OnInit {
   username = '';
   isCreating = false;
+  createError = '';
+  isLoadingProfile = true;
 
   constructor(
     private readonly supabaseService: SupabaseService,
@@ -23,22 +25,31 @@ export class HomeComponent implements OnInit {
   }
 
   private async loadProfile(): Promise<void> {
-    const user = this.supabaseService.getCurrentUser();
-    if (user) {
+    try {
+      const user = this.supabaseService.getCurrentUser();
+      if (!user) {
+        this.router.navigate(['/login']);
+        return;
+      }
       try {
         const profile = await this.supabaseService.getProfile(user.id);
         this.username = profile.username;
       } catch {
         this.username = user.email ?? 'Joueur';
       }
+    } finally {
+      this.isLoadingProfile = false;
     }
   }
 
   async createGame(): Promise<void> {
     this.isCreating = true;
+    this.createError = '';
     try {
       const roomId = await this.supabaseService.createRoom();
       this.router.navigate(['/lobby', roomId]);
+    } catch {
+      this.createError = 'Impossible de créer la partie. Réessaie.';
     } finally {
       this.isCreating = false;
     }
