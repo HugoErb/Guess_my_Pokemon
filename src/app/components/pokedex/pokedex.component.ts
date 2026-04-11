@@ -1,6 +1,5 @@
 import { Component, OnInit, DestroyRef, inject, input, output } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { PokemonService } from '../../services/pokemon.service';
@@ -38,8 +37,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 @Component({
   selector: 'app-pokedex',
-  standalone: true,
-  imports: [CommonModule, FormsModule, PokemonCardComponent],
+  imports: [FormsModule, PokemonCardComponent],
   template: `
     <div class="flex flex-col gap-4 h-full">
 

@@ -7,7 +7,6 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { firstValueFrom, Subscription } from 'rxjs';
 
@@ -20,8 +19,7 @@ import { PokedexComponent } from '../../components/pokedex/pokedex.component';
 
 @Component({
   selector: 'app-game',
-  standalone: true,
-  imports: [CommonModule, PokemonCardComponent, PokedexComponent],
+  imports: [PokemonCardComponent, PokedexComponent],
   template: `
     <div class="min-h-screen bg-slate-900 text-white flex flex-col">
 

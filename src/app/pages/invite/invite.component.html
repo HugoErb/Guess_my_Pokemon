@@ -20,53 +20,59 @@
   <main class="flex-1 flex items-center justify-center px-4">
 
     <!-- Loading -->
-    <div *ngIf="state === 'loading'" class="flex flex-col items-center gap-4 text-slate-400">
-      <svg class="w-10 h-10 animate-spin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="40 20"/>
-      </svg>
-      <p>Chargement de l'invitation…</p>
-    </div>
+    @if (state === 'loading') {
+      <div class="flex flex-col items-center gap-4 text-slate-400">
+        <svg class="w-10 h-10 animate-spin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="40 20"/>
+        </svg>
+        <p>Chargement de l'invitation…</p>
+      </div>
+    }
 
     <!-- Error / Full -->
-    <div *ngIf="state === 'error' || state === 'full'" class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl p-8 shadow-xl text-center">
-      <div class="text-4xl mb-4">⚠️</div>
-      <p class="text-slate-300 text-lg">{{ errorMessage }}</p>
-      <button
-        (click)="decline()"
-        class="mt-6 px-6 py-2 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors text-sm font-medium"
-      >
-        Retour à l'accueil
-      </button>
-    </div>
+    @if (state === 'error' || state === 'full') {
+      <div class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl p-8 shadow-xl text-center">
+        <div class="text-4xl mb-4">⚠️</div>
+        <p class="text-slate-300 text-lg">{{ errorMessage }}</p>
+        <button
+          (click)="decline()"
+          class="mt-6 px-6 py-2 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors text-sm font-medium"
+        >
+          Retour à l'accueil
+        </button>
+      </div>
+    }
 
     <!-- Valid invitation -->
-    <div *ngIf="state === 'valid'" class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl p-8 shadow-xl">
-      <div class="flex flex-col items-center text-center gap-4">
-        <div class="text-4xl">🎮</div>
-        <h2 class="text-xl font-semibold">Invitation à jouer&nbsp;!</h2>
-        <p class="text-slate-300 leading-relaxed">
-          <span class="text-red-400 font-bold">{{ inviterUsername }}</span>
-          t'invite à une partie de Guess My Pokémon&nbsp;!
-        </p>
-        <div class="flex gap-3 mt-4 w-full">
-          <button
-            (click)="accept()"
-            [disabled]="isJoining"
-            class="flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-white transition-colors shadow-lg"
-          >
-            <span *ngIf="!isJoining">✅ Accepter</span>
-            <span *ngIf="isJoining">Connexion…</span>
-          </button>
-          <button
-            (click)="decline()"
-            [disabled]="isJoining"
-            class="flex-1 py-3 px-4 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
-          >
-            ❌ Refuser
-          </button>
+    @if (state === 'valid') {
+      <div class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl p-8 shadow-xl">
+        <div class="flex flex-col items-center text-center gap-4">
+          <div class="text-4xl">🎮</div>
+          <h2 class="text-xl font-semibold">Invitation à jouer&nbsp;!</h2>
+          <p class="text-slate-300 leading-relaxed">
+            <span class="text-red-400 font-bold">{{ inviterUsername }}</span>
+            t'invite à une partie de Guess My Pokémon&nbsp;!
+          </p>
+          <div class="flex gap-3 mt-4 w-full">
+            <button
+              (click)="accept()"
+              [disabled]="isJoining"
+              class="flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-white transition-colors shadow-lg"
+            >
+              @if (!isJoining) { <span>✅ Accepter</span> }
+              @if (isJoining) { <span>Connexion…</span> }
+            </button>
+            <button
+              (click)="decline()"
+              [disabled]="isJoining"
+              class="flex-1 py-3 px-4 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+            >
+              ❌ Refuser
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    }
 
   </main>
 

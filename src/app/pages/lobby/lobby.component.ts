@@ -6,7 +6,6 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { firstValueFrom, filter, take, Subscription } from 'rxjs';
@@ -19,8 +18,7 @@ import { Pokemon } from '../../models/pokemon.model';
 
 @Component({
   selector: 'app-lobby',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   template: `
     <div class="min-h-screen bg-slate-900 text-white flex flex-col">
 

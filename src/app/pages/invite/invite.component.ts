@@ -1,13 +1,11 @@
 import { Component, input, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { SupabaseService } from '../../services/supabase.service';
 
 @Component({
   selector: 'app-invite',
-  standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './invite.component.html',
 })
 export class InviteComponent implements OnInit {

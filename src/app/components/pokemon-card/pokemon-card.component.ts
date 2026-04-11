@@ -1,5 +1,5 @@
 import { Component, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { Pokemon } from '../../models/pokemon.model';
 
 const TYPE_COLORS: Record<string, string> = {
@@ -25,8 +25,7 @@ const TYPE_COLORS: Record<string, string> = {
 
 @Component({
   selector: 'app-pokemon-card',
-  standalone: true,
-  imports: [CommonModule],
+  imports: [NgClass],
   template: `
     <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 flex flex-col gap-4">
 

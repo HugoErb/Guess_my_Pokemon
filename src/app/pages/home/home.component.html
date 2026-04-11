@@ -40,8 +40,8 @@
           [disabled]="isCreating"
           class="mt-4 w-full py-3 px-6 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-white transition-colors text-base shadow-lg"
         >
-          <span *ngIf="!isCreating">▶ Créer une partie</span>
-          <span *ngIf="isCreating">Création en cours…</span>
+          @if (!isCreating) { <span>▶ Créer une partie</span> }
+          @if (isCreating) { <span>Création en cours…</span> }
         </button>
         @if (createError) {
           <p class="mt-3 text-sm text-red-400">{{ createError }}</p>
