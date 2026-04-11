@@ -120,11 +120,11 @@ const TYPE_COLORS: Record<string, string> = {
       <div class="flex justify-around text-sm border-t border-slate-700 pt-3">
         <div class="text-center">
           <p class="text-slate-400 text-[10px] uppercase tracking-wider">Taille</p>
-          <p class="text-white font-medium">{{ (pokemon().height / 10).toFixed(1) }}m</p>
+          <p class="text-white font-medium">{{ pokemon().height }}m</p>
         </div>
         <div class="text-center">
           <p class="text-slate-400 text-[10px] uppercase tracking-wider">Poids</p>
-          <p class="text-white font-medium">{{ (pokemon().weight / 10).toFixed(1) }}kg</p>
+          <p class="text-white font-medium">{{ pokemon().weight }}kg</p>
         </div>
       </div>
 
