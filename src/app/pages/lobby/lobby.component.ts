@@ -9,11 +9,12 @@ import { GameService } from '../../services/game.service';
 import { PokemonService } from '../../services/pokemon.service';
 import { SupabaseService } from '../../services/supabase.service';
 import { Pokemon } from '../../models/pokemon.model';
+import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { ICONS } from '../../constants/icons';
 
 @Component({
 	selector: 'app-lobby',
-	imports: [FormsModule],
+	imports: [FormsModule, PokemonCardComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
 	template: `
 		<div class="h-screen bg-slate-900 text-white flex flex-col overflow-hidden">
@@ -101,9 +102,16 @@ import { ICONS } from '../../constants/icons';
 							<div>
 								<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Ton Pokémon</h3>
 								@if (selectedPokemon) {
-									<div class="bg-slate-700 rounded-xl p-3 flex flex-col items-center gap-2 border-2 border-red-500">
+									<div class="relative bg-slate-700 rounded-xl p-3 flex flex-col items-center gap-2 border-2 border-red-500">
 										<img [src]="selectedPokemon.sprite" [alt]="selectedPokemon.name" class="w-20 h-20 object-contain" />
 										<span class="text-sm font-medium capitalize">{{ selectedPokemon.name }}</span>
+										<button
+											(click)="openPokemonDetails(selectedPokemon)"
+											class="absolute top-2 right-2 w-7 h-7 flex items-center justify-center bg-slate-800/90 hover:bg-blue-500 rounded-full text-slate-300 hover:text-white transition-colors border border-slate-600 shadow-sm"
+											title="Voir ton Pokémon"
+										>
+											<iconify-icon [icon]="ICONS.search" class="text-sm"></iconify-icon>
+										</button>
 									</div>
 								} @else {
 									<div class="bg-slate-700 rounded-xl p-3 flex flex-col items-center gap-2 border-2 border-dashed border-slate-500">
@@ -195,22 +203,31 @@ import { ICONS } from '../../constants/icons';
 							<div class="flex-1 overflow-y-auto pr-2">
 								<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 pb-2">
 									@for (pokemon of filteredPokemons; track pokemon.id) {
-										<button
-											(click)="selectPokemon(pokemon)"
-											[class]="
-												pokemon.id === selectedPokemon?.id
-													? 'flex flex-col items-center gap-1 p-2 rounded-xl bg-red-900/40 border-2 border-red-500 hover:bg-red-900/60 transition-all'
-													: 'flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-700/60 border-2 border-transparent hover:bg-slate-700 hover:border-slate-500 transition-all'
-											"
-										>
-											<img
-												[src]="pokemon.sprite"
-												[alt]="pokemon.name"
-												class="w-16 h-16 object-contain"
-												loading="lazy"
-											/>
-											<span class="text-xs text-center capitalize leading-tight">{{ pokemon.name }}</span>
-										</button>
+										<div class="relative w-full h-full">
+											<button
+												(click)="selectPokemon(pokemon)"
+												[class]="
+													pokemon.id === selectedPokemon?.id
+														? 'w-full h-full flex flex-col items-center gap-1 p-2 rounded-xl bg-red-900/40 border-2 border-red-500 hover:bg-red-900/60 transition-all'
+														: 'w-full h-full flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-700/60 border-2 border-transparent hover:bg-slate-700 hover:border-slate-500 transition-all'
+												"
+											>
+												<img
+													[src]="pokemon.sprite"
+													[alt]="pokemon.name"
+													class="w-16 h-16 object-contain"
+													loading="lazy"
+												/>
+												<span class="text-xs text-center capitalize leading-tight">{{ pokemon.name }}</span>
+											</button>
+											<button
+												(click)="openPokemonDetails(pokemon); $event.stopPropagation()"
+												class="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-slate-800/90 hover:bg-blue-500 rounded-full text-slate-300 hover:text-white transition-colors border border-slate-600 shadow-sm"
+												title="Voir le Pokédex complet"
+											>
+												<iconify-icon [icon]="ICONS.search" class="text-xs"></iconify-icon>
+											</button>
+										</div>
 									}
 								</div>
 								@if (filteredPokemons.length === 0 && allPokemons.length > 0) {
@@ -232,6 +249,39 @@ import { ICONS } from '../../constants/icons';
 						</div>
 					}
 
+				</div>
+			}
+
+			<!-- Modal Pokédex -->
+			@if (selectedPokemonDetails) {
+				<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closePokemonDetails()">
+					<div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-md w-full shadow-2xl relative flex flex-col gap-4 max-h-[90vh]" (click)="$event.stopPropagation()">
+						
+						<!-- Header -->
+						<div class="flex items-center justify-between">
+							<h2 class="text-xl font-bold flex items-center gap-2">
+								<span class="text-slate-400">#{{ selectedPokemonDetails.id.toString().padStart(3, '0') }}</span>
+								<span class="capitalize text-white">{{ selectedPokemonDetails.name }}</span>
+							</h2>
+							<button (click)="closePokemonDetails()" class="text-slate-400 hover:text-white transition-colors p-1">
+								<iconify-icon [icon]="ICONS.close" class="text-2xl"></iconify-icon>
+							</button>
+						</div>
+
+						<!-- Contenu scrollable si nécessaire -->
+						<div class="overflow-y-auto pr-2">
+							<app-pokemon-card [pokemon]="selectedPokemonDetails" />
+						</div>
+
+						<!-- Footer action -->
+						<button 
+							(click)="selectFromDetails(selectedPokemonDetails)"
+							class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-xl font-bold text-white transition-colors mt-2 shadow-lg flex items-center justify-center gap-2"
+						>
+							<iconify-icon [icon]="ICONS.checkCircle" class="text-xl"></iconify-icon>
+							Sélectionner ce Pokémon
+						</button>
+					</div>
 				</div>
 			}
 		</div>
@@ -265,6 +315,9 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	isReady = false;
 	isSettingReady = false;
 	selectError = '';
+
+	// Détails du Pokémon
+	selectedPokemonDetails: Pokemon | null = null;
 
 	// État de chargement
 	isLoading = true;
@@ -422,5 +475,20 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		}
 		this.copied = true;
 		setTimeout(() => (this.copied = false), 2000);
+	}
+
+	// ─── Modal Pokédex ───────────────────────────────────────────────────────────
+
+	openPokemonDetails(pokemon: Pokemon): void {
+		this.selectedPokemonDetails = pokemon;
+	}
+
+	closePokemonDetails(): void {
+		this.selectedPokemonDetails = null;
+	}
+
+	selectFromDetails(pokemon: Pokemon): void {
+		void this.selectPokemon(pokemon);
+		this.closePokemonDetails();
 	}
 }

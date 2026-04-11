@@ -102,22 +102,24 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         <div class="flex-1 overflow-y-auto min-h-0" style="max-height: 320px;">
           <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-1.5 pb-2">
             @for (pokemon of displayedPokemons; track pokemon.id) {
-              <button
-                (click)="selectPokemon(pokemon)"
-                [class]="selectedPokemon?.id === pokemon.id
-                  ? 'flex flex-col items-center gap-1 p-1.5 rounded-xl bg-red-900/40 border-2 border-red-500 transition-all'
-                  : 'flex flex-col items-center gap-1 p-1.5 rounded-xl bg-slate-700/60 border-2 border-transparent hover:bg-slate-700 hover:border-slate-500 transition-all'"
-              >
-                <img
-                  [src]="pokemon.sprite"
-                  [alt]="pokemon.name"
-                  class="w-12 h-12 object-contain"
-                  loading="lazy"
-                />
-                <span class="text-xs text-center capitalize leading-tight text-slate-300 truncate w-full">
-                  {{ pokemon.name }}
-                </span>
-              </button>
+              <div class="relative w-full h-full">
+                <button
+                  (click)="openPokemonDetails(pokemon)"
+                  [class]="selectedPokemonDetails?.id === pokemon.id
+                    ? 'w-full h-full flex flex-col items-center gap-1 p-1.5 rounded-xl bg-red-900/40 border-2 border-red-500 transition-all'
+                    : 'w-full h-full flex flex-col items-center gap-1 p-1.5 rounded-xl bg-slate-700/60 border-2 border-transparent hover:bg-slate-700 hover:border-slate-500 transition-all'"
+                >
+                  <img
+                    [src]="pokemon.sprite"
+                    [alt]="pokemon.name"
+                    class="w-12 h-12 object-contain"
+                    loading="lazy"
+                  />
+                  <span class="text-xs text-center capitalize leading-tight text-slate-300 truncate w-full">
+                    {{ pokemon.name }}
+                  </span>
+                </button>
+              </div>
             }
           </div>
 
@@ -144,21 +146,37 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         }
       </div>
 
-      <!-- Pokémon sélectionné -->
-      @if (selectedPokemon) {
-        <div class="border-t border-slate-700 pt-4">
-          <p class="text-xs text-slate-400 uppercase tracking-wider mb-3">Pokémon sélectionné</p>
-          <app-pokemon-card [pokemon]="selectedPokemon" />
+      <!-- Modal Pokédex -->
+      @if (selectedPokemonDetails) {
+        <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4" (click)="closePokemonDetails()">
+          <div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-md w-full shadow-2xl relative flex flex-col gap-4 max-h-[90vh]" (click)="$event.stopPropagation()">
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between">
+              <h2 class="text-xl font-bold flex items-center gap-2">
+                <span class="text-slate-400">#{{ selectedPokemonDetails.id.toString().padStart(3, '0') }}</span>
+                <span class="capitalize text-white">{{ selectedPokemonDetails.name }}</span>
+              </h2>
+              <button (click)="closePokemonDetails()" class="text-slate-400 hover:text-white transition-colors p-1">
+                <iconify-icon [icon]="ICONS.close" class="text-2xl"></iconify-icon>
+              </button>
+            </div>
 
-          @if (showGuessButton()) {
-            <button
-              type="button"
-              (click)="onGuess()"
-              class="mt-3 w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white text-sm transition-colors flex items-center justify-center gap-2"
-            >
-              <iconify-icon [icon]="ICONS.sword" class="text-lg"></iconify-icon>Deviner ce Pokémon
-            </button>
-          }
+            <!-- Contenu scrollable -->
+            <div class="overflow-y-auto pr-2">
+              <app-pokemon-card [pokemon]="selectedPokemonDetails" />
+            </div>
+
+            @if (showGuessButton()) {
+              <button 
+                (click)="onGuessFromDetails(selectedPokemonDetails)"
+                class="w-full bg-red-600 hover:bg-red-500 py-3 rounded-xl font-bold text-white transition-colors mt-2 shadow-lg flex items-center justify-center gap-2"
+              >
+                <iconify-icon [icon]="ICONS.sword" class="text-xl"></iconify-icon>
+                Deviner ce Pokémon
+              </button>
+            }
+          </div>
         </div>
       }
 
@@ -176,6 +194,7 @@ export class PokedexComponent implements OnInit {
   allPokemons: Pokemon[] = [];
   filteredPokemons: Pokemon[] = [];
   selectedPokemon: Pokemon | null = null;
+  selectedPokemonDetails: Pokemon | null = null;
 
   searchQuery = '';
   selectedGenerations: number[] = [];
@@ -256,5 +275,18 @@ export class PokedexComponent implements OnInit {
     if (this.selectedPokemon) {
       this.guess.emit(this.selectedPokemon.id);
     }
+  }
+
+  openPokemonDetails(pokemon: Pokemon): void {
+    this.selectedPokemonDetails = pokemon;
+  }
+
+  closePokemonDetails(): void {
+    this.selectedPokemonDetails = null;
+  }
+
+  onGuessFromDetails(pokemon: Pokemon): void {
+    this.guess.emit(pokemon.id);
+    this.closePokemonDetails();
   }
 }
