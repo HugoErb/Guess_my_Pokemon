@@ -16,7 +16,7 @@ import { ICONS } from '../../constants/icons';
 	imports: [FormsModule],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
 	template: `
-		<div class="min-h-screen bg-slate-900 text-white flex flex-col">
+		<div class="h-screen bg-slate-900 text-white flex flex-col overflow-hidden">
 			<!-- Header -->
 			<header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center gap-3">
 				<iconify-icon [icon]="ICONS.pokeball" class="text-2xl text-red-500"></iconify-icon>
@@ -113,7 +113,41 @@ import { ICONS } from '../../constants/icons';
 								}
 							</div>
 
-							<div>
+							<div class="flex flex-col gap-2">
+								<button
+									(click)="setReady()"
+									[disabled]="!selectedPokemon || isSettingReady || isReady"
+									class="bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-xl font-bold text-sm transition-colors w-full"
+								>
+									@if (isSettingReady) {
+										<span class="flex items-center justify-center gap-2">
+											<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+											Confirmation…
+										</span>
+									} @else if (isReady) {
+										<span class="flex items-center justify-center gap-1">
+											<iconify-icon [icon]="ICONS.checkCircle"></iconify-icon>
+											Tu es prêt !
+										</span>
+									} @else {
+										<span class="flex items-center justify-center gap-1">
+											<iconify-icon [icon]="ICONS.checkCircle"></iconify-icon>
+											Je suis prêt !
+										</span>
+									}
+								</button>
+								@if (devMode && isReady && !opponentReady()) {
+									<button
+										(click)="simulateOpponentReady()"
+										[disabled]="isSimulatingReady"
+										class="bg-amber-800/50 hover:bg-amber-700/50 border border-amber-600 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-xs font-medium text-amber-300 transition-colors w-full"
+									>
+										{{ isSimulatingReady ? 'Simulation…' : '⚙ Simuler adversaire prêt [DEV]' }}
+									</button>
+								}
+							</div>
+
+							<div class="border-t border-slate-700 pt-4 mt-2">
 								<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Adversaire</h3>
 								@if (opponentReady()) {
 									<div class="flex items-center gap-2 text-green-400">
@@ -127,13 +161,6 @@ import { ICONS } from '../../constants/icons';
 									</div>
 								}
 							</div>
-
-							@if (isReady) {
-								<div class="flex items-center gap-2 text-green-400 mt-auto">
-									<iconify-icon [icon]="ICONS.checkCircle" class="text-lg"></iconify-icon>
-									<span class="text-sm font-medium">Tu es prêt !</span>
-								</div>
-							}
 						</div>
 
 						<!-- Colonne droite : sélecteur de Pokémon -->
@@ -165,7 +192,7 @@ import { ICONS } from '../../constants/icons';
 							</div>
 
 							<!-- Grille de Pokémon scrollable -->
-							<div class="flex-1 overflow-y-auto">
+							<div class="flex-1 overflow-y-auto pr-2">
 								<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 pb-2">
 									@for (pokemon of filteredPokemons; track pokemon.id) {
 										<button
@@ -205,36 +232,6 @@ import { ICONS } from '../../constants/icons';
 						</div>
 					}
 
-					<!-- Footer : bouton Je suis prêt -->
-					<div class="bg-slate-800 border-t border-slate-700 px-6 py-4 flex flex-col items-center gap-2">
-						<button
-							(click)="setReady()"
-							[disabled]="!selectedPokemon || isSettingReady || isReady"
-							class="bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed px-8 py-3 rounded-xl font-bold text-base transition-colors"
-						>
-							@if (isSettingReady) {
-								<span class="flex items-center gap-2">
-									<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-									Confirmation…
-								</span>
-							} @else if (isReady) {
-								<iconify-icon [icon]="ICONS.checkCircle" class="mr-1"></iconify-icon>
-								Tu es prêt !
-							} @else {
-								<iconify-icon [icon]="ICONS.checkCircle" class="mr-1"></iconify-icon>
-								Je suis prêt !
-							}
-						</button>
-						@if (devMode && isReady && !opponentReady()) {
-							<button
-								(click)="simulateOpponentReady()"
-								[disabled]="isSimulatingReady"
-								class="bg-amber-800/50 hover:bg-amber-700/50 border border-amber-600 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-2 rounded-lg text-sm font-medium text-amber-300 transition-colors"
-							>
-								{{ isSimulatingReady ? 'Simulation…' : '⚙ Simuler adversaire prêt [DEV]' }}
-							</button>
-						}
-					</div>
 				</div>
 			}
 		</div>
