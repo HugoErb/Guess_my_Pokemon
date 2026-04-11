@@ -44,6 +44,10 @@ import { environment } from '../../../environments/environment';
 							</span>
 						}
 					}
+					<button (click)="promptCancel()" class="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-red-600 border border-slate-600 hover:border-red-500 rounded text-sm text-slate-300 hover:text-white transition-colors">
+						<iconify-icon [icon]="ICONS.logout" class="text-lg"></iconify-icon>
+						<span class="hidden sm:inline">Quitter la partie</span>
+					</button>
 				</div>
 			</header>
 
@@ -127,6 +131,27 @@ import { environment } from '../../../environments/environment';
 					</div>
 				</div>
 			}
+
+			<!-- Modal de confirmation d'annulation -->
+			@if (showCancelModal) {
+				<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[110] p-4" (click)="closeCancelModal()">
+					<div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-4 text-center" (click)="$event.stopPropagation()">
+						<iconify-icon [icon]="ICONS.alert" class="text-5xl text-red-500 mx-auto"></iconify-icon>
+						<h2 class="text-xl font-bold text-white uppercase tracking-wider">Quitter la partie ?</h2>
+						<p class="text-slate-300 text-sm">
+							Es-tu sûr de vouloir revenir à l'accueil ? Cela <strong class="text-red-400">annulera définitivement</strong> la partie en cours pour les deux joueurs.
+						</p>
+						<div class="flex flex-col-reverse sm:flex-row gap-3 mt-4">
+							<button (click)="closeCancelModal()" class="flex-1 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium transition-colors">
+								Non, rester
+							</button>
+							<button (click)="confirmCancel()" [disabled]="isCancelling" class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm font-bold text-white transition-colors">
+								{{ isCancelling ? 'Annulation...' : 'Oui, quitter' }}
+							</button>
+						</div>
+					</div>
+				</div>
+			}
 		</div>
 	`,
 })
@@ -149,6 +174,9 @@ export class GameComponent implements OnInit, OnDestroy {
 	showEndModal = false;
 	isWinner = false;
 	readonly isDev = environment.devMode && isDevMode();
+
+	showCancelModal = false;
+	isCancelling = false;
 
 	private guessMessageTimer: ReturnType<typeof setTimeout> | null = null;
 	private pokemonSub?: Subscription;
@@ -234,6 +262,30 @@ export class GameComponent implements OnInit, OnDestroy {
 
 	goHome(): void {
 		this.router.navigate(['/home']);
+	}
+
+	// ─── Annulation de partie ──────────────────────────────────────────────────
+
+	promptCancel(): void {
+		this.showCancelModal = true;
+	}
+
+	closeCancelModal(): void {
+		this.showCancelModal = false;
+	}
+
+	async confirmCancel(): Promise<void> {
+		if (this.isCancelling) return;
+		this.isCancelling = true;
+		try {
+			await this.gameService.cancelRoom(this.roomId());
+			this.router.navigate(['/home']);
+		} catch (err) {
+			console.error('[GameComponent] Erreur lors de l\'annulation', err);
+		} finally {
+			this.isCancelling = false;
+			this.closeCancelModal();
+		}
 	}
 
 	ngOnDestroy(): void {

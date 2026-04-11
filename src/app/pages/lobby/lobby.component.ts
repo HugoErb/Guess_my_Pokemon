@@ -19,9 +19,15 @@ import { ICONS } from '../../constants/icons';
 	template: `
 		<div class="h-screen bg-slate-900 text-white flex flex-col overflow-hidden">
 			<!-- Header -->
-			<header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center gap-3">
-				<iconify-icon [icon]="ICONS.pokeball" class="text-2xl text-red-500"></iconify-icon>
-				<h1 class="text-xl font-bold text-white">Guess my Pokémon</h1>
+			<header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
+				<div class="flex items-center gap-3">
+					<iconify-icon [icon]="ICONS.pokeball" class="text-2xl text-red-500"></iconify-icon>
+					<h1 class="text-xl font-bold text-white">Guess my Pokémon</h1>
+				</div>
+				<button (click)="promptCancel()" class="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-red-600 border border-slate-600 hover:border-red-500 rounded text-sm text-slate-300 hover:text-white transition-colors">
+					<iconify-icon [icon]="ICONS.logout" class="text-lg"></iconify-icon>
+					<span class="hidden sm:inline">Quitter la partie</span>
+				</button>
 			</header>
 
 			@if (!room() && isLoading) {
@@ -284,6 +290,27 @@ import { ICONS } from '../../constants/icons';
 					</div>
 				</div>
 			}
+
+			<!-- Modal de confirmation d'annulation -->
+			@if (showCancelModal) {
+				<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[110] p-4" (click)="closeCancelModal()">
+					<div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-4 text-center" (click)="$event.stopPropagation()">
+						<iconify-icon [icon]="ICONS.alert" class="text-5xl text-red-500 mx-auto"></iconify-icon>
+						<h2 class="text-xl font-bold text-white uppercase tracking-wider">Quitter la partie ?</h2>
+						<p class="text-slate-300 text-sm">
+							Es-tu sûr de vouloir revenir à l'accueil ? Cela <strong class="text-red-400">annulera définitivement</strong> la partie en cours pour les deux joueurs.
+						</p>
+						<div class="flex flex-col-reverse sm:flex-row gap-3 mt-4">
+							<button (click)="closeCancelModal()" class="flex-1 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium transition-colors">
+								Non, rester
+							</button>
+							<button (click)="confirmCancel()" [disabled]="isCancelling" class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm font-bold text-white transition-colors">
+								{{ isCancelling ? 'Annulation...' : 'Oui, quitter' }}
+							</button>
+						</div>
+					</div>
+				</div>
+			}
 		</div>
 	`,
 	styles: [],
@@ -328,6 +355,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
 	// Annulation / mode dev
 	isCancelling = false;
+	showCancelModal = false;
 	isSimulating = false;
 	isSimulatingReady = false;
 	readonly devMode = environment.devMode;
@@ -490,5 +518,20 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	selectFromDetails(pokemon: Pokemon): void {
 		void this.selectPokemon(pokemon);
 		this.closePokemonDetails();
+	}
+
+	// ─── Modal d'annulation ──────────────────────────────────────────────────────
+	
+	promptCancel(): void {
+		this.showCancelModal = true;
+	}
+
+	closeCancelModal(): void {
+		this.showCancelModal = false;
+	}
+
+	async confirmCancel(): Promise<void> {
+		this.closeCancelModal();
+		await this.cancelRoom();
 	}
 }
