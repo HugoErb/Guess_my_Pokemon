@@ -1,10 +1,10 @@
-# Guess My Pokémon
+# Guess my Pokémon
 
 Un jeu multijoueur en temps réel où deux joueurs s'affrontent pour deviner le Pokémon choisi par l'adversaire.
 
 ## Le projet
 
-**Guess My Pokémon** est une application web de type "devine le Pokémon de l'autre". Chaque joueur choisit secrètement un Pokémon dans son Pokédex, puis les deux joueurs s'affrontent pour deviner lequel l'autre a sélectionné.
+**Guess my Pokémon** est une application web de type "devine le Pokémon de l'autre". Chaque joueur choisit secrètement un Pokémon dans son Pokédex, puis les deux joueurs s'affrontent pour deviner lequel l'autre a sélectionné.
 
 ### Fonctionnalités principales
 

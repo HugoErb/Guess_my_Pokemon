@@ -62,19 +62,21 @@ export class SupabaseService implements OnDestroy {
     const user = data.user;
     if (!user) throw new Error('Aucun utilisateur retourné après l\'inscription');
 
-    if (!data.session) {
-      // Confirmation email requise : le profil sera créé à la première connexion
-      throw new Error('Un email de confirmation a été envoyé. Clique sur le lien dans ta boîte mail pour activer ton compte.');
-    }
-
+    // Toujours tenter d'insérer le profil dès que l'utilisateur est créé,
+    // que la confirmation email soit activée ou non.
     const { error: profileError } = await this.supabase
       .from('profiles')
-      .insert({ id: user.id, username });
+      .upsert({ id: user.id, username }, { onConflict: 'id', ignoreDuplicates: true });
 
-    if (profileError) throw new Error(profileError.message);
+    if (profileError) console.error('Erreur création profil à l\'inscription:', profileError);
+
+    if (!data.session) {
+      // Confirmation email requise
+      throw new Error('Un email de confirmation a été envoyé. Clique sur le lien dans ta boîte mail pour activer ton compte.');
+    }
   }
 
-  private async ensureProfile(userId: string, username?: string): Promise<void> {
+  async ensureProfile(userId: string, username?: string): Promise<void> {
     const { data } = await this.supabase
       .from('profiles')
       .select('id')
@@ -82,7 +84,8 @@ export class SupabaseService implements OnDestroy {
       .maybeSingle();
 
     if (!data && username) {
-      await this.supabase.from('profiles').insert({ id: userId, username });
+      const { error } = await this.supabase.from('profiles').insert({ id: userId, username });
+      if (error) console.error('Erreur création profil:', error);
     }
   }
 

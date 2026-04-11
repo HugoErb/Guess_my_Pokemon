@@ -36,7 +36,17 @@ export class HomeComponent implements OnInit {
         const profile = await this.supabaseService.getProfile(user.id);
         this.username = profile.username;
       } catch {
-        this.username = user.email ?? 'Joueur';
+        // Profil absent : tenter de le créer depuis les métadonnées d'inscription
+        const metaUsername = user.user_metadata?.['username'];
+        if (metaUsername) {
+          await this.supabaseService.ensureProfile(user.id, metaUsername);
+          try {
+            const profile = await this.supabaseService.getProfile(user.id);
+            this.username = profile.username;
+            return;
+          } catch { /* profil toujours inaccessible */ }
+        }
+        this.username = metaUsername ?? user.email?.split('@')[0] ?? 'Joueur';
       }
     } finally {
       this.isLoadingProfile = false;

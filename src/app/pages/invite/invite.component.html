@@ -1,69 +1,75 @@
 <div class="min-h-screen bg-slate-900 text-white flex flex-col">
+	<!-- Header -->
+	<header class="flex items-center px-6 py-4 border-b border-slate-700">
+		<div class="flex items-center gap-3">
+			<iconify-icon [icon]="ICONS.pokeball" class="text-2xl text-red-500"></iconify-icon>
+			<span class="text-xl font-bold tracking-wide">Guess my Pokémon</span>
+		</div>
+	</header>
 
-  <!-- Header -->
-  <header class="flex items-center px-6 py-4 border-b border-slate-700">
-    <div class="flex items-center gap-3">
-      <iconify-icon [icon]="ICONS.pokeball" class="text-2xl text-red-500"></iconify-icon>
-      <span class="text-xl font-bold tracking-wide">Guess My Pokémon</span>
-    </div>
-  </header>
+	<!-- Main content -->
+	<main class="flex-1 flex items-center justify-center px-4">
+		<!-- Loading -->
+		@if (state === "loading") {
+			<div class="flex flex-col items-center gap-4 text-slate-400">
+				<iconify-icon [icon]="ICONS.loading" class="text-4xl animate-spin"></iconify-icon>
+				<p>Chargement de l'invitation…</p>
+			</div>
+		}
 
-  <!-- Main content -->
-  <main class="flex-1 flex items-center justify-center px-4">
+		<!-- Error / Full -->
+		@if (state === "error" || state === "full") {
+			<div class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl p-8 shadow-xl text-center">
+				<iconify-icon [icon]="ICONS.alert" class="text-4xl mb-4 text-yellow-400"></iconify-icon>
+				<p class="text-slate-300 text-lg">{{ errorMessage }}</p>
+				<button
+					(click)="decline()"
+					class="mt-6 px-6 py-2 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors text-sm font-medium"
+				>
+					Retour à l'accueil
+				</button>
+			</div>
+		}
 
-    <!-- Loading -->
-    @if (state === 'loading') {
-      <div class="flex flex-col items-center gap-4 text-slate-400">
-        <iconify-icon [icon]="ICONS.loading" class="text-4xl animate-spin"></iconify-icon>
-        <p>Chargement de l'invitation…</p>
-      </div>
-    }
-
-    <!-- Error / Full -->
-    @if (state === 'error' || state === 'full') {
-      <div class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl p-8 shadow-xl text-center">
-        <iconify-icon [icon]="ICONS.alert" class="text-4xl mb-4 text-yellow-400"></iconify-icon>
-        <p class="text-slate-300 text-lg">{{ errorMessage }}</p>
-        <button
-          (click)="decline()"
-          class="mt-6 px-6 py-2 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors text-sm font-medium"
-        >
-          Retour à l'accueil
-        </button>
-      </div>
-    }
-
-    <!-- Valid invitation -->
-    @if (state === 'valid') {
-      <div class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl p-8 shadow-xl">
-        <div class="flex flex-col items-center text-center gap-4">
-          <iconify-icon [icon]="ICONS.game" class="text-4xl text-red-400"></iconify-icon>
-          <h2 class="text-xl font-semibold">Invitation à jouer&nbsp;!</h2>
-          <p class="text-slate-300 leading-relaxed">
-            <span class="text-red-400 font-bold">{{ inviterUsername }}</span>
-            t'invite à une partie de Guess My Pokémon&nbsp;!
-          </p>
-          <div class="flex gap-3 mt-4 w-full">
-            <button
-              (click)="accept()"
-              [disabled]="isJoining"
-              class="flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-white transition-colors shadow-lg"
-            >
-              @if (!isJoining) { <span class="flex items-center justify-center gap-1"><iconify-icon [icon]="ICONS.checkCircle"></iconify-icon>Accepter</span> }
-              @if (isJoining) { <span>Connexion…</span> }
-            </button>
-            <button
-              (click)="decline()"
-              [disabled]="isJoining"
-              class="flex-1 py-3 px-4 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
-            >
-              <span class="flex items-center justify-center gap-1"><iconify-icon [icon]="ICONS.close"></iconify-icon>Refuser</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    }
-
-  </main>
-
+		<!-- Valid invitation -->
+		@if (state === "valid") {
+			<div class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl p-8 shadow-xl">
+				<div class="flex flex-col items-center text-center gap-4">
+					<iconify-icon [icon]="ICONS.game" class="text-4xl text-red-400"></iconify-icon>
+					<h2 class="text-xl font-semibold">Invitation à jouer&nbsp;!</h2>
+					<p class="text-slate-300 leading-relaxed">
+						<span class="text-red-400 font-bold">{{ inviterUsername }}</span>
+						t'invite à une partie de Guess my Pokémon&nbsp;!
+					</p>
+					<div class="flex gap-3 mt-4 w-full">
+						<button
+							(click)="accept()"
+							[disabled]="isJoining"
+							class="flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-white transition-colors shadow-lg"
+						>
+							@if (!isJoining) {
+								<span class="flex items-center justify-center gap-1">
+									<iconify-icon [icon]="ICONS.checkCircle"></iconify-icon>
+									Accepter
+								</span>
+							}
+							@if (isJoining) {
+								<span>Connexion…</span>
+							}
+						</button>
+						<button
+							(click)="decline()"
+							[disabled]="isJoining"
+							class="flex-1 py-3 px-4 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+						>
+							<span class="flex items-center justify-center gap-1">
+								<iconify-icon [icon]="ICONS.close"></iconify-icon>
+								Refuser
+							</span>
+						</button>
+					</div>
+				</div>
+			</div>
+		}
+	</main>
 </div>
