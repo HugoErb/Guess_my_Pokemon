@@ -55,7 +55,7 @@ export class SupabaseService implements OnDestroy {
     const { data, error } = await this.supabase.auth.signUp({
       email,
       password,
-      options: { data: { username } },
+      options: { data: { username, display_name: username } },
     });
     if (error) throw error;
 
