@@ -1,10 +1,11 @@
-import { Component, OnInit, DestroyRef, inject, input, output } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, input, output, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 
 import { PokemonService } from '../../services/pokemon.service';
 import { Pokemon } from '../../models/pokemon.model';
 import { PokemonCardComponent } from '../pokemon-card/pokemon-card.component';
+import { ICONS } from '../../constants/icons';
 
 const ALL_TYPES = [
   'Normal', 'Feu', 'Eau', 'Électrik', 'Plante', 'Glace',
@@ -38,6 +39,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 @Component({
   selector: 'app-pokedex',
   imports: [FormsModule, PokemonCardComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <div class="flex flex-col gap-4 h-full">
 
@@ -46,7 +48,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
       <!-- Barre de recherche -->
       <div class="relative">
-        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+        <iconify-icon [icon]="ICONS.search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></iconify-icon>
         <input
           type="text"
           placeholder="Rechercher un Pokémon..."
@@ -155,7 +157,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
               (click)="onGuess()"
               class="mt-3 w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white text-sm transition-colors flex items-center justify-center gap-2"
             >
-              🎯 Deviner ce Pokémon
+              <iconify-icon [icon]="ICONS.sword" class="text-lg"></iconify-icon>Deviner ce Pokémon
             </button>
           }
         </div>
@@ -165,6 +167,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
   `,
 })
 export class PokedexComponent implements OnInit {
+  protected readonly ICONS = ICONS;
   private readonly pokemonService = inject(PokemonService);
   private readonly destroyRef = inject(DestroyRef);
 

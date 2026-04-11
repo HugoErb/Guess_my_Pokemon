@@ -1,14 +1,17 @@
-import { Component, input, OnInit } from '@angular/core';
+import { Component, input, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { SupabaseService } from '../../services/supabase.service';
+import { ICONS } from '../../constants/icons';
 
 @Component({
   selector: 'app-invite',
   imports: [],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './invite.component.html',
 })
 export class InviteComponent implements OnInit {
+  protected readonly ICONS = ICONS;
   readonly roomId = input.required<string>();
 
   state: 'loading' | 'valid' | 'error' | 'full' = 'loading';

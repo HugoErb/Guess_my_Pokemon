@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
+import { ICONS } from '../../constants/icons';
 
 function passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
   const password = group.get('password')?.value;
@@ -13,9 +14,11 @@ function passwordMatchValidator(group: AbstractControl): ValidationErrors | null
 @Component({
   selector: 'app-login',
   imports: [NgClass, ReactiveFormsModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
+  protected readonly ICONS = ICONS;
   mode: 'login' | 'register' | 'forgot' = 'login';
   errorMessage = '';
   infoMessage = '';

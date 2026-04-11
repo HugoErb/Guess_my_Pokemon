@@ -6,6 +6,7 @@ import {
   effect,
   inject,
   input,
+  CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom, Subscription } from 'rxjs';
@@ -16,17 +17,19 @@ import { SupabaseService } from '../../services/supabase.service';
 import { Pokemon } from '../../models/pokemon.model';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { PokedexComponent } from '../../components/pokedex/pokedex.component';
+import { ICONS } from '../../constants/icons';
 
 @Component({
   selector: 'app-game',
   imports: [PokemonCardComponent, PokedexComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <div class="min-h-screen bg-slate-900 text-white flex flex-col">
 
       <!-- Header -->
       <header class="bg-slate-800 border-b border-slate-700 px-6 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-base font-bold">P</div>
+          <iconify-icon [icon]="ICONS.pokeball" class="text-2xl text-red-500"></iconify-icon>
           <h1 class="text-lg font-bold text-white">Guess My Pokémon</h1>
         </div>
 
@@ -89,11 +92,11 @@ import { PokedexComponent } from '../../components/pokedex/pokedex.component';
           <div class="bg-slate-800 rounded-2xl p-8 max-w-sm w-full border border-slate-700 shadow-2xl flex flex-col items-center gap-6 text-center">
 
             @if (isWinner) {
-              <div class="text-6xl">🏆</div>
+              <iconify-icon [icon]="ICONS.trophy" class="text-6xl text-yellow-400 animate-bounce"></iconify-icon>
               <h2 class="text-2xl font-bold text-yellow-400">Victoire !</h2>
               <p class="text-slate-300">Tu as trouvé le Pokémon de ton adversaire !</p>
             } @else {
-              <div class="text-6xl">💀</div>
+              <iconify-icon [icon]="ICONS.skull" class="text-6xl text-red-400 animate-pulse"></iconify-icon>
               <h2 class="text-2xl font-bold text-red-400">Défaite !</h2>
               <p class="text-slate-300">Ton adversaire a trouvé ton Pokémon !</p>
             }
@@ -116,7 +119,7 @@ import { PokedexComponent } from '../../components/pokedex/pokedex.component';
               (click)="goHome()"
               class="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2"
             >
-              🏠 Retour à l'accueil
+              <iconify-icon [icon]="ICONS.home" class="text-xl"></iconify-icon>Retour à l'accueil
             </button>
 
           </div>
@@ -127,6 +130,7 @@ import { PokedexComponent } from '../../components/pokedex/pokedex.component';
   `,
 })
 export class GameComponent implements OnInit, OnDestroy {
+  protected readonly ICONS = ICONS;
   roomId = input.required<string>();
 
   private readonly gameService = inject(GameService);

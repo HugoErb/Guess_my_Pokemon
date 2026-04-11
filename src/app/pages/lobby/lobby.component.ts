@@ -5,6 +5,7 @@ import {
   computed,
   inject,
   input,
+  CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -16,16 +17,18 @@ import { GameService } from '../../services/game.service';
 import { PokemonService } from '../../services/pokemon.service';
 import { SupabaseService } from '../../services/supabase.service';
 import { Pokemon } from '../../models/pokemon.model';
+import { ICONS } from '../../constants/icons';
 
 @Component({
   selector: 'app-lobby',
   imports: [FormsModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <div class="min-h-screen bg-slate-900 text-white flex flex-col">
 
       <!-- Header -->
       <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center gap-3">
-        <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-lg font-bold">P</div>
+        <iconify-icon [icon]="ICONS.pokeball" class="text-2xl text-red-500"></iconify-icon>
         <h1 class="text-xl font-bold text-white">Guess My Pokémon</h1>
       </header>
 
@@ -39,7 +42,7 @@ import { Pokemon } from '../../models/pokemon.model';
       @if (room()?.player2_id === null) {
         <div class="flex-1 flex items-center justify-center p-6">
           <div class="bg-slate-800 rounded-2xl p-8 max-w-md w-full text-center shadow-xl border border-slate-700">
-            <div class="text-4xl mb-4">⏳</div>
+            <iconify-icon [icon]="ICONS.timer" class="text-4xl mb-4 text-blue-400 animate-pulse"></iconify-icon>
             <h2 class="text-2xl font-bold mb-2">En attente de ton adversaire…</h2>
             <p class="text-slate-400 mb-6">Partage ce lien à ton ami pour qu'il rejoigne la partie :</p>
 
@@ -57,7 +60,11 @@ import { Pokemon } from '../../models/pokemon.model';
                   ? 'bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap'
                   : 'bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap'"
               >
-                {{ copied ? 'Lien copié ! ✓' : '📋 Copier' }}
+                @if (copied) {
+                  <iconify-icon [icon]="ICONS.checkCircle" class="mr-1"></iconify-icon>Lien copié !
+                } @else {
+                  <iconify-icon [icon]="ICONS.copy" class="mr-1"></iconify-icon>Copier
+                }
               </button>
             </div>
 
@@ -121,12 +128,12 @@ import { Pokemon } from '../../models/pokemon.model';
                 <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Adversaire</h3>
                 @if (opponentReady()) {
                   <div class="flex items-center gap-2 text-green-400">
-                    <span class="text-lg">✓</span>
+                    <iconify-icon [icon]="ICONS.checkCircle" class="text-lg"></iconify-icon>
                     <span class="text-sm font-medium">Prêt !</span>
                   </div>
                 } @else {
                   <div class="flex items-center gap-2 text-slate-400">
-                    <div class="w-3 h-3 rounded-full border-2 border-slate-500 border-t-transparent animate-spin"></div>
+                    <iconify-icon [icon]="ICONS.loading" class="text-lg animate-spin"></iconify-icon>
                     <span class="text-sm">En attente…</span>
                   </div>
                 }
@@ -134,7 +141,7 @@ import { Pokemon } from '../../models/pokemon.model';
 
               @if (isReady) {
                 <div class="flex items-center gap-2 text-green-400 mt-auto">
-                  <span class="text-lg">✓</span>
+                  <iconify-icon [icon]="ICONS.checkCircle" class="text-lg"></iconify-icon>
                   <span class="text-sm font-medium">Tu es prêt !</span>
                 </div>
               }
@@ -147,7 +154,7 @@ import { Pokemon } from '../../models/pokemon.model';
               <!-- Barre de recherche + bouton aléatoire -->
               <div class="flex gap-2">
                 <div class="flex-1 relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+                  <iconify-icon [icon]="ICONS.search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></iconify-icon>
                   <input
                     type="text"
                     placeholder="Chercher..."
@@ -160,7 +167,7 @@ import { Pokemon } from '../../models/pokemon.model';
                   (click)="pickRandom()"
                   class="bg-slate-700 hover:bg-slate-600 border border-slate-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
                 >
-                  🎲 Aléatoire
+                  <iconify-icon [icon]="ICONS.dice" class="mr-1 animate-bounce"></iconify-icon>Aléatoire
                 </button>
               </div>
 
@@ -216,9 +223,9 @@ import { Pokemon } from '../../models/pokemon.model';
                   Confirmation…
                 </span>
               } @else if (isReady) {
-                ✅ Tu es prêt !
+                <iconify-icon [icon]="ICONS.checkCircle" class="mr-1"></iconify-icon>Tu es prêt !
               } @else {
-                ✅ Je suis prêt !
+                <iconify-icon [icon]="ICONS.checkCircle" class="mr-1"></iconify-icon>Je suis prêt !
               }
             </button>
           </div>
@@ -235,6 +242,7 @@ import { Pokemon } from '../../models/pokemon.model';
   `]
 })
 export class LobbyComponent implements OnInit, OnDestroy {
+  protected readonly ICONS = ICONS;
   roomId = input.required<string>();
 
   private readonly gameService = inject(GameService);
@@ -363,8 +371,15 @@ export class LobbyComponent implements OnInit, OnDestroy {
     if (this.isSimulating) return;
     this.isSimulating = true;
     try {
-      const pokemon = await firstValueFrom(this.pokemonService.random());
-      await this.gameService.simulateOpponent(this.roomId(), pokemon.id);
+      // Utilise les Pokémon déjà chargés dans le composant si disponibles,
+      // sinon attend le premier chargement
+      let pokemons = this.allPokemons;
+      if (pokemons.length === 0) {
+        pokemons = await firstValueFrom(this.pokemonService.loadAll());
+      }
+      if (pokemons.length === 0) return;
+      const randomPokemon = pokemons[Math.floor(Math.random() * pokemons.length)];
+      await this.gameService.simulateOpponent(this.roomId(), randomPokemon.id);
     } finally {
       this.isSimulating = false;
     }

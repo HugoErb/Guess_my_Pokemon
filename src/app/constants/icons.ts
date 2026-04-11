@@ -1,0 +1,37 @@
+export const ICONS = {
+  // Navigation & UI
+  home: 'mdi:home',
+  copy: 'mdi:content-copy',
+  check: 'mdi:check',
+  close: 'mdi:close',
+  search: 'mdi:magnify',
+  alert: 'mdi:alert',
+  loading: 'mdi:loading',       // animé : animate-spin
+  refresh: 'mdi:refresh',       // animé : animate-spin
+
+  // Jeu
+  game: 'mdi:gamepad-variant',
+  dice: 'mdi:dice-multiple',    // animé : animate-bounce
+  trophy: 'mdi:trophy',
+  skull: 'mdi:skull',
+  pokedex: 'mdi:book-open-page-variant',
+  timer: 'mdi:timer-sand',      // animé : animate-pulse
+
+  // Auth
+  email: 'mdi:email-outline',
+  password: 'mdi:lock-outline',
+  eye: 'mdi:eye-outline',
+  eyeOff: 'mdi:eye-off-outline',
+  login: 'mdi:login',
+  logout: 'mdi:logout',
+
+  // Pokémon / Lobby
+  pokeball: 'mdi:pokeball',
+  checkCircle: 'mdi:check-circle',
+  clock: 'mdi:clock-outline',   // animé : animate-spin [animation-duration:3s]
+  share: 'mdi:share-variant',
+  sword: 'mdi:sword-cross',
+} as const;
+
+export type IconName = keyof typeof ICONS;
+export type IconValue = (typeof ICONS)[IconName];
