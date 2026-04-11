@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, computed, effect, inject, input, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, effect, inject, input, isDevMode, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom, Subscription } from 'rxjs';
 
@@ -9,6 +9,7 @@ import { Pokemon } from '../../models/pokemon.model';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { PokedexComponent } from '../../components/pokedex/pokedex.component';
 import { ICONS } from '../../constants/icons';
+import { environment } from '../../../environments/environment';
 
 @Component({
 	selector: 'app-game',
@@ -25,6 +26,14 @@ import { ICONS } from '../../constants/icons';
 
 				<!-- Statut du tour -->
 				<div class="flex items-center gap-3">
+					<!-- DEV: Pokémon adverse -->
+					@if (isDev && devOpponentPokemon) {
+						<div style="display:flex;align-items:center;gap:6px;background:rgba(234,179,8,0.15);border:1px solid rgba(234,179,8,0.5);border-radius:999px;padding:2px 10px 2px 4px;font-size:12px;color:#fde68a;">
+							<img [src]="devOpponentPokemon.sprite" [alt]="devOpponentPokemon.name" style="width:28px;height:28px;object-fit:contain;image-rendering:pixelated;" />
+							<span style="font-weight:600;text-transform:capitalize;">{{ devOpponentPokemon.name }}</span>
+							<span style="font-size:10px;opacity:0.6;">[DEV]</span>
+						</div>
+					}
 					@if (room()?.status === 'playing') {
 						@if (isMyTurn()) {
 							<span
@@ -132,13 +141,16 @@ export class GameComponent implements OnInit, OnDestroy {
 
 	myPokemon: Pokemon | null = null;
 	opponentPokemon: Pokemon | null = null;
+	devOpponentPokemon: Pokemon | null = null;
 	guessMessage = '';
 	showEndModal = false;
 	isWinner = false;
+	readonly isDev = environment.devMode && isDevMode();
 
 	private guessMessageTimer: ReturnType<typeof setTimeout> | null = null;
 	private pokemonSub?: Subscription;
 	private opponentSub?: Subscription;
+	private devOpponentSub?: Subscription;
 
 	constructor() {
 		// Watch room signal for 'finished' status
@@ -168,6 +180,16 @@ export class GameComponent implements OnInit, OnDestroy {
 			this.pokemonSub = this.pokemonService.getById(myPokemonId).subscribe((p) => {
 				this.myPokemon = p ?? null;
 			});
+		}
+
+		// DEV : charger le Pokémon adverse pour l'overlay de débogage
+		if (this.isDev) {
+			const opponentPokemonId = isPlayer1 ? r.pokemon_p2 : r.pokemon_p1;
+			if (opponentPokemonId !== null) {
+				this.devOpponentSub = this.pokemonService.getById(opponentPokemonId).subscribe((p) => {
+					this.devOpponentPokemon = p ?? null;
+				});
+			}
 		}
 	}
 
@@ -215,6 +237,7 @@ export class GameComponent implements OnInit, OnDestroy {
 		this.gameService.stopWatching();
 		this.pokemonSub?.unsubscribe();
 		this.opponentSub?.unsubscribe();
+		this.devOpponentSub?.unsubscribe();
 		if (this.guessMessageTimer) clearTimeout(this.guessMessageTimer);
 	}
 }
