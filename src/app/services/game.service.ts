@@ -1,4 +1,4 @@
-import { inject, Injectable, OnDestroy, signal } from '@angular/core';
+import { computed, inject, Injectable, OnDestroy, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Room, RoomPatch } from '../models/room.model';
 import { SupabaseService } from './supabase.service';
@@ -114,17 +114,17 @@ export class GameService implements OnDestroy {
 
   // ─── Helpers d'état ──────────────────────────────────────────────────────────
 
-  isMyTurn(): boolean {
+  readonly isMyTurn = computed(() => {
     const room = this.currentRoom();
-    const user = this.supabaseService.getCurrentUser();
+    const user = this.supabaseService.currentUserSignal();
     if (!room || !user) return false;
     return room.current_turn === user.id;
-  }
+  });
 
-  isPlayer1(): boolean {
+  readonly isPlayer1 = computed(() => {
     const room = this.currentRoom();
-    const user = this.supabaseService.getCurrentUser();
+    const user = this.supabaseService.currentUserSignal();
     if (!room || !user) return false;
     return room.player1_id === user.id;
-  }
+  });
 }
