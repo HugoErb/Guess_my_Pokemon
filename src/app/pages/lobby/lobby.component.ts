@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 import { firstValueFrom, filter, take, Subscription } from 'rxjs';
 import { toObservable } from '@angular/core/rxjs-interop';
 
+import { environment } from '../../../environments/environment';
 import { GameService } from '../../services/game.service';
 import { PokemonService } from '../../services/pokemon.service';
 import { SupabaseService } from '../../services/supabase.service';
@@ -64,6 +65,26 @@ import { Pokemon } from '../../models/pokemon.model';
             <div class="flex justify-center mt-6">
               <div class="w-10 h-10 border-4 border-slate-600 border-t-blue-500 rounded-full animate-spin"></div>
             </div>
+
+            <!-- Bouton Annuler -->
+            <button
+              (click)="cancelRoom()"
+              [disabled]="isCancelling"
+              class="mt-6 w-full bg-slate-700 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-sm font-medium text-slate-300 transition-colors"
+            >
+              {{ isCancelling ? 'Annulation…' : 'Annuler' }}
+            </button>
+
+            <!-- Bouton mode dev -->
+            @if (devMode) {
+              <button
+                (click)="simulateOpponent()"
+                [disabled]="isSimulating"
+                class="mt-2 w-full bg-amber-800/50 hover:bg-amber-700/50 border border-amber-600 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-sm font-medium text-amber-300 transition-colors"
+              >
+                {{ isSimulating ? 'Simulation en cours…' : '⚙ Simuler adversaire [DEV]' }}
+              </button>
+            }
           </div>
         </div>
       }
@@ -247,6 +268,11 @@ export class LobbyComponent implements OnInit, OnDestroy {
   inviteLink = '';
   copied = false;
 
+  // Annulation / mode dev
+  isCancelling = false;
+  isSimulating = false;
+  readonly devMode = environment.devMode;
+
   private pokemonsSub?: Subscription;
 
   ngOnInit(): void {
@@ -319,6 +345,28 @@ export class LobbyComponent implements OnInit, OnDestroy {
       this.isReady = true;
     } finally {
       this.isSettingReady = false;
+    }
+  }
+
+  async cancelRoom(): Promise<void> {
+    if (this.isCancelling) return;
+    this.isCancelling = true;
+    try {
+      await this.gameService.cancelRoom(this.roomId());
+      this.router.navigate(['/home']);
+    } finally {
+      this.isCancelling = false;
+    }
+  }
+
+  async simulateOpponent(): Promise<void> {
+    if (this.isSimulating) return;
+    this.isSimulating = true;
+    try {
+      const pokemon = await firstValueFrom(this.pokemonService.random());
+      await this.gameService.simulateOpponent(this.roomId(), pokemon.id);
+    } finally {
+      this.isSimulating = false;
     }
   }
 

@@ -5,7 +5,7 @@ import { SupabaseService } from './supabase.service';
 
 @Injectable({ providedIn: 'root' })
 export class GameService implements OnDestroy {
-  private supabaseService = inject(SupabaseService);
+  private readonly supabaseService = inject(SupabaseService);
 
   /** Signal Angular : room en cours de jeu, null si aucune. */
   currentRoom = signal<Room | null>(null);
@@ -32,6 +32,29 @@ export class GameService implements OnDestroy {
       this.roomSubscription.unsubscribe();
       this.roomSubscription = null;
     }
+  }
+
+  async cancelRoom(roomId: string): Promise<void> {
+    this.stopWatching();
+    await this.supabaseService.deleteRoom(roomId);
+    this.currentRoom.set(null);
+  }
+
+  async simulateOpponent(roomId: string, pokemonId: number): Promise<void> {
+    const user = this.supabaseService.getCurrentUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
+    const room = this.currentRoom();
+    if (!room) throw new Error('Aucune room active');
+
+    await this.supabaseService.updateRoom(roomId, {
+      player2_id: user.id,
+      status: 'playing',
+      pokemon_p2: pokemonId,
+      p1_ready: true,
+      p2_ready: true,
+      current_turn: room.player1_id,
+    });
   }
 
   ngOnDestroy(): void {

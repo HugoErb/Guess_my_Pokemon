@@ -96,6 +96,18 @@ export class SupabaseService implements OnDestroy {
     if (error) throw error;
   }
 
+  async resetPasswordForEmail(email: string): Promise<void> {
+    const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) throw error;
+  }
+
+  async updatePassword(newPassword: string): Promise<void> {
+    const { error } = await this.supabase.auth.updateUser({ password: newPassword });
+    if (error) throw error;
+  }
+
   // ─── Profil ──────────────────────────────────────────────────────────────────
 
   async getProfile(userId: string): Promise<Profile> {
@@ -181,6 +193,15 @@ export class SupabaseService implements OnDestroy {
     const { error } = await this.supabase
       .from('rooms')
       .update(patch)
+      .eq('id', roomId);
+
+    if (error) throw error;
+  }
+
+  async deleteRoom(roomId: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('rooms')
+      .delete()
       .eq('id', roomId);
 
     if (error) throw error;

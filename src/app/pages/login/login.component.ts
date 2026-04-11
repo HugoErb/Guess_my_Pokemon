@@ -16,13 +16,14 @@ function passwordMatchValidator(group: AbstractControl): ValidationErrors | null
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
-  mode: 'login' | 'register' = 'login';
+  mode: 'login' | 'register' | 'forgot' = 'login';
   errorMessage = '';
   infoMessage = '';
   isLoading = false;
 
   loginForm: FormGroup;
   registerForm: FormGroup;
+  forgotForm: FormGroup;
 
   private readonly supabaseService = inject(SupabaseService);
   private readonly router = inject(Router);
@@ -44,9 +45,13 @@ export class LoginComponent {
       },
       { validators: passwordMatchValidator }
     );
+
+    this.forgotForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+    });
   }
 
-  setMode(mode: 'login' | 'register'): void {
+  setMode(mode: 'login' | 'register' | 'forgot'): void {
     this.mode = mode;
     this.errorMessage = '';
     this.infoMessage = '';
@@ -88,6 +93,23 @@ export class LoginComponent {
       } else {
         this.errorMessage = message;
       }
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  async onForgotPassword(): Promise<void> {
+    if (this.forgotForm.invalid) return;
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    const { email } = this.forgotForm.value;
+    try {
+      await this.supabaseService.resetPasswordForEmail(email);
+      this.infoMessage = `Un lien de réinitialisation a été envoyé à ${email}. Vérifie ta boîte mail.`;
+      this.forgotForm.reset();
+    } catch (err: unknown) {
+      this.errorMessage = err instanceof Error ? err.message : 'Une erreur est survenue.';
     } finally {
       this.isLoading = false;
     }
