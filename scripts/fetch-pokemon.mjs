@@ -30,7 +30,7 @@ const TYPE_FR = {
   normal: 'Normal',
   fire: 'Feu',
   water: 'Eau',
-  electric: 'Électrik',
+  electric: 'Électrik', // Orthographe officielle des jeux Nintendo (pas "Électrique")
   grass: 'Plante',
   ice: 'Glace',
   fighting: 'Combat',
@@ -94,7 +94,7 @@ async function fetchWithRetry(url) {
     } catch (err) {
       lastError = err;
       if (attempt < RETRY_COUNT) {
-        await sleep(RETRY_DELAY_MS);
+        await sleep(RETRY_DELAY_MS * attempt);  // backoff exponentiel : 1s, 2s, 3s
       }
     }
   }
@@ -355,7 +355,7 @@ async function main() {
 
   // 3. Crée les tâches et les exécute par batches
   let processed = 0;
-  const tasks = pokemonIds.map((id, index) => async () => {
+  const tasks = pokemonIds.map((id) => async () => {
     processed++;
     if (processed === 1 || processed % 100 === 0) {
       console.log(`Traitement ${processed}/${total}...`);
