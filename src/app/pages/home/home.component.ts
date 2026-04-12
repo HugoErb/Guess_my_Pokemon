@@ -33,7 +33,12 @@ export class HomeComponent implements OnInit {
     this.newPassword = '';
     this.confirmPassword = '';
   }
-  closePasswordModal(): void { this.showPasswordModal.set(false); }
+  closePasswordModal(): void { 
+    this.showPasswordModal.set(false);
+    this.showCurrentPassword.set(false);
+    this.showNewPassword.set(false);
+    this.showConfirmPassword.set(false);
+  }
 
   openUsernameModal(): void { 
     this.newUsernameInput = this.username;
@@ -62,6 +67,14 @@ export class HomeComponent implements OnInit {
 
   showToast = signal(false);
   toastMessage = signal('');
+  
+  showCurrentPassword = signal(false);
+  showNewPassword = signal(false);
+  showConfirmPassword = signal(false);
+  
+  toggleCurrentPassword(): void { this.showCurrentPassword.update(v => !v); }
+  toggleNewPassword(): void { this.showNewPassword.update(v => !v); }
+  toggleConfirmPassword(): void { this.showConfirmPassword.update(v => !v); }
   
   private triggerToast(message: string): void {
     this.toastMessage.set(message);
@@ -130,15 +143,19 @@ export class HomeComponent implements OnInit {
   }
 
   async changePassword(): Promise<void> {
-    if (!this.currentPassword) {
+    const current = this.currentPassword.trim();
+    const newPwd = this.newPassword.trim();
+    const confirm = this.confirmPassword.trim();
+
+    if (!current) {
       this.passwordError = 'Veuillez saisir votre mot de passe actuel.';
       return;
     }
-    if (!this.newPassword || this.newPassword.length < 6) {
+    if (!newPwd || newPwd.length < 6) {
       this.passwordError = 'Le nouveau mot de passe doit faire au moins 6 caractères.';
       return;
     }
-    if (this.newPassword !== this.confirmPassword) {
+    if (newPwd !== confirm) {
       this.passwordError = 'Les nouveaux mots de passe ne correspondent pas.';
       return;
     }
@@ -147,14 +164,14 @@ export class HomeComponent implements OnInit {
     this.passwordError = '';
     try {
       // 1. Vérifier le mot de passe actuel
-      const isValid = await this.supabaseService.verifyPassword(this.currentPassword);
+      const isValid = await this.supabaseService.verifyPassword(current);
       if (!isValid) {
         this.passwordError = 'Le mot de passe actuel est incorrect.';
         return;
       }
 
       // 2. Mettre à jour le mot de passe
-      await this.supabaseService.updatePassword(this.newPassword);
+      await this.supabaseService.updatePassword(newPwd);
       
       // Reset des champs
       this.currentPassword = '';

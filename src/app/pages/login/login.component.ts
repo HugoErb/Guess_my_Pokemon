@@ -1,4 +1,4 @@
-import { Component, inject, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, inject, CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -23,6 +23,14 @@ export class LoginComponent {
   errorMessage = '';
   infoMessage = '';
   isLoading = false;
+  
+  showLoginPassword = signal(false);
+  showRegisterPassword = signal(false);
+  showRegisterConfirmPassword = signal(false);
+
+  toggleLoginPassword(): void { this.showLoginPassword.update(v => !v); }
+  toggleRegisterPassword(): void { this.showRegisterPassword.update(v => !v); }
+  toggleRegisterConfirmPassword(): void { this.showRegisterConfirmPassword.update(v => !v); }
 
   loginForm: FormGroup;
   registerForm: FormGroup;
