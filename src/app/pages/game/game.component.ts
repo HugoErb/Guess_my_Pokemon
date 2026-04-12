@@ -152,6 +152,20 @@ import { environment } from '../../../environments/environment';
 					</div>
 
 					<button 
+						(click)="requestReplay()" 
+						[disabled]="iWantReplay()"
+						class="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold text-white transition-colors flex flex-col items-center justify-center gap-0.5 mt-2"
+					>
+						<div class="flex items-center gap-2">
+							<iconify-icon [icon]="ICONS.dice" class="text-lg"></iconify-icon>
+							<span>{{ iWantReplay() ? 'En attente...' : 'Rejouer' }}</span>
+						</div>
+						@if (iWantReplay() && !opponentWantsReplay()) {
+							<span class="text-[9px] font-medium uppercase tracking-wider opacity-80 italic">En attente de l'adversaire</span>
+						}
+					</button>
+
+					<button 
 						(click)="goHome()" 
 						class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 mt-2"
 					>
@@ -308,7 +322,20 @@ export class GameComponent implements OnInit, OnDestroy {
 
 	room = computed(() => this.gameService.currentRoom());
 	isMyTurn = this.gameService.isMyTurn;
+	isPlayer1 = this.gameService.isPlayer1;
 	readonly settings = this.gameService.settings;
+
+	iWantReplay = computed(() => {
+		const r = this.room();
+		if (!r) return false;
+		return this.isPlayer1() ? r.p1_ready : r.p2_ready;
+	});
+
+	opponentWantsReplay = computed(() => {
+		const r = this.room();
+		if (!r) return false;
+		return this.isPlayer1() ? r.p2_ready : r.p1_ready;
+	});
 
 	myPokemon: Pokemon | null = null;
 	opponentPokemon: Pokemon | null = null;
@@ -361,6 +388,23 @@ export class GameComponent implements OnInit, OnDestroy {
 			if (this.isDev && r?.status === 'playing' && !this.isMyTurn()) {
 				untracked(() => {
 					void this.simulateOpponentTurn();
+				});
+			}
+
+			// Navigation vers le lobby si une revanche est lancée
+			if (r?.status === 'selecting') {
+				untracked(() => {
+					void this.router.navigate(['/lobby', this.roomId()]);
+				});
+			}
+
+			// Simulation Rejouer pour le mode DEV
+			if (this.isDev && r?.status === 'finished' && this.iWantReplay() && !this.opponentWantsReplay()) {
+				untracked(() => {
+					// Petit délai avant que le bot accepte la revanche
+					setTimeout(() => {
+						void this.gameService.simulateOpponentReplay(this.roomId());
+					}, 2000);
 				});
 			}
 		});
@@ -498,6 +542,14 @@ export class GameComponent implements OnInit, OnDestroy {
 
 	goHome(): void {
 		this.router.navigate(['/home']);
+	}
+
+	async requestReplay(): Promise<void> {
+		try {
+			await this.gameService.requestReplay(this.roomId());
+		} catch (err) {
+			console.error('[GameComponent] Erreur lors de la demande de revanche', err);
+		}
 	}
 
 	// ─── Annulation de partie ──────────────────────────────────────────────────

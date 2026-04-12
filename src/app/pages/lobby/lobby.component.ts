@@ -455,8 +455,9 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		// Re-applique le filtre dès que les settings de la room changent
 		// (résout la race condition Realtime vs getRoomById)
 		effect(() => {
-			this.gameService.settings(); // dépendance réactive
+			const s = this.gameService.settings();
 			untracked(() => {
+				this.gameSettings = { ...s };
 				if (this.allPokemons.length > 0) this.onSearch();
 			});
 		});

@@ -157,6 +157,8 @@ export class GameService implements OnDestroy {
       await this.updateAndRefresh(roomId, {
         winner_id: user.id,
         status: 'finished',
+        p1_ready: false,
+        p2_ready: false,
       });
       return 'correct';
     } else {
@@ -188,6 +190,8 @@ export class GameService implements OnDestroy {
       await this.updateAndRefresh(roomId, {
         winner_id: isPlayer1 ? room.player2_id : room.player1_id,
         status: 'finished',
+        p1_ready: false,
+        p2_ready: false,
       });
       return 'correct';
     } else {
@@ -197,6 +201,66 @@ export class GameService implements OnDestroy {
       });
       return 'incorrect';
     }
+  }
+
+  /**
+   * Demande une revanche. 
+   * Si les deux joueurs acceptent, la partie repasse en mode sélection.
+   */
+  async requestReplay(roomId: string): Promise<void> {
+    const user = this.supabaseService.getCurrentUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
+    const room = this.currentRoom();
+    if (!room) throw new Error('Aucune room active');
+
+    const isPlayer1 = this.isPlayer1();
+    const patch: RoomPatch = isPlayer1 ? { p1_ready: true } : { p2_ready: true };
+
+    const otherReady = isPlayer1 ? room.p2_ready : room.p1_ready;
+    
+    // Si l'autre a déjà accepté
+    if (otherReady) {
+      Object.assign(patch, {
+        status: 'selecting',
+        pokemon_p1: null,
+        pokemon_p2: null,
+        p1_ready: false,
+        p2_ready: false,
+        winner_id: null,
+        current_turn: null,
+      } satisfies RoomPatch);
+    }
+
+    await this.updateAndRefresh(roomId, patch);
+  }
+
+  /**
+   * DEV : Simule l'acceptation d'une revanche par l'adversaire.
+   */
+  async simulateOpponentReplay(roomId: string): Promise<void> {
+    const room = this.currentRoom();
+    if (!room) throw new Error('Aucune room active');
+
+    const isPlayer1 = this.isPlayer1();
+    // On veut simuler l'action de l'AUTRE joueur
+    const patch: RoomPatch = isPlayer1 ? { p2_ready: true } : { p1_ready: true };
+
+    const opponentAlreadyRequested = isPlayer1 ? room.p1_ready : room.p2_ready;
+
+    if (opponentAlreadyRequested) {
+      Object.assign(patch, {
+        status: 'selecting',
+        pokemon_p1: null,
+        pokemon_p2: null,
+        p1_ready: false,
+        p2_ready: false,
+        winner_id: null,
+        current_turn: null,
+      } satisfies RoomPatch);
+    }
+
+    await this.updateAndRefresh(roomId, patch);
   }
 
   /** Rafraîchit manuellement l'état de la room. */
