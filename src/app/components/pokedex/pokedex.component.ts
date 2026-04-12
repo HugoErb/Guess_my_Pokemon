@@ -50,10 +50,10 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         <h2 class="text-lg font-bold text-white tracking-wide uppercase">Pokédex</h2>
         <button 
           (click)="clearFilters()"
-          class="text-xs text-slate-400 hover:text-white uppercase tracking-wider flex items-center gap-1 transition-colors pb-0.5"
+          class="flex items-center gap-2 px-2.5 py-1 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 hover:border-slate-500 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all duration-200 group"
         >
-          <iconify-icon [icon]="ICONS.refresh"></iconify-icon>
-          Réinitialiser
+          <iconify-icon [icon]="ICONS.refresh" class="text-sm group-hover:rotate-180 transition-transform duration-500"></iconify-icon>
+          <span>Réinitialiser les filtres</span>
         </button>
       </div>
 
