@@ -1,4 +1,4 @@
-import { Component, OnInit, DestroyRef, inject, input, output, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, input, output, CUSTOM_ELEMENTS_SCHEMA, signal, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 
@@ -63,8 +63,8 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         <input
           type="text"
           placeholder="Rechercher un Pokémon..."
-          [(ngModel)]="searchQuery"
-          (ngModelChange)="applyFilters()"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
           class="w-full bg-slate-700 border border-slate-600 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
         />
       </div>
@@ -126,9 +126,15 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         <div class="shrink-0">
           <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">Poids (kg)</p>
           <div class="flex items-center gap-2">
-             <input type="number" [(ngModel)]="minWeight" (input)="applyFilters()" placeholder="Min" class="w-20 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-500" />
+             <input type="number" 
+                    [ngModel]="minWeight()" 
+                    (ngModelChange)="minWeight.set($event)"
+                    placeholder="Min" class="w-20 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-500" />
              <span class="text-slate-600 text-xs">à</span>
-             <input type="number" [(ngModel)]="maxWeight" (input)="applyFilters()" placeholder="Max" class="w-20 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-500" />
+             <input type="number" 
+                    [ngModel]="maxWeight()" 
+                    (ngModelChange)="maxWeight.set($event)"
+                    placeholder="Max" class="w-20 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-500" />
           </div>
         </div>
 
@@ -136,9 +142,15 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         <div class="shrink-0">
           <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">Taille (m)</p>
           <div class="flex items-center gap-2">
-             <input type="number" [(ngModel)]="minHeight" (input)="applyFilters()" placeholder="Min" class="w-20 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-500" />
+             <input type="number" 
+                    [ngModel]="minHeight()" 
+                    (ngModelChange)="minHeight.set($event)"
+                    placeholder="Min" class="w-20 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-500" />
              <span class="text-slate-600 text-xs">à</span>
-             <input type="number" [(ngModel)]="maxHeight" (input)="applyFilters()" placeholder="Max" class="w-20 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-500" />
+             <input type="number" 
+                    [ngModel]="maxHeight()" 
+                    (ngModelChange)="maxHeight.set($event)"
+                    placeholder="Max" class="w-20 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-500" />
           </div>
         </div>
       </div>
@@ -146,7 +158,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
       <!-- Filtres type -->
       <div>
         <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">
-          Type @if (onlyDualType) { (2 max) }
+          Type @if (onlyDualType()) { (2 max) }
         </p>
         <div class="flex flex-wrap items-center gap-1">
           @for (type of allTypes; track type) {
@@ -165,7 +177,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
           
           <button
             (click)="toggleOnlyDualType()"
-            [class]="onlyDualType
+            [class]="onlyDualType()
               ? 'px-3 py-1 rounded-lg text-xs font-bold bg-indigo-600 text-white border border-indigo-500 shadow-lg shadow-indigo-500/20 transition-all'
               : 'px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
           >
@@ -176,17 +188,19 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
       <!-- Résultats -->
       <div class="flex flex-col gap-2 min-h-0 flex-1">
-        <p class="text-xs text-slate-400">
-          Résultats ({{ filteredPokemons.length }} Pokémon)
-          @if (visiblePokemons.length < filteredPokemons.length) {
-            — {{ visiblePokemons.length }} affichés
-          }
-        </p>
+        <div class="flex justify-between items-center text-xs text-slate-400">
+          <span>
+            Résultats ({{ filteredPokemons().length }} Pokémon)
+            @if (visiblePokemons().length < filteredPokemons().length) {
+              — {{ visiblePokemons().length }} affichés
+            }
+          </span>
+        </div>
 
         <!-- Grille scrollable -->
         <div class="flex-1 overflow-y-auto pr-2" (scroll)="onGridScroll($event)">
           <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 pb-2">
-            @for (pokemon of visiblePokemons; track pokemon.id) {
+            @for (pokemon of visiblePokemons(); track pokemon.id) {
               <div class="relative w-full h-full">
                 <button
                   (click)="openPokemonDetails(pokemon)"
@@ -208,12 +222,12 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
             }
           </div>
 
-          @if (visiblePokemons.length === 0 && allPokemons.length > 0) {
+          @if (visiblePokemons().length === 0 && allPokemons().length > 0) {
             <div class="text-center text-slate-500 py-8 text-sm">
               Aucun Pokémon trouvé
             </div>
           }
-          @if (allPokemons.length === 0) {
+          @if (allPokemons().length === 0) {
             <div class="flex justify-center py-8">
               <div class="w-8 h-8 border-4 border-slate-600 border-t-blue-500 rounded-full animate-spin"></div>
             </div>
@@ -267,26 +281,29 @@ export class PokedexComponent implements OnInit {
   showGuessButton = input<boolean>(false);
   guess = output<number>();
 
-  allPokemons: Pokemon[] = [];
-  filteredPokemons: Pokemon[] = [];
-  visiblePokemons: Pokemon[] = [];
+  allPokemons = signal<Pokemon[]>([]);
+  
+  // États des filtres (Signals)
+  searchQuery = signal('');
+  selectedGenerations = signal<number[]>([]);
+  selectedTypes = signal<string[]>([]);
+  selectedCategories = signal<string[]>([]);
+  selectedEvoStages = signal<number[]>([]);
+  minWeight = signal<number | null>(0);
+  maxWeight = signal<number | null>(null);
+  minHeight = signal<number | null>(0);
+  maxHeight = signal<number | null>(null);
+  onlyDualType = signal(false);
+
+  // Pagination (Signal)
+  displayedCount = signal(100);
+  private readonly PAGE_SIZE = 100;
+
+  // Sélections
   selectedPokemon: Pokemon | null = null;
   selectedPokemonDetails: Pokemon | null = null;
 
-  searchQuery = '';
-  selectedGenerations: number[] = [];
-  selectedTypes: string[] = [];
-  selectedCategories: string[] = [];
-  selectedEvoStages: number[] = [];
-  minWeight: number | null = 0;
-  maxWeight: number | null = null;
-  minHeight: number | null = 0;
-  maxHeight: number | null = null;
-  onlyDualType = false;
-
-  private displayedCount = 100;
-  private readonly PAGE_SIZE = 100;
-
+  // Données constantes
   readonly generations = GENERATIONS;
   readonly allTypes = ALL_TYPES;
   readonly categories = [
@@ -297,58 +314,40 @@ export class PokedexComponent implements OnInit {
   ];
   readonly evoStages = [1, 2, 3];
 
-  ngOnInit(): void {
-    this.pokemonService.loadAll().pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(pokemons => {
-      // Pré-calculer le stade pour optimiser les filtres
-      this.allPokemons = pokemons.map(p => ({
-        ...p,
-        _stage: parseInt(p.evolution_stage?.split('/')[0] || '1')
-      } as any));
-      
-      this.applyFilters();
-    });
-  }
-
-  applyFilters(): void {
-    const q = this.searchQuery ? this.searchQuery.trim().toLowerCase() : '';
-    const hasGens = this.selectedGenerations.length > 0;
-    const hasTypes = this.selectedTypes.length > 0;
-    const hasCats = this.selectedCategories.length > 0;
-    const hasEvos = this.selectedEvoStages.length > 0;
+  // Logic de filtrage réactive (Computed)
+  filteredPokemons = computed(() => {
+    const list = this.allPokemons();
+    const q = this.searchQuery().trim().toLowerCase();
+    const gens = this.selectedGenerations();
+    const types = this.selectedTypes();
+    const cats = this.selectedCategories();
+    const evos = this.selectedEvoStages();
+    const isDualOnly = this.onlyDualType();
     
-    // On travaille sur le minWeight/minHeight tels quels
-    const minW = this.minWeight;
-    const maxW = this.maxWeight;
-    const minH = this.minHeight;
-    const maxH = this.maxHeight;
+    const minW = this.minWeight();
+    const maxW = this.maxWeight();
+    const minH = this.minHeight();
+    const maxH = this.maxHeight();
 
-    this.filteredPokemons = this.allPokemons.filter(p => {
+    return list.filter(p => {
       if (q && !p.name.toLowerCase().includes(q)) return false;
-      if (hasGens && !this.selectedGenerations.includes(p.generation)) return false;
+      if (gens.length > 0 && !gens.includes(p.generation)) return false;
       
-      if (this.onlyDualType) {
-        // Afficher seulement les Pokémon avec 2 types
+      if (isDualOnly) {
         if (p.types.length !== 2) return false;
-        
-        if (hasTypes) {
-          if (this.selectedTypes.length === 2) {
-            // Doit avoir EXACTEMENT ces deux types
-            if (!this.selectedTypes.every(t => p.types.includes(t))) return false;
+        if (types.length > 0) {
+          if (types.length === 2) {
+            if (!types.every(t => p.types.includes(t))) return false;
           } else {
-            // Doit avoir au moins le type sélectionné (et on sait déjà qu'il en a 2)
-            if (!p.types.some(t => this.selectedTypes.includes(t))) return false;
+            if (!p.types.some(t => types.includes(t))) return false;
           }
         }
-      } else if (hasTypes) {
-        // Mode classique : n'importe lequel des types
-        if (!p.types.some(t => this.selectedTypes.includes(t))) return false;
+      } else if (types.length > 0) {
+        if (!p.types.some(t => types.includes(t))) return false;
       }
 
-      if (hasCats && !this.selectedCategories.includes(p.category)) return false;
-      
-      if (hasEvos && !this.selectedEvoStages.includes((p as any)._stage)) return false;
+      if (cats.length > 0 && !cats.includes(p.category)) return false;
+      if (evos.length > 0 && !evos.includes((p as any)._stage)) return false;
 
       if (minW !== null && p.weight < minW) return false;
       if (maxW !== null && p.weight > maxW) return false;
@@ -357,94 +356,94 @@ export class PokedexComponent implements OnInit {
 
       return true;
     });
-    
-    this.displayedCount = this.PAGE_SIZE;
-    this.visiblePokemons = this.filteredPokemons.slice(0, this.displayedCount);
+  });
+
+  visiblePokemons = computed(() => {
+    return this.filteredPokemons().slice(0, this.displayedCount());
+  });
+
+  ngOnInit(): void {
+    this.pokemonService.loadAll().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(pokemons => {
+      this.allPokemons.set(pokemons.map(p => ({
+        ...p,
+        _stage: parseInt(p.evolution_stage?.split('/')[0] || '1')
+      } as any)));
+    });
   }
 
   onGridScroll(event: Event): void {
     const el = event.target as HTMLElement;
-    if (el.scrollHeight - el.scrollTop - el.clientHeight < 300 && this.displayedCount < this.filteredPokemons.length) {
-      this.displayedCount += this.PAGE_SIZE;
-      this.visiblePokemons = this.filteredPokemons.slice(0, this.displayedCount);
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 300 && this.displayedCount() < this.filteredPokemons().length) {
+      this.displayedCount.update(c => c + this.PAGE_SIZE);
     }
   }
 
   toggleGeneration(gen: number): void {
-    const idx = this.selectedGenerations.indexOf(gen);
-    if (idx >= 0) {
-      this.selectedGenerations = this.selectedGenerations.filter(g => g !== gen);
-    } else {
-      this.selectedGenerations = [...this.selectedGenerations, gen];
-    }
-    this.applyFilters();
+    this.selectedGenerations.update(list => 
+      list.includes(gen) ? list.filter(g => g !== gen) : [...list, gen]
+    );
+    this.displayedCount.set(this.PAGE_SIZE);
   }
 
   isGenSelected(gen: number): boolean {
-    return this.selectedGenerations.includes(gen);
+    return this.selectedGenerations().includes(gen);
   }
 
   toggleType(type: string): void {
-    const idx = this.selectedTypes.indexOf(type);
-    if (idx >= 0) {
-      this.selectedTypes = this.selectedTypes.filter(t => t !== type);
-    } else {
-      if (this.onlyDualType && this.selectedTypes.length >= 2) return; // Limite à 2 types seulement en mode dual
-      this.selectedTypes = [...this.selectedTypes, type];
-    }
-    this.applyFilters();
+    this.selectedTypes.update(list => {
+      if (list.includes(type)) return list.filter(t => t !== type);
+      if (this.onlyDualType() && list.length >= 2) return list;
+      return [...list, type];
+    });
+    this.displayedCount.set(this.PAGE_SIZE);
   }
 
   toggleOnlyDualType(): void {
-    this.onlyDualType = !this.onlyDualType;
-    this.selectedTypes = []; // Vide les types sélectionnés lors du changement de mode
-    this.applyFilters();
+    this.onlyDualType.update(v => !v);
+    this.selectedTypes.set([]);
+    this.displayedCount.set(this.PAGE_SIZE);
   }
 
   isTypeSelected(type: string): boolean {
-    return this.selectedTypes.includes(type);
+    return this.selectedTypes().includes(type);
   }
 
   toggleCategory(catId: string): void {
-    const idx = this.selectedCategories.indexOf(catId);
-    if (idx >= 0) {
-      this.selectedCategories = this.selectedCategories.filter(c => c !== catId);
-    } else {
-      this.selectedCategories = [...this.selectedCategories, catId];
-    }
-    this.applyFilters();
+    this.selectedCategories.update(list => 
+      list.includes(catId) ? list.filter(c => c !== catId) : [...list, catId]
+    );
+    this.displayedCount.set(this.PAGE_SIZE);
   }
 
   isCategorySelected(catId: string): boolean {
-    return this.selectedCategories.includes(catId);
+    return this.selectedCategories().includes(catId);
   }
 
   toggleEvoStage(stage: number): void {
-    const idx = this.selectedEvoStages.indexOf(stage);
-    if (idx >= 0) {
-      this.selectedEvoStages = this.selectedEvoStages.filter(s => s !== stage);
-    } else {
-      this.selectedEvoStages = [...this.selectedEvoStages, stage];
-    }
-    this.applyFilters();
+    this.selectedEvoStages.update(list => 
+      list.includes(stage) ? list.filter(s => s !== stage) : [...list, stage]
+    );
+    this.displayedCount.set(this.PAGE_SIZE);
   }
 
   isEvoStageSelected(stage: number): boolean {
-    return this.selectedEvoStages.includes(stage);
+    return this.selectedEvoStages().includes(stage);
   }
 
   clearFilters(): void {
-    this.searchQuery = '';
-    this.selectedGenerations = [];
-    this.selectedTypes = [];
-    this.selectedCategories = [];
-    this.selectedEvoStages = [];
-    this.minWeight = 0;
-    this.maxWeight = null;
-    this.minHeight = 0;
-    this.maxHeight = null;
-    this.onlyDualType = false;
-    this.applyFilters();
+    this.searchQuery.set('');
+    this.selectedGenerations.set([]);
+    this.selectedTypes.set([]);
+    this.selectedCategories.set([]);
+    this.selectedEvoStages.set([]);
+    this.minWeight.set(0);
+    this.maxWeight.set(null);
+    this.minHeight.set(0);
+    this.maxHeight.set(null);
+    this.onlyDualType.set(false);
+    this.displayedCount.set(this.PAGE_SIZE);
   }
 
   getTypeColor(type: string): string {
