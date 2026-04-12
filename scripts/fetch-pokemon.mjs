@@ -247,7 +247,12 @@ async function processPokemon(id, index, total) {
     );
 
     // Stade d'évolution
-    const evolutionStage = await getEvolutionStage(species);
+    let evolutionStage = await getEvolutionStage(species);
+
+    // Override pour Phione et Manaphy (PokéAPI les lie parfois à tort en évolution)
+    if (id === 489 || id === 490) {
+      evolutionStage = '1/1';
+    }
 
     // Nom FR
     const name = getNameFr(species.names, pokemon.name);
