@@ -98,11 +98,25 @@ export class HomeComponent implements OnInit {
         this.router.navigate(['/login']);
         return;
       }
+
+      // 1. Tenter de charger depuis le cache pour un affichage instantané
+      const cachedAvatar = localStorage.getItem(`gmp_avatar_${user.id}`);
+      if (cachedAvatar) {
+        this.avatarUrl.set(cachedAvatar);
+      }
+
       try {
         const profile = await this.supabaseService.getProfile(user.id);
         this.username = profile.username;
         this.email = user.email ?? '';
         this.avatarUrl.set(profile.avatar_url ?? null);
+        
+        // Mettre à jour le cache
+        if (profile.avatar_url) {
+          localStorage.setItem(`gmp_avatar_${user.id}`, profile.avatar_url);
+        } else {
+          localStorage.removeItem(`gmp_avatar_${user.id}`);
+        }
       } catch {
         // Profil absent : tenter de le créer depuis les métadonnées d'inscription
         const metaUsername = user.user_metadata?.['username'];
@@ -234,6 +248,7 @@ export class HomeComponent implements OnInit {
         if (user) {
           await this.supabaseService.updateProfile(user.id, { avatar_url: base64 });
           this.avatarUrl.set(base64);
+          localStorage.setItem(`gmp_avatar_${user.id}`, base64);
         }
       };
       reader.readAsDataURL(file);
