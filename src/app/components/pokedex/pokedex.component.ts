@@ -6,6 +6,7 @@ import { PokemonService } from '../../services/pokemon.service';
 import { Pokemon } from '../../models/pokemon.model';
 import { PokemonCardComponent } from '../pokemon-card/pokemon-card.component';
 import { ICONS } from '../../constants/icons';
+import { modalAnimation } from '../../constants/animations';
 
 const ALL_TYPES = [
   'Normal', 'Feu', 'Eau', 'Électrik', 'Plante', 'Glace',
@@ -40,6 +41,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
   selector: 'app-pokedex',
   imports: [FormsModule, PokemonCardComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  animations: [modalAnimation],
   template: `
     <div class="flex flex-col gap-5 h-full">
 
@@ -221,8 +223,15 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
       <!-- Modal Pokédex -->
       @if (selectedPokemonDetails) {
-        <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4" (click)="closePokemonDetails()">
-          <div class="bg-slate-800 border border-slate-600 rounded-2xl p-3 max-w-md w-full shadow-2xl relative flex flex-col gap-3 max-h-[95vh]" (click)="$event.stopPropagation()">
+        <div 
+          class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4" 
+          (click)="closePokemonDetails()"
+          [@modalAnimation]
+        >
+          <div 
+            class="bg-slate-800 border border-slate-600 rounded-2xl p-3 max-w-md w-full shadow-2xl relative flex flex-col gap-3 max-h-[95vh] modal-content" 
+            (click)="$event.stopPropagation()"
+          >
             
             <!-- Bouton Fermer Absolu -->
             <button (click)="closePokemonDetails()" class="absolute top-5 right-5 z-10 bg-slate-900/60 hover:bg-red-600 rounded-full w-8 h-8 flex items-center justify-center text-slate-300 hover:text-white transition-colors backdrop-blur-sm">

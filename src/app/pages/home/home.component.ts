@@ -2,11 +2,13 @@ import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core
 import { Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
 import { ICONS } from '../../constants/icons';
+import { modalAnimation } from '../../constants/animations';
 
 @Component({
   selector: 'app-home',
   imports: [],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  animations: [modalAnimation],
   templateUrl: './home.component.html',
 })
 export class HomeComponent implements OnInit {

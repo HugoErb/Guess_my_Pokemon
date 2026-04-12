@@ -9,12 +9,14 @@ import { Pokemon } from '../../models/pokemon.model';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { PokedexComponent } from '../../components/pokedex/pokedex.component';
 import { ICONS } from '../../constants/icons';
+import { modalAnimation } from '../../constants/animations';
 import { environment } from '../../../environments/environment';
 
 @Component({
 	selector: 'app-game',
 	imports: [PokemonCardComponent, PokedexComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
+	animations: [modalAnimation],
 	template: `
 		<div class="h-screen bg-slate-900 text-white flex flex-col overflow-hidden">
 			<!-- Header -->
@@ -64,7 +66,7 @@ import { environment } from '../../../environments/environment';
 			<!-- Contenu principal : deux colonnes -->
 			<div class="flex-1 flex overflow-hidden">
 				<!-- Colonne gauche : Ton Pokémon -->
-				<div class="w-80 shrink-0 bg-slate-850 border-r border-slate-700 overflow-y-auto p-4 flex flex-col gap-6">
+				<div class="w-80 shrink-0 overflow-y-auto p-4 flex flex-col gap-6">
 					<div>
 						<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Ton Pokémon</h3>
 						@if (myPokemon) {
@@ -97,9 +99,12 @@ import { environment } from '../../../environments/environment';
 
 			<!-- Modal de fin de partie -->
 			@if (showEndModal) {
-				<div class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+				<div 
+					class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+					[@modalAnimation]
+				>
 					<div
-						class="bg-slate-800 rounded-2xl p-8 max-w-sm w-full border border-slate-700 shadow-2xl flex flex-col items-center gap-6 text-center"
+						class="bg-slate-800 rounded-2xl p-8 max-w-sm w-full border border-slate-700 shadow-2xl flex flex-col items-center gap-6 text-center modal-content"
 					>
 						@if (isWinner) {
 							<iconify-icon [icon]="ICONS.trophy" class="text-6xl text-yellow-400 animate-bounce"></iconify-icon>
@@ -138,8 +143,15 @@ import { environment } from '../../../environments/environment';
 			<!-- Modal de confirmation d'annulation -->
 			<!-- Modal règles -->
 			@if (showRulesModal()) {
-				<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeRulesModal()">
-					<div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4 text-center" (click)="$event.stopPropagation()">
+				<div 
+					class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" 
+					(click)="closeRulesModal()"
+					[@modalAnimation]
+				>
+					<div 
+						class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4 text-center modal-content" 
+						(click)="$event.stopPropagation()"
+					>
 						<iconify-icon [icon]="ICONS.pokedex" class="text-5xl text-red-500 mx-auto"></iconify-icon>
 						<h2 class="text-xl font-bold text-white uppercase tracking-wider">Règles du jeu</h2>
 						<ol class="space-y-3 text-sm text-slate-300 list-none text-justify">
@@ -172,8 +184,15 @@ import { environment } from '../../../environments/environment';
 			}
 
 			@if (showCancelModal()) {
-				<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[110] p-4" (click)="closeCancelModal()">
-					<div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-4 text-center" (click)="$event.stopPropagation()">
+				<div 
+					class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[110] p-4" 
+					(click)="closeCancelModal()"
+					[@modalAnimation]
+				>
+					<div 
+						class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-4 text-center modal-content" 
+						(click)="$event.stopPropagation()"
+					>
 						<iconify-icon [icon]="ICONS.alert" class="text-5xl text-red-500 mx-auto"></iconify-icon>
 						<h2 class="text-xl font-bold text-white uppercase tracking-wider">Quitter la partie ?</h2>
 						<p class="text-slate-300 text-sm">

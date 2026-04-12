@@ -11,11 +11,13 @@ import { SupabaseService } from '../../services/supabase.service';
 import { Pokemon } from '../../models/pokemon.model';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { ICONS } from '../../constants/icons';
+import { modalAnimation } from '../../constants/animations';
 
 @Component({
 	selector: 'app-lobby',
 	imports: [FormsModule, PokemonCardComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
+	animations: [modalAnimation],
 	template: `
 		<div class="h-screen bg-slate-900 text-white flex flex-col overflow-hidden">
 			<!-- Header -->
@@ -107,7 +109,7 @@ import { ICONS } from '../../constants/icons';
 					<!-- Contenu principal en deux colonnes -->
 					<div class="flex-1 flex overflow-hidden">
 						<!-- Colonne gauche : ton Pokémon + statut adversaire -->
-						<div class="w-56 shrink-0 bg-slate-800 border-r border-slate-700 flex flex-col p-4 gap-4">
+						<div class="w-56 shrink-0 flex flex-col p-4 gap-4">
 							<div>
 								<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Ton Pokémon</h3>
 								@if (selectedPokemon) {
@@ -263,8 +265,15 @@ import { ICONS } from '../../constants/icons';
 
 			<!-- Modal Pokédex -->
 			@if (selectedPokemonDetails) {
-				<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closePokemonDetails()">
-					<div class="bg-slate-800 border border-slate-600 rounded-2xl p-3 max-w-md w-full shadow-2xl relative flex flex-col gap-3 max-h-[95vh]" (click)="$event.stopPropagation()">
+				<div 
+					class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" 
+					(click)="closePokemonDetails()"
+					[@modalAnimation]
+				>
+					<div 
+						class="bg-slate-800 border border-slate-600 rounded-2xl p-3 max-w-md w-full shadow-2xl relative flex flex-col gap-3 max-h-[95vh] modal-content" 
+						(click)="$event.stopPropagation()"
+					>
 						
 						<!-- Bouton Fermer Absolu -->
 						<button (click)="closePokemonDetails()" class="absolute top-5 right-5 z-10 bg-slate-900/60 hover:bg-red-600 rounded-full w-8 h-8 flex items-center justify-center text-slate-300 hover:text-white transition-colors backdrop-blur-sm">
@@ -290,8 +299,15 @@ import { ICONS } from '../../constants/icons';
 
 			<!-- Modal règles -->
 			@if (showRulesModal()) {
-				<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeRulesModal()">
-					<div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4 text-center" (click)="$event.stopPropagation()">
+				<div 
+					class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" 
+					(click)="closeRulesModal()"
+					[@modalAnimation]
+				>
+					<div 
+						class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4 text-center modal-content" 
+						(click)="$event.stopPropagation()"
+					>
 						<iconify-icon [icon]="ICONS.pokedex" class="text-5xl text-red-500 mx-auto"></iconify-icon>
 						<h2 class="text-xl font-bold text-white uppercase tracking-wider">Règles du jeu</h2>
 						<ol class="space-y-3 text-sm text-slate-300 list-none text-justify">
@@ -325,8 +341,15 @@ import { ICONS } from '../../constants/icons';
 
 			<!-- Modal de confirmation d'annulation -->
 			@if (showCancelModal()) {
-				<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[110] p-4" (click)="closeCancelModal()">
-					<div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-4 text-center" (click)="$event.stopPropagation()">
+				<div 
+					class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[110] p-4" 
+					(click)="closeCancelModal()"
+					[@modalAnimation]
+				>
+					<div 
+						class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-4 text-center modal-content" 
+						(click)="$event.stopPropagation()"
+					>
 						<iconify-icon [icon]="ICONS.alert" class="text-5xl text-red-500 mx-auto"></iconify-icon>
 						<h2 class="text-xl font-bold text-white uppercase tracking-wider">Quitter la partie ?</h2>
 						<p class="text-slate-300 text-sm">
