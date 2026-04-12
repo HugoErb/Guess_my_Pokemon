@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy, signal } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { filter, skipUntil } from 'rxjs/operators';
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
@@ -11,6 +11,10 @@ export class SupabaseService implements OnDestroy {
   private userSubject = new BehaviorSubject<User | null>(null);
   private authSubscription: { unsubscribe: () => void } | null = null;
   private readonly isInitializedSubject = new BehaviorSubject<boolean>(false);
+  private broadcastSubject = new Subject<{ event: string; payload: any }>();
+
+  broadcastEvents$ = this.broadcastSubject.asObservable();
+  private activeRoomChannel: any = null;
 
   currentUser$: Observable<User | null> = this.userSubject.asObservable();
   readonly authReady$: Observable<User | null>;
@@ -228,15 +232,26 @@ export class SupabaseService implements OnDestroy {
             observer.next(payload.new as Room);
           }
         )
+        .on(
+          'broadcast',
+          { event: '*' },
+          ({ event, payload }) => {
+            console.log(`[SupabaseService] Broadcast reçu sur canal : ${event}`, payload);
+            this.broadcastSubject.next({ event, payload });
+          }
+        )
         .subscribe(status => {
           if (status === 'CHANNEL_ERROR') {
             observer.error(new Error(`Erreur de connexion au canal room-${roomId}`));
           }
         });
 
+      this.activeRoomChannel = channel;
+
       // Cleanup : retirer le canal à la désinscription
       return () => {
         this.supabase.removeChannel(channel);
+        this.activeRoomChannel = null;
       };
     });
   }
@@ -260,6 +275,26 @@ export class SupabaseService implements OnDestroy {
   }
 
   // ─── Utilitaire interne ──────────────────────────────────────────────────────
+
+  async broadcastGuess(pokemonId: number, senderId: string | null): Promise<void> {
+    if (this.activeRoomChannel) {
+      console.log(`[SupabaseService] Envoi du broadcast guess: ${pokemonId} (sender: ${senderId})`);
+      const eventData = {
+        type: 'broadcast',
+        event: 'opponent_guess',
+        payload: { pokemonId, senderId },
+      };
+      
+      await this.activeRoomChannel.send(eventData);
+
+      // En mode DEV, si on est seul, on double l'envoi localement pour être sûr
+      if (environment.devMode) {
+        this.broadcastSubject.next({ event: eventData.event, payload: eventData.payload });
+      }
+    } else {
+      console.warn('[SupabaseService] Impossible d\'envoyer le broadcast : canal inactif');
+    }
+  }
 
   getCurrentUser(): User | null {
     return this.userSubject.getValue();

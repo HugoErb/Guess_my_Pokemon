@@ -1,7 +1,8 @@
-import { computed, inject, Injectable, OnDestroy, signal } from '@angular/core';
+import { computed, inject, Injectable, isDevMode, OnDestroy, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { DEFAULT_SETTINGS, GameSettings, Room, RoomPatch } from '../models/room.model';
 import { SupabaseService } from './supabase.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class GameService implements OnDestroy {
@@ -9,6 +10,13 @@ export class GameService implements OnDestroy {
 
   /** Signal Angular : room en cours de jeu, null si aucune. */
   currentRoom = signal<Room | null>(null);
+  
+  isDev(): boolean {
+    return environment.devMode && isDevMode();
+  }
+  
+  /** Événements diffusés en direct (broadcast) */
+  broadcastEvents$ = this.supabaseService.broadcastEvents$;
 
   private roomSubscription: Subscription | null = null;
 
@@ -63,7 +71,7 @@ export class GameService implements OnDestroy {
     if (!user) throw new Error('Utilisateur non connecté');
 
     await this.updateAndRefresh(roomId, {
-      player2_id: user.id,
+      player2_id: null,
       status: 'ready',
     });
   }
@@ -135,7 +143,12 @@ export class GameService implements OnDestroy {
 
     // Le Pokémon adverse : player1 cherche pokemon_p2 et vice-versa
     const adversaryPokemonId = isPlayer1 ? room.pokemon_p2 : room.pokemon_p1;
-    const adversaryId = isPlayer1 ? room.player2_id : room.player1_id;
+    let adversaryId = isPlayer1 ? room.player2_id : room.player1_id;
+
+    // Fallback pour le mode dev si l'adversaire simulé n'a pas d'ID
+    if (this.isDev() && !adversaryId) {
+      adversaryId = null; // Le tour passera à null, ce qui désactivera le tour du joueur 1
+    }
 
     if (adversaryPokemonId === null) throw new Error('L\'adversaire n\'a pas encore choisi de Pokémon');
 
@@ -148,9 +161,39 @@ export class GameService implements OnDestroy {
       return 'correct';
     } else {
       // Mauvaise réponse : passage de tour
-      if (!adversaryId) throw new Error('Adversaire introuvable');
+      if (!adversaryId && !this.isDev()) throw new Error('Adversaire introuvable');
+      
+      // Diffuser le guess à l'adversaire via Broadcast
+      void this.supabaseService.broadcastGuess(pokemonId, user.id);
+
       await this.updateAndRefresh(roomId, {
         current_turn: adversaryId,
+      });
+      return 'incorrect';
+    }
+  }
+
+  /**
+   * DEV : Simule un guess de l'adversaire.
+   */
+  async simulateOpponentGuess(roomId: string, pokemonId: number): Promise<'correct' | 'incorrect'> {
+    const room = this.currentRoom();
+    if (!room) throw new Error('Aucune room active');
+
+    const isPlayer1 = this.isPlayer1();
+    const targetPokemonId = isPlayer1 ? room.pokemon_p1 : room.pokemon_p2;
+    const myId = isPlayer1 ? room.player1_id : room.player2_id;
+
+    if (pokemonId === targetPokemonId) {
+      await this.updateAndRefresh(roomId, {
+        winner_id: isPlayer1 ? room.player2_id : room.player1_id,
+        status: 'finished',
+      });
+      return 'correct';
+    } else {
+      void this.supabaseService.broadcastGuess(pokemonId, null);
+      await this.updateAndRefresh(roomId, {
+        current_turn: room.player1_id,
       });
       return 'incorrect';
     }

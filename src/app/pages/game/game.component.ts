@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, computed, effect, inject, input, isDevMode, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, effect, inject, input, isDevMode, signal, untracked, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom, Subscription } from 'rxjs';
 
@@ -139,7 +139,6 @@ import { environment } from '../../../environments/environment';
 
 					@if (opponentPokemon) {
 						<div class="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 flex flex-col items-center gap-2">
-							<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Le Pokémon adverse était</p>
 							<div class="flex flex-col items-center gap-1">
 								<img [src]="opponentPokemon.sprite" [alt]="opponentPokemon.name" class="w-24 h-24 object-contain" />
 								<h3 class="text-lg font-bold text-white capitalize">{{ opponentPokemon.name }}</h3>
@@ -244,15 +243,15 @@ import { environment } from '../../../environments/environment';
 			</div>
 		}
 		@if (showIncorrectModal()) {
-			<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[110] p-4" [@modalAnimation]>
-				<div class="bg-slate-800 border border-slate-600 rounded-2xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center gap-4 text-center modal-content">
-					<div class="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20">
+			<div class="fixed inset-0 bg-black/70 flex items-center justify-center z-[110] p-4" [@modalAnimation]>
+				<div class="bg-slate-800 rounded-2xl p-8 max-w-sm w-full border border-slate-600 shadow-2xl flex flex-col items-center gap-6 text-center modal-content">
+					<div class="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center border border-red-500/30">
 						<iconify-icon [icon]="ICONS.close" class="text-4xl text-red-500"></iconify-icon>
 					</div>
 					
-					<div class="space-y-1">
-						<h2 class="text-xl font-bold text-red-500 uppercase tracking-wider">Raté !</h2>
-						<p class="text-slate-300 text-sm">
+					<div class="space-y-2">
+						<h2 class="text-2xl font-bold text-red-500 uppercase tracking-tight">Raté !</h2>
+						<p class="text-slate-300">
 							Ce n'était pas 
 							@if (lastGuessedPokemon) {
 								<strong class="text-white capitalize">{{ lastGuessedPokemon.name }}</strong>
@@ -260,11 +259,38 @@ import { environment } from '../../../environments/environment';
 								le bon Pokémon
 							}
 						</p>
-						<p class="text-[11px] text-slate-500 font-medium italic">C'est maintenant au tour de l'adversaire.</p>
+						<p class="text-slate-300">C'est maintenant au tour de l'adversaire de jouer.</p>
 					</div>
 
-					<button (click)="showIncorrectModal.set(false)" class="w-full py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-bold text-white transition-colors mt-2">
+					<button (click)="showIncorrectModal.set(false)" class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2">
 						Compris
+					</button>
+				</div>
+			</div>
+		}
+
+		@if (showMyTurnModal()) {
+			<div class="fixed inset-0 bg-black/70 flex items-center justify-center z-[110] p-4" [@modalAnimation]>
+				<div class="bg-slate-800 border border-slate-600 rounded-2xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center gap-6 text-center modal-content">
+					<div class="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
+						<iconify-icon [icon]="ICONS.pokeball" class="text-4xl text-blue-500 animate-bounce"></iconify-icon>
+					</div>
+					
+					<div class="space-y-2">
+						<h2 class="text-2xl font-bold text-blue-400 uppercase tracking-tight">À toi de jouer !</h2>
+						@if (opponentLastGuess) {
+							<p class="text-slate-300">
+								L'adversaire a tenté 
+								<strong class="text-white capitalize">{{ opponentLastGuess.name }}</strong>... 
+							</p>
+							<p class="text-slate-300">C'est raté ! C'est ton tour.</p>
+						} @else {
+							<p class="text-slate-300">L'adversaire s'est trompé, c'est ton tour !</p>
+						}
+					</div>
+
+					<button (click)="showMyTurnModal.set(false)" class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2">
+						Prêt !
 					</button>
 				</div>
 			</div>
@@ -288,9 +314,13 @@ export class GameComponent implements OnInit, OnDestroy {
 	opponentPokemon: Pokemon | null = null;
 	devOpponentPokemon: Pokemon | null = null;
 	lastGuessedPokemon: Pokemon | null = null;
+	opponentLastGuess: Pokemon | null = null;
 	showEndModal = false;
 	showIncorrectModal = signal(false);
+	showMyTurnModal = signal(false);
 	isWinner = false;
+	devOpponentTries = signal(0);
+	private isSimulatingTurn = false;
 	readonly isDev = environment.devMode && isDevMode();
 
 	showRulesModal = signal(false);
@@ -307,6 +337,7 @@ export class GameComponent implements OnInit, OnDestroy {
 	private pokemonSub?: Subscription;
 	private opponentSub?: Subscription;
 	private devOpponentSub?: Subscription;
+	private broadcastSub?: Subscription;
 
 	turnCounter = signal(0);
 	private lastTurnId: string | null = null;
@@ -320,10 +351,17 @@ export class GameComponent implements OnInit, OnDestroy {
 				void this.handleGameFinished(r);
 			}
 
-			// Incrémenter le compteur de tours
-			if (r?.status === 'playing' && r.current_turn && r.current_turn !== this.lastTurnId) {
+			// Incrémenter le compteur de tours (Accepte null pour le bot)
+			if (r?.status === 'playing' && r.current_turn !== this.lastTurnId) {
 				this.turnCounter.update(c => c + 1);
 				this.lastTurnId = r.current_turn;
+			}
+
+			// Simulation DEV de l'adversaire
+			if (this.isDev && r?.status === 'playing' && !this.isMyTurn()) {
+				untracked(() => {
+					void this.simulateOpponentTurn();
+				});
 			}
 		});
 	}
@@ -357,6 +395,35 @@ export class GameComponent implements OnInit, OnDestroy {
 				});
 			}
 		}
+
+		// ─── Écoute des Broadcasts (Guesses de l'adversaire) ──────────────
+		this.broadcastSub = this.gameService.broadcastEvents$.subscribe(evt => {
+			console.log('[GameComponent] Broadcast reçu:', evt);
+			if (evt.event === 'opponent_guess') {
+				const { pokemonId, senderId } = evt.payload;
+				const currentUserId = this.supabaseService.getCurrentUser()?.id;
+				
+				console.log('[GameComponent] Guess adversaire:', { pokemonId, senderId, currentUserId });
+
+				// On ne traite que si c'est l'adversaire (ou le bot) qui a joué
+				if (senderId !== currentUserId) {
+					this.pokemonService.getById(pokemonId).subscribe(async p => {
+						this.opponentLastGuess = p ?? null;
+						
+						// Si la modale "Raté" est encore ouverte, on attend qu'elle se ferme
+						if (this.showIncorrectModal()) {
+							console.log('[GameComponent] Attente fermeture modale incorrecte...');
+							while (this.showIncorrectModal()) {
+								await new Promise(resolve => setTimeout(resolve, 500));
+							}
+						}
+						
+						console.log('[GameComponent] Affichage modale tour adverse');
+						this.showMyTurnModal.set(true);
+					});
+				}
+			}
+		});
 	}
 
 	private async handleGameFinished(r: { winner_id: string | null; pokemon_p1: number | null; pokemon_p2: number | null }): Promise<void> {
@@ -374,6 +441,8 @@ export class GameComponent implements OnInit, OnDestroy {
 			});
 		}
 
+		this.showMyTurnModal.set(false);
+		this.showIncorrectModal.set(false);
 		this.showEndModal = true;
 	}
 
@@ -391,6 +460,39 @@ export class GameComponent implements OnInit, OnDestroy {
 			// 'correct' → room signal switches to 'finished' → effect handles modal
 		} catch (err) {
 			console.error('[GameComponent] Erreur lors du guess', err);
+		}
+	}
+
+	private async simulateOpponentTurn(): Promise<void> {
+		if (this.isSimulatingTurn) return;
+		this.isSimulatingTurn = true;
+
+		try {
+			// Délai augmenté pour laisser le temps de lire la pop-up d'erreur
+			await new Promise(resolve => setTimeout(resolve, 4000));
+			
+			const r = this.room();
+			if (!r || r.status !== 'playing' || this.isMyTurn()) return;
+
+			const currentTries = this.devOpponentTries();
+			let targetPokemonId: number;
+
+			if (currentTries < 2) {
+				// Raté : On prend un Pokémon au hasard (différent du mien)
+				targetPokemonId = this.myPokemon?.id === 1 ? 4 : 1; 
+				this.devOpponentTries.update(t => t + 1);
+			} else {
+				// Gagné : L'adversaire trouve mon Pokémon
+				if (!this.myPokemon) return;
+				targetPokemonId = this.myPokemon.id;
+			}
+
+			console.log('[GameComponent] Bot simulation guess:', targetPokemonId);
+			await this.gameService.simulateOpponentGuess(this.roomId(), targetPokemonId);
+		} catch (err) {
+			console.error('[GameComponent] Erreur simulation guess', err);
+		} finally {
+			this.isSimulatingTurn = false;
 		}
 	}
 
@@ -422,5 +524,6 @@ export class GameComponent implements OnInit, OnDestroy {
 		this.pokemonSub?.unsubscribe();
 		this.opponentSub?.unsubscribe();
 		this.devOpponentSub?.unsubscribe();
+		this.broadcastSub?.unsubscribe();
 	}
 }
