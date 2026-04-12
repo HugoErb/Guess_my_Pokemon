@@ -32,12 +32,6 @@ import { environment } from '../../../environments/environment';
 				</div>
 			</header>
 
-			<!-- Message de tentative ratée -->
-			@if (guessMessage) {
-				<div class="bg-red-900/40 border-b border-red-500 text-red-300 text-sm px-6 py-2 text-center font-medium">
-					{{ guessMessage }}
-				</div>
-			}
 
 			<!-- Contenu principal : deux colonnes -->
 			<div class="flex-1 flex overflow-hidden">
@@ -126,28 +120,43 @@ import { environment } from '../../../environments/environment';
 			</div>
 		</div>
 
-		<!-- Modales -->
+		<!-- Modale de Fin de Partie -->
 		@if (showEndModal) {
-			<div class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" [@modalAnimation]>
-				<div class="bg-slate-800 rounded-2xl p-8 max-w-sm w-full border border-slate-700 shadow-2xl flex flex-col items-center gap-6 text-center modal-content">
-					@if (isWinner) {
-						<iconify-icon [icon]="ICONS.trophy" class="text-6xl text-yellow-400 animate-bounce"></iconify-icon>
-						<h2 class="text-2xl font-bold text-yellow-400">Victoire !</h2>
-						<p class="text-slate-300">Tu as trouvé le Pokémon de ton adversaire !</p>
-					} @else {
-						<iconify-icon [icon]="ICONS.skull" class="text-6xl text-red-400 animate-pulse"></iconify-icon>
-						<h2 class="text-2xl font-bold text-red-400">Défaite !</h2>
-						<p class="text-slate-300">Ton adversaire a trouvé ton Pokémon !</p>
-					}
+			<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4" [@modalAnimation]>
+				<div class="bg-slate-800 border border-slate-600 rounded-2xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center gap-6 text-center modal-content">
+					
+					<div class="flex flex-col items-center gap-2">
+						@if (isWinner) {
+							<iconify-icon [icon]="ICONS.trophy" class="text-6xl text-yellow-400 animate-bounce"></iconify-icon>
+							<h2 class="text-2xl font-bold text-yellow-400 uppercase tracking-tight">Victoire !</h2>
+							<p class="text-slate-300">Tu as trouvé le Pokémon de ton adversaire !</p>
+						} @else {
+							<iconify-icon [icon]="ICONS.skull" class="text-6xl text-red-500 animate-pulse"></iconify-icon>
+							<h2 class="text-2xl font-bold text-red-500 uppercase tracking-tight">Défaite</h2>
+							<p class="text-slate-300">Ton adversaire a trouvé ton Pokémon !</p>
+						}
+					</div>
+
 					@if (opponentPokemon) {
-						<div class="flex flex-col items-center gap-2 bg-slate-700 rounded-xl p-4 w-full">
-							<p class="text-xs text-slate-400 uppercase tracking-wider">C'était</p>
-							<img [src]="opponentPokemon.sprite" [alt]="opponentPokemon.name" class="w-24 h-24 object-contain" />
-							<p class="font-bold text-white capitalize">{{ opponentPokemon.name }}</p>
+						<div class="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 flex flex-col items-center gap-2">
+							<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Le Pokémon adverse était</p>
+							<div class="flex flex-col items-center gap-1">
+								<img [src]="opponentPokemon.sprite" [alt]="opponentPokemon.name" class="w-24 h-24 object-contain" />
+								<h3 class="text-lg font-bold text-white capitalize">{{ opponentPokemon.name }}</h3>
+							</div>
 						</div>
 					}
-					<button (click)="goHome()" class="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2">
-						<iconify-icon [icon]="ICONS.home" class="text-xl"></iconify-icon>
+
+					<div class="bg-slate-900/30 border border-slate-700/50 rounded-xl py-2 px-6 w-fit">
+						<p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Partie terminée en</p>
+						<p class="text-lg font-mono font-bold text-white">{{ gameTurn() }} tours</p>
+					</div>
+
+					<button 
+						(click)="goHome()" 
+						class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 mt-2"
+					>
+						<iconify-icon [icon]="ICONS.home" class="text-lg"></iconify-icon>
 						Retour à l'accueil
 					</button>
 				</div>
@@ -234,6 +243,32 @@ import { environment } from '../../../environments/environment';
 				</div>
 			</div>
 		}
+		@if (showIncorrectModal()) {
+			<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[110] p-4" [@modalAnimation]>
+				<div class="bg-slate-800 border border-slate-600 rounded-2xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center gap-4 text-center modal-content">
+					<div class="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20">
+						<iconify-icon [icon]="ICONS.close" class="text-4xl text-red-500"></iconify-icon>
+					</div>
+					
+					<div class="space-y-1">
+						<h2 class="text-xl font-bold text-red-500 uppercase tracking-wider">Raté !</h2>
+						<p class="text-slate-300 text-sm">
+							Ce n'était pas 
+							@if (lastGuessedPokemon) {
+								<strong class="text-white capitalize">{{ lastGuessedPokemon.name }}</strong>
+							} @else {
+								le bon Pokémon
+							}
+						</p>
+						<p class="text-[11px] text-slate-500 font-medium italic">C'est maintenant au tour de l'adversaire.</p>
+					</div>
+
+					<button (click)="showIncorrectModal.set(false)" class="w-full py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-bold text-white transition-colors mt-2">
+						Compris
+					</button>
+				</div>
+			</div>
+		}
 	`,
 })
 export class GameComponent implements OnInit, OnDestroy {
@@ -252,8 +287,9 @@ export class GameComponent implements OnInit, OnDestroy {
 	myPokemon: Pokemon | null = null;
 	opponentPokemon: Pokemon | null = null;
 	devOpponentPokemon: Pokemon | null = null;
-	guessMessage = '';
+	lastGuessedPokemon: Pokemon | null = null;
 	showEndModal = false;
+	showIncorrectModal = signal(false);
 	isWinner = false;
 	readonly isDev = environment.devMode && isDevMode();
 
@@ -268,7 +304,6 @@ export class GameComponent implements OnInit, OnDestroy {
 	closeGameSettingsModal(): void { this.showGameSettingsModal.set(false); }
 	isCancelling = false;
 
-	private guessMessageTimer: ReturnType<typeof setTimeout> | null = null;
 	private pokemonSub?: Subscription;
 	private opponentSub?: Subscription;
 	private devOpponentSub?: Subscription;
@@ -348,11 +383,10 @@ export class GameComponent implements OnInit, OnDestroy {
 		try {
 			const result = await this.gameService.guess(this.roomId(), pokemonId);
 			if (result === 'incorrect') {
-				this.guessMessage = "Raté ! Ce n'est pas le bon Pokémon.";
-				if (this.guessMessageTimer) clearTimeout(this.guessMessageTimer);
-				this.guessMessageTimer = setTimeout(() => {
-					this.guessMessage = '';
-				}, 3000);
+				this.pokemonService.getById(pokemonId).subscribe(p => {
+					this.lastGuessedPokemon = p ?? null;
+					this.showIncorrectModal.set(true);
+				});
 			}
 			// 'correct' → room signal switches to 'finished' → effect handles modal
 		} catch (err) {
@@ -388,6 +422,5 @@ export class GameComponent implements OnInit, OnDestroy {
 		this.pokemonSub?.unsubscribe();
 		this.opponentSub?.unsubscribe();
 		this.devOpponentSub?.unsubscribe();
-		if (this.guessMessageTimer) clearTimeout(this.guessMessageTimer);
 	}
 }

@@ -16,11 +16,17 @@ export class GameService implements OnDestroy {
 
   async joinAndWatch(roomId: string): Promise<void> {
     this.stopWatching();
-    // 1. S'abonner d'abord pour ne rater aucune mise à jour
     this.roomSubscription = this.supabaseService
       .subscribeToRoom(roomId)
-      .subscribe(updatedRoom => {
-        this.currentRoom.set(updatedRoom);
+      .subscribe({
+        next: updatedRoom => {
+          this.currentRoom.set(updatedRoom);
+        },
+        error: err => {
+          console.error('[GameService] Erreur Realtime:', err);
+          // Si on perd la connexion, on tente quand même de rafraîchir une fois manuellement
+          void this.refreshRoom(roomId);
+        }
       });
     // 2. Charger l'état initial ensuite
     const room = await this.supabaseService.getRoomById(roomId);
@@ -135,7 +141,7 @@ export class GameService implements OnDestroy {
 
     if (pokemonId === adversaryPokemonId) {
       // Bonne réponse : fin de partie
-      await this.supabaseService.updateRoom(roomId, {
+      await this.updateAndRefresh(roomId, {
         winner_id: user.id,
         status: 'finished',
       });
@@ -143,10 +149,20 @@ export class GameService implements OnDestroy {
     } else {
       // Mauvaise réponse : passage de tour
       if (!adversaryId) throw new Error('Adversaire introuvable');
-      await this.supabaseService.updateRoom(roomId, {
+      await this.updateAndRefresh(roomId, {
         current_turn: adversaryId,
       });
       return 'incorrect';
+    }
+  }
+
+  /** Rafraîchit manuellement l'état de la room. */
+  async refreshRoom(roomId: string): Promise<void> {
+    try {
+      const room = await this.supabaseService.getRoomById(roomId);
+      this.currentRoom.set(room);
+    } catch (err) {
+      console.error('[GameService] Impossible de rafraîchir la room:', err);
     }
   }
 
