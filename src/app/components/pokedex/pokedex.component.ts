@@ -197,14 +197,12 @@ export class PokedexComponent implements OnInit {
   }
 
   applyFilters(): void {
-    this.pokemonService.filter({
-      query: this.searchQuery,
-      generations: this.selectedGenerations,
-      types: this.selectedTypes,
-    }).pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(results => {
-      this.filteredPokemons = results;
+    const q = this.searchQuery.trim().toLowerCase();
+    this.filteredPokemons = this.allPokemons.filter(p => {
+      if (q && !p.name.toLowerCase().includes(q)) return false;
+      if (this.selectedGenerations.length > 0 && !this.selectedGenerations.includes(p.generation)) return false;
+      if (this.selectedTypes.length > 0 && !this.selectedTypes.some(t => p.types.includes(t))) return false;
+      return true;
     });
   }
 
