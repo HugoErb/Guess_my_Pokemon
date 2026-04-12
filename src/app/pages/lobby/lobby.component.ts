@@ -12,12 +12,13 @@ import { Pokemon } from '../../models/pokemon.model';
 import { DEFAULT_SETTINGS, GameSettings } from '../../models/room.model';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { CancelModalComponent } from '../../components/cancel-modal/cancel-modal.component';
+import { RulesModalComponent } from '../../components/rules-modal/rules-modal.component';
 import { ICONS } from '../../constants/icons';
 import { modalAnimation } from '../../constants/animations';
 
 @Component({
 	selector: 'app-lobby',
-	imports: [FormsModule, PokemonCardComponent, CancelModalComponent],
+	imports: [FormsModule, PokemonCardComponent, CancelModalComponent, RulesModalComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
 	animations: [modalAnimation],
 	template: `
@@ -426,46 +427,8 @@ import { modalAnimation } from '../../constants/animations';
 				</div>
 			}
 
-			<!-- Modal règles -->
 			@if (showRulesModal()) {
-				<div 
-					class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" 
-					(click)="closeRulesModal()"
-					[@modalAnimation]
-				>
-					<div 
-						class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4 text-center modal-content" 
-						(click)="$event.stopPropagation()"
-					>
-						<iconify-icon [icon]="ICONS.pokedex" class="text-5xl text-red-500 mx-auto"></iconify-icon>
-						<h2 class="text-xl font-bold text-white uppercase tracking-wider">Règles du jeu</h2>
-						<ol class="space-y-3 text-sm text-slate-300 list-none text-justify">
-							<li class="flex gap-3">
-								<span class="text-red-500 font-bold text-base leading-snug">1.</span>
-								<span>Au début de la partie, chaque joueur choisit secrètement un Pokémon que son adversaire devra deviner.</span>
-							</li>
-							<li class="flex gap-3">
-								<span class="text-red-500 font-bold text-base leading-snug">2.</span>
-								<span>À chaque tour, le joueur actif pose <strong class="text-white">une question à l'oral</strong> à son adversaire sur son Pokémon.</span>
-							</li>
-							<li class="flex gap-3">
-								<span class="text-red-500 font-bold text-base leading-snug">3.</span>
-								<span>L'adversaire doit répondre <strong class="text-white">par oui ou par non</strong>, en disant la vérité.</span>
-							</li>
-							<li class="flex gap-3">
-								<span class="text-red-500 font-bold text-base leading-snug">4.</span>
-								<span>Quand un joueur pense avoir trouvé, il tape le nom du Pokémon dans le champ de recherche pour tenter sa chance.</span>
-							</li>
-							<li class="flex gap-3">
-								<span class="text-red-500 font-bold text-base leading-snug">5.</span>
-								<span>Le <strong class="text-white">premier à deviner</strong> le Pokémon de son adversaire remporte la partie !</span>
-							</li>
-						</ol>
-						<button (click)="closeRulesModal()" class="mt-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium text-white transition-colors">
-							Fermer
-						</button>
-					</div>
-				</div>
+				<app-rules-modal (close)="closeRulesModal()" />
 			}
 
 			@if (showCancelModal()) {

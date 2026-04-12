@@ -8,6 +8,7 @@ export const ICONS = {
   alert: 'mdi:alert',
   loading: 'mdi:loading',       // animé : animate-spin
   refresh: 'mdi:refresh',       // animé : animate-spin
+  edit: 'mdi:pencil',
 
   // Jeu
   game: 'mdi:gamepad-variant',
@@ -24,6 +25,7 @@ export const ICONS = {
   eyeOff: 'mdi:eye-off-outline',
   login: 'mdi:login',
   logout: 'mdi:logout',
+  user: 'mdi:account-outline',
 
   // Pokémon / Lobby
   pokeball: 'mdi:pokeball',

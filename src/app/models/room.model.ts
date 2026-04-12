@@ -32,5 +32,6 @@ export type RoomPatch = Partial<Omit<Room, 'id' | 'created_at' | 'player1_id'>>;
 export interface Profile {
   id: string;
   username: string;
+  avatar_url?: string;
   created_at: string;
 }

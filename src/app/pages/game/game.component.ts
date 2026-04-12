@@ -9,13 +9,14 @@ import { Pokemon } from '../../models/pokemon.model';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { PokedexComponent } from '../../components/pokedex/pokedex.component';
 import { CancelModalComponent } from '../../components/cancel-modal/cancel-modal.component';
+import { RulesModalComponent } from '../../components/rules-modal/rules-modal.component';
 import { ICONS } from '../../constants/icons';
 import { modalAnimation } from '../../constants/animations';
 import { environment } from '../../../environments/environment';
 
 @Component({
 	selector: 'app-game',
-	imports: [PokemonCardComponent, PokedexComponent, CancelModalComponent],
+	imports: [PokemonCardComponent, PokedexComponent, CancelModalComponent, RulesModalComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
 	animations: [modalAnimation],
 	template: `
@@ -154,20 +155,7 @@ import { environment } from '../../../environments/environment';
 		}
 
 		@if (showRulesModal()) {
-			<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeRulesModal()" [@modalAnimation]>
-				<div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4 text-center modal-content" (click)="$event.stopPropagation()">
-					<iconify-icon [icon]="ICONS.pokedex" class="text-5xl text-red-500 mx-auto"></iconify-icon>
-					<h2 class="text-xl font-bold text-white uppercase tracking-wider">Règles du jeu</h2>
-					<ol class="space-y-3 text-sm text-slate-300 list-none text-justify">
-						<li class="flex gap-3"><span class="text-red-500 font-bold text-base leading-snug">1.</span><span>Chaque joueur choisit secrètement un Pokémon.</span></li>
-						<li class="flex gap-3"><span class="text-red-500 font-bold text-base leading-snug">2.</span><span>Posez une question à l'oral à chaque tour.</span></li>
-						<li class="flex gap-3"><span class="text-red-500 font-bold text-base leading-snug">3.</span><span>Répondez par oui ou par non.</span></li>
-						<li class="flex gap-3"><span class="text-red-500 font-bold text-base leading-snug">4.</span><span>Tentez votre chance en tapant le nom du Pokémon.</span></li>
-						<li class="flex gap-3"><span class="text-red-500 font-bold text-base leading-snug">5.</span><span>Le premier à deviner gagne !</span></li>
-					</ol>
-					<button (click)="closeRulesModal()" class="mt-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium text-white transition-colors">Fermer</button>
-				</div>
-			</div>
+			<app-rules-modal (close)="closeRulesModal()" />
 		}
 
 		@if (showCancelModal()) {

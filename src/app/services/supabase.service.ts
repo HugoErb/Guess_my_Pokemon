@@ -111,6 +111,19 @@ export class SupabaseService implements OnDestroy {
     if (error) throw error;
   }
 
+  async verifyPassword(password: string): Promise<boolean> {
+    const user = this.userSubject.getValue();
+    if (!user?.email) return false;
+    
+    // On tente une reconnexion silencieuse pour vérifier le mot de passe actuel
+    const { error } = await this.supabase.auth.signInWithPassword({
+      email: user.email,
+      password: password
+    });
+    
+    return !error;
+  }
+
   // ─── Profil ──────────────────────────────────────────────────────────────────
 
   async getProfile(userId: string): Promise<Profile> {
@@ -122,6 +135,33 @@ export class SupabaseService implements OnDestroy {
 
     if (error) throw error;
     return data as Profile;
+  }
+
+  async updateProfile(userId: string, patch: Partial<Profile>): Promise<void> {
+    const { error } = await this.supabase
+      .from('profiles')
+      .update(patch)
+      .eq('id', userId);
+
+    if (error) throw error;
+  }
+
+  async updateUsername(userId: string, newUsername: string): Promise<void> {
+    // 1. Mettre à jour les métadonnées de l'utilisateur (Auth)
+    const { error: authError } = await this.supabase.auth.updateUser({
+      data: { 
+        username: newUsername,
+        display_name: newUsername 
+      }
+    });
+    if (authError) throw authError;
+
+    // 2. Mettre à jour la table des profils (Public)
+    const { error: profileError } = await this.supabase
+      .from('profiles')
+      .update({ username: newUsername })
+      .eq('id', userId);
+    if (profileError) throw profileError;
   }
 
   // ─── Rooms ───────────────────────────────────────────────────────────────────
