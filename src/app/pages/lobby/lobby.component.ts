@@ -206,9 +206,9 @@ import { ICONS } from '../../constants/icons';
 							</div>
 
 							<!-- Grille de Pokémon scrollable -->
-							<div class="flex-1 overflow-y-auto pr-2">
+							<div class="flex-1 overflow-y-auto pr-2" (scroll)="onGridScroll($event)">
 								<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 pb-2">
-									@for (pokemon of filteredPokemons; track pokemon.id) {
+									@for (pokemon of visiblePokemons; track pokemon.id) {
 										<div class="relative w-full h-full">
 											<button
 												(click)="selectPokemon(pokemon)"
@@ -236,7 +236,7 @@ import { ICONS } from '../../constants/icons';
 										</div>
 									}
 								</div>
-								@if (filteredPokemons.length === 0 && allPokemons.length > 0) {
+								@if (visiblePokemons.length === 0 && allPokemons.length > 0) {
 									<div class="text-center text-slate-500 py-10">Aucun Pokémon trouvé pour "{{ searchQuery }}"</div>
 								}
 								@if (allPokemons.length === 0) {
@@ -331,11 +331,14 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	// Sélection Pokémon
 	allPokemons: Pokemon[] = [];
 	filteredPokemons: Pokemon[] = [];
+	visiblePokemons: Pokemon[] = [];
 	selectedPokemon: Pokemon | null = null;
 	searchQuery = '';
 	isReady = false;
 	isSettingReady = false;
 	selectError = '';
+	private displayedCount = 100;
+	private readonly PAGE_SIZE = 100;
 
 	// Détails du Pokémon
 	selectedPokemonDetails: Pokemon | null = null;
@@ -375,6 +378,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		this.pokemonsSub = this.pokemonService.loadAll().subscribe((pokemons) => {
 			this.allPokemons = pokemons;
 			this.filteredPokemons = pokemons;
+			this.displayedCount = this.PAGE_SIZE;
+			this.visiblePokemons = pokemons.slice(0, this.displayedCount);
 		});
 
 		// 5. Watcher Realtime : si status 'playing' → navigate /game/:roomId
@@ -417,6 +422,16 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
 	onSearch(): void {
 		this.filteredPokemons = this.allPokemons.filter((p) => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
+		this.displayedCount = this.PAGE_SIZE;
+		this.visiblePokemons = this.filteredPokemons.slice(0, this.displayedCount);
+	}
+
+	onGridScroll(event: Event): void {
+		const el = event.target as HTMLElement;
+		if (el.scrollHeight - el.scrollTop - el.clientHeight < 300 && this.displayedCount < this.filteredPokemons.length) {
+			this.displayedCount += this.PAGE_SIZE;
+			this.visiblePokemons = this.filteredPokemons.slice(0, this.displayedCount);
+		}
 	}
 
 	async setReady(): Promise<void> {
@@ -434,15 +449,13 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		}
 	}
 
-	async cancelRoom(): Promise<void> {
+	cancelRoom(): void {
 		if (this.isCancelling) return;
 		this.isCancelling = true;
-		try {
-			await this.gameService.cancelRoom(this.roomId());
-			this.router.navigate(['/home']);
-		} finally {
-			this.isCancelling = false;
-		}
+		void this.gameService.cancelRoom(this.roomId()).catch(err => {
+			console.error('[LobbyComponent] Erreur lors de l\'annulation', err);
+		});
+		void this.router.navigate(['/home']);
 	}
 
 	async simulateOpponent(): Promise<void> {
@@ -520,8 +533,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		this.showCancelModal = false;
 	}
 
-	async confirmCancel(): Promise<void> {
+	confirmCancel(): void {
 		this.closeCancelModal();
-		await this.cancelRoom();
+		this.cancelRoom();
 	}
 }

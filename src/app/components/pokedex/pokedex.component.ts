@@ -96,12 +96,15 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
       <div class="flex flex-col gap-2 min-h-0 flex-1">
         <p class="text-xs text-slate-400">
           Résultats ({{ filteredPokemons.length }} Pokémon)
+          @if (visiblePokemons.length < filteredPokemons.length) {
+            — {{ visiblePokemons.length }} affichés
+          }
         </p>
 
         <!-- Grille scrollable -->
-        <div class="flex-1 overflow-y-auto pr-2">
+        <div class="flex-1 overflow-y-auto pr-2" (scroll)="onGridScroll($event)">
           <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 pb-2">
-            @for (pokemon of filteredPokemons; track pokemon.id) {
+            @for (pokemon of visiblePokemons; track pokemon.id) {
               <div class="relative w-full h-full">
                 <button
                   (click)="openPokemonDetails(pokemon)"
@@ -123,7 +126,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
             }
           </div>
 
-          @if (filteredPokemons.length === 0 && allPokemons.length > 0) {
+          @if (visiblePokemons.length === 0 && allPokemons.length > 0) {
             <div class="text-center text-slate-500 py-8 text-sm">
               Aucun Pokémon trouvé
             </div>
@@ -177,12 +180,16 @@ export class PokedexComponent implements OnInit {
 
   allPokemons: Pokemon[] = [];
   filteredPokemons: Pokemon[] = [];
+  visiblePokemons: Pokemon[] = [];
   selectedPokemon: Pokemon | null = null;
   selectedPokemonDetails: Pokemon | null = null;
 
   searchQuery = '';
   selectedGenerations: number[] = [];
   selectedTypes: string[] = [];
+
+  private displayedCount = 100;
+  private readonly PAGE_SIZE = 100;
 
   readonly generations = GENERATIONS;
   readonly allTypes = ALL_TYPES;
@@ -193,6 +200,8 @@ export class PokedexComponent implements OnInit {
     ).subscribe(pokemons => {
       this.allPokemons = pokemons;
       this.filteredPokemons = pokemons;
+      this.displayedCount = this.PAGE_SIZE;
+      this.visiblePokemons = pokemons.slice(0, this.displayedCount);
     });
   }
 
@@ -204,6 +213,16 @@ export class PokedexComponent implements OnInit {
       if (this.selectedTypes.length > 0 && !this.selectedTypes.some(t => p.types.includes(t))) return false;
       return true;
     });
+    this.displayedCount = this.PAGE_SIZE;
+    this.visiblePokemons = this.filteredPokemons.slice(0, this.displayedCount);
+  }
+
+  onGridScroll(event: Event): void {
+    const el = event.target as HTMLElement;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 300 && this.displayedCount < this.filteredPokemons.length) {
+      this.displayedCount += this.PAGE_SIZE;
+      this.visiblePokemons = this.filteredPokemons.slice(0, this.displayedCount);
+    }
   }
 
   toggleGeneration(gen: number): void {

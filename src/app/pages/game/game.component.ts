@@ -274,18 +274,13 @@ export class GameComponent implements OnInit, OnDestroy {
 		this.showCancelModal = false;
 	}
 
-	async confirmCancel(): Promise<void> {
+	confirmCancel(): void {
 		if (this.isCancelling) return;
 		this.isCancelling = true;
-		try {
-			await this.gameService.cancelRoom(this.roomId());
-			this.router.navigate(['/home']);
-		} catch (err) {
+		void this.gameService.cancelRoom(this.roomId()).catch(err => {
 			console.error('[GameComponent] Erreur lors de l\'annulation', err);
-		} finally {
-			this.isCancelling = false;
-			this.closeCancelModal();
-		}
+		});
+		void this.router.navigate(['/home']);
 	}
 
 	ngOnDestroy(): void {
