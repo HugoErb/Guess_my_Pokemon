@@ -48,13 +48,15 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
       <!-- Titre + Reset -->
       <div class="flex justify-between items-end">
         <h2 class="text-lg font-bold text-white tracking-wide uppercase">Pokédex</h2>
-        <button 
-          (click)="clearFilters()"
-          class="flex items-center gap-2 px-2.5 py-1 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 hover:border-slate-500 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all duration-200 group"
-        >
-          <iconify-icon [icon]="ICONS.refresh" class="text-sm group-hover:rotate-180 transition-transform duration-500"></iconify-icon>
-          <span>Réinitialiser les filtres</span>
-        </button>
+        @if (!noSearch()) {
+          <button 
+            (click)="clearFilters()"
+            class="flex items-center gap-2 px-2.5 py-1 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 hover:border-slate-500 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all duration-200 group"
+          >
+            <iconify-icon [icon]="ICONS.refresh" class="text-sm group-hover:rotate-180 transition-transform duration-500"></iconify-icon>
+            <span>Réinitialiser les filtres</span>
+          </button>
+        }
       </div>
 
       <!-- Barre de recherche -->
@@ -70,6 +72,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
       </div>
 
       <!-- Filtres principaux -->
+      @if (!noSearch()) {
       <div class="flex flex-wrap gap-x-8 gap-y-6">
         <!-- Génération -->
         <div class="shrink-0">
@@ -185,6 +188,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
           </button>
         </div>
       </div>
+      }
 
       <!-- Résultats -->
       <div class="flex flex-col gap-2 min-h-0 flex-1">
@@ -208,12 +212,16 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
                     ? 'w-full h-full flex flex-col items-center gap-1 p-2 rounded-xl bg-red-900/40 border-2 border-red-500 transition-all'
                     : 'w-full h-full flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-700/60 border-2 border-transparent hover:bg-slate-700 hover:border-slate-500 transition-all'"
                 >
-                  <img
-                    [src]="pokemon.sprite"
-                    [alt]="pokemon.name"
-                    class="w-12 h-12 object-contain"
-                    loading="lazy"
-                  />
+                  @if (!noPokedex()) {
+                    <img
+                      [src]="pokemon.sprite"
+                      [alt]="pokemon.name"
+                      class="w-12 h-12 object-contain"
+                      loading="lazy"
+                    />
+                  } @else {
+                    <div class="w-12 h-12 flex items-center justify-center text-3xl text-slate-500">?</div>
+                  }
                   <span class="text-xs text-center capitalize leading-tight text-slate-300 truncate w-full">
                     {{ pokemon.name }}
                   </span>
@@ -254,7 +262,15 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
             <!-- Contenu scrollable -->
             <div class="overflow-y-auto flex-1">
-              <app-pokemon-card [pokemon]="selectedPokemonDetails" />
+              @if (!noPokedex()) {
+                <app-pokemon-card [pokemon]="selectedPokemonDetails" />
+              } @else {
+                <div class="flex flex-col items-center gap-3 py-6">
+                  <div class="w-20 h-20 flex items-center justify-center text-6xl text-slate-500">?</div>
+                  <p class="text-lg font-bold capitalize text-white">{{ selectedPokemonDetails.name }}</p>
+                  <p class="text-xs text-slate-400">Mode Pokédex caché</p>
+                </div>
+              }
             </div>
 
             @if (showGuessButton()) {
@@ -279,6 +295,9 @@ export class PokedexComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   showGuessButton = input<boolean>(false);
+  restrictedGenerations = input<number[]>([]);
+  noPokedex = input<boolean>(false);
+  noSearch = input<boolean>(false);
   guess = output<number>();
 
   allPokemons = signal<Pokemon[]>([]);
@@ -318,6 +337,7 @@ export class PokedexComponent implements OnInit {
   filteredPokemons = computed(() => {
     const list = this.allPokemons();
     const q = this.searchQuery().trim().toLowerCase();
+    const restricted = this.restrictedGenerations();
     const gens = this.selectedGenerations();
     const types = this.selectedTypes();
     const cats = this.selectedCategories();
@@ -330,6 +350,7 @@ export class PokedexComponent implements OnInit {
     const maxH = this.maxHeight();
 
     return list.filter(p => {
+      if (restricted.length > 0 && !restricted.includes(p.generation)) return false;
       if (q && !p.name.toLowerCase().includes(q)) return false;
       if (gens.length > 0 && !gens.includes(p.generation)) return false;
       

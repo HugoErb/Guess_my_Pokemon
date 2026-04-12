@@ -1,4 +1,16 @@
-export type RoomStatus = 'waiting' | 'selecting' | 'playing' | 'finished';
+export type RoomStatus = 'waiting' | 'ready' | 'selecting' | 'playing' | 'finished';
+
+export interface GameSettings {
+  generations: number[];  // [] = toutes les générations
+  noPokedex: boolean;     // cache tout sauf le nom
+  noSearch: boolean;      // désactive les filtres avancés (garde la recherche par nom)
+}
+
+export const DEFAULT_SETTINGS: GameSettings = {
+  generations: [],
+  noPokedex: false,
+  noSearch: false,
+};
 
 export interface Room {
   id: string;
@@ -12,6 +24,7 @@ export interface Room {
   status: RoomStatus;
   winner_id: string | null;
   created_at: string;
+  settings: GameSettings | null;
 }
 
 export type RoomPatch = Partial<Omit<Room, 'id' | 'created_at' | 'player1_id'>>;

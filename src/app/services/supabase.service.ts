@@ -3,7 +3,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { filter, skipUntil } from 'rxjs/operators';
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
-import { Profile, Room, RoomPatch } from '../models/room.model';
+import { GameSettings, Profile, Room, RoomPatch } from '../models/room.model';
 
 @Injectable({ providedIn: 'root' })
 export class SupabaseService implements OnDestroy {
@@ -157,7 +157,16 @@ export class SupabaseService implements OnDestroy {
 
     const { error } = await this.supabase
       .from('rooms')
-      .update({ player2_id: user.id, status: 'selecting' })
+      .update({ player2_id: user.id, status: 'ready' })
+      .eq('id', roomId);
+
+    if (error) throw error;
+  }
+
+  async launchGame(roomId: string, settings: GameSettings): Promise<void> {
+    const { error } = await this.supabase
+      .from('rooms')
+      .update({ status: 'selecting', settings })
       .eq('id', roomId);
 
     if (error) throw error;

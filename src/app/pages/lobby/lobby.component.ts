@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, computed, inject, input, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, effect, inject, input, signal, untracked, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { firstValueFrom, filter, take, Subscription } from 'rxjs';
@@ -9,13 +9,15 @@ import { GameService } from '../../services/game.service';
 import { PokemonService } from '../../services/pokemon.service';
 import { SupabaseService } from '../../services/supabase.service';
 import { Pokemon } from '../../models/pokemon.model';
+import { DEFAULT_SETTINGS, GameSettings } from '../../models/room.model';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
+import { CancelModalComponent } from '../../components/cancel-modal/cancel-modal.component';
 import { ICONS } from '../../constants/icons';
 import { modalAnimation } from '../../constants/animations';
 
 @Component({
 	selector: 'app-lobby',
-	imports: [FormsModule, PokemonCardComponent],
+	imports: [FormsModule, PokemonCardComponent, CancelModalComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
 	animations: [modalAnimation],
 	template: `
@@ -41,8 +43,8 @@ import { modalAnimation } from '../../constants/animations';
 				</div>
 			}
 
-			<!-- Phase 1 : En attente du 2ème joueur -->
-			@if (room()?.player2_id === null) {
+			<!-- Phase 1 : En attente du 2ème joueur / ready -->
+			@if (room()?.status === 'waiting' || room()?.status === 'ready') {
 				<div class="flex-1 flex items-center justify-center p-6">
 					<div class="bg-slate-800 rounded-2xl p-8 max-w-md w-full text-center shadow-xl border border-slate-700">
 						<iconify-icon [icon]="ICONS.timer" class="text-4xl mb-4 text-blue-400 animate-pulse"></iconify-icon>
@@ -61,8 +63,8 @@ import { modalAnimation } from '../../constants/animations';
 								(click)="copyInviteLink()"
 								[class]="
 									copied
-										? 'bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap'
-										: 'bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap'
+										? 'bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors whitespace-nowrap'
+										: 'bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors whitespace-nowrap'
 								"
 							>
 								@if (copied) {
@@ -75,22 +77,146 @@ import { modalAnimation } from '../../constants/animations';
 							</button>
 						</div>
 
-						<!-- Spinner -->
-						<div class="flex justify-center mt-6">
-							<div class="w-10 h-10 border-4 border-slate-600 border-t-blue-500 rounded-full animate-spin"></div>
-						</div>
+						<!-- Panneau de configuration (Player 1 uniquement) -->
+						@if (isPlayer1()) {
+							<div class="mt-6 text-left">
+								<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Configuration de la partie</h3>
+								<div class="flex flex-col gap-3">
+
+									<!-- Mode par génération -->
+									<div class="bg-slate-700/50 border border-slate-600 rounded-xl p-3 flex flex-col gap-2"
+										 [class.opacity-60]="isConfigLocked()">
+										<div class="flex items-center justify-between">
+											<div>
+												<p class="text-sm font-semibold text-white">Par génération</p>
+												<p class="text-xs text-slate-400">Restreindre aux Pokémon des générations choisies</p>
+											</div>
+											<button
+												(click)="toggleGenMode()"
+												[disabled]="isConfigLocked()"
+												class="w-11 h-6 rounded-full transition-colors duration-200 relative flex-shrink-0"
+												[class.bg-red-600]="gameSettings.generations.length > 0"
+												[class.bg-slate-600]="gameSettings.generations.length === 0"
+											>
+												<span
+													class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200"
+													[class.translate-x-5]="gameSettings.generations.length > 0"
+												></span>
+											</button>
+										</div>
+										@if (gameSettings.generations.length > 0) {
+											<div class="flex flex-wrap gap-1 pt-1">
+												@for (gen of [1,2,3,4,5,6,7,8,9]; track gen) {
+													<button
+														(click)="toggleGeneration(gen)"
+														[disabled]="isConfigLocked()"
+														[class]="gameSettings.generations.includes(gen)
+															? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-red-600 text-white border border-red-500 transition-colors'
+															: 'px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-600 text-slate-300 border border-slate-500 hover:bg-slate-500 transition-colors'"
+													>{{ gen }}</button>
+												}
+											</div>
+										}
+									</div>
+
+									<!-- Mode sans Pokédex -->
+									<div class="bg-slate-700/50 border border-slate-600 rounded-xl p-3 flex items-center justify-between"
+										 [class.opacity-60]="isConfigLocked()">
+										<div>
+											<p class="text-sm font-semibold text-white">Sans Pokédex</p>
+											<p class="text-xs text-slate-400">Les Pokémon n'affichent que leur nom</p>
+										</div>
+										<button
+											(click)="toggleNoPokedex()"
+											[disabled]="isConfigLocked()"
+											class="w-11 h-6 rounded-full transition-colors duration-200 relative flex-shrink-0"
+											[class.bg-red-600]="gameSettings.noPokedex"
+											[class.bg-slate-600]="!gameSettings.noPokedex"
+										>
+											<span
+												class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200"
+												[class.translate-x-5]="gameSettings.noPokedex"
+											></span>
+										</button>
+									</div>
+
+									<!-- Mode sans recherche -->
+									<div class="bg-slate-700/50 border border-slate-600 rounded-xl p-3 flex items-center justify-between"
+										 [class.opacity-60]="isConfigLocked()">
+										<div>
+											<p class="text-sm font-semibold text-white">Sans filtres avancés</p>
+											<p class="text-xs text-slate-400">Les filtres par génération et type sont désactivés</p>
+										</div>
+										<button
+											(click)="toggleNoSearch()"
+											[disabled]="isConfigLocked()"
+											class="w-11 h-6 rounded-full transition-colors duration-200 relative flex-shrink-0"
+											[class.bg-red-600]="gameSettings.noSearch"
+											[class.bg-slate-600]="!gameSettings.noSearch"
+										>
+											<span
+												class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200"
+												[class.translate-x-5]="gameSettings.noSearch"
+											></span>
+										</button>
+									</div>
+
+								</div>
+							</div>
+						}
+
+						@if (room()?.status === 'waiting') {
+							<!-- Spinner attente adversaire -->
+							<div class="flex justify-center mt-6">
+								<div class="w-10 h-10 border-4 border-slate-600 border-t-blue-500 rounded-full animate-spin"></div>
+							</div>
+						}
+
+						@if (room()?.status === 'ready' && isPlayer1()) {
+							<!-- Ami connecté : bouton Lancer -->
+							<div class="mt-6 flex flex-col gap-3">
+								<div class="flex items-center justify-center gap-2 text-green-400 text-sm font-medium">
+									<iconify-icon [icon]="ICONS.checkCircle" class="text-lg"></iconify-icon>
+									Ton ami a rejoint !
+								</div>
+								<button
+									(click)="launchGame()"
+									[disabled]="isLaunching"
+									class="w-full bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-3 rounded-xl text-sm font-bold text-white transition-colors flex items-center justify-center gap-2"
+								>
+									@if (isLaunching) {
+										<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+										Lancement…
+									} @else {
+										<iconify-icon [icon]="ICONS.sword" class="text-lg"></iconify-icon>
+										Lancer la partie !
+									}
+								</button>
+								@if (launchError) {
+									<p class="text-red-400 text-xs text-center">{{ launchError }}</p>
+								}
+							</div>
+						}
+
+						@if (room()?.status === 'ready' && !isPlayer1()) {
+							<!-- Player 2 attend que le maître lance -->
+							<div class="mt-6 flex flex-col items-center gap-3">
+								<div class="w-10 h-10 border-4 border-slate-600 border-t-green-500 rounded-full animate-spin"></div>
+								<p class="text-slate-400 text-sm">En attente du lancement par le maître de partie…</p>
+							</div>
+						}
 
 						<!-- Bouton Annuler -->
 						<button
 							(click)="cancelRoom()"
 							[disabled]="isCancelling"
-							class="mt-6 w-full bg-slate-700 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-sm font-medium text-slate-300 transition-colors"
+							class="mt-4 w-full bg-slate-700 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
 						>
 							{{ isCancelling ? 'Annulation…' : 'Annuler' }}
 						</button>
 
 						<!-- Bouton mode dev -->
-						@if (devMode) {
+						@if (devMode && room()?.status === 'waiting') {
 							<button
 								(click)="simulateOpponent()"
 								[disabled]="isSimulating"
@@ -98,13 +224,16 @@ import { modalAnimation } from '../../constants/animations';
 							>
 								{{ isSimulating ? 'Simulation en cours…' : '⚙ Simuler adversaire [DEV]' }}
 							</button>
+							@if (simulateError) {
+								<p class="text-red-400 text-xs text-center mt-1">{{ simulateError }}</p>
+							}
 						}
 					</div>
 				</div>
 			}
 
 			<!-- Phase 2 : Sélection du Pokémon -->
-			@if (room()?.player2_id !== null) {
+			@if (room()?.status === 'selecting' || room()?.status === 'playing') {
 				<div class="flex-1 flex flex-col overflow-hidden">
 					<!-- Contenu principal en deux colonnes -->
 					<div class="flex-1 flex overflow-hidden">
@@ -203,7 +332,7 @@ import { modalAnimation } from '../../constants/animations';
 								</div>
 								<button
 									(click)="pickRandom()"
-									class="bg-slate-700 hover:bg-slate-600 border border-slate-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+									class="bg-slate-700 hover:bg-slate-600 border border-slate-600 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors whitespace-nowrap"
 								>
 									<iconify-icon [icon]="ICONS.dice" class="mr-1"></iconify-icon>
 									Aléatoire
@@ -332,39 +461,19 @@ import { modalAnimation } from '../../constants/animations';
 								<span>Le <strong class="text-white">premier à deviner</strong> le Pokémon de son adversaire remporte la partie !</span>
 							</li>
 						</ol>
-						<button (click)="closeRulesModal()" class="mt-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium transition-colors">
+						<button (click)="closeRulesModal()" class="mt-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium text-white transition-colors">
 							Fermer
 						</button>
 					</div>
 				</div>
 			}
 
-			<!-- Modal de confirmation d'annulation -->
 			@if (showCancelModal()) {
-				<div 
-					class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[110] p-4" 
-					(click)="closeCancelModal()"
-					[@modalAnimation]
-				>
-					<div 
-						class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-4 text-center modal-content" 
-						(click)="$event.stopPropagation()"
-					>
-						<iconify-icon [icon]="ICONS.alert" class="text-5xl text-red-500 mx-auto"></iconify-icon>
-						<h2 class="text-xl font-bold text-white uppercase tracking-wider">Quitter la partie ?</h2>
-						<p class="text-slate-300 text-sm">
-							Es-tu sûr de vouloir revenir à l'accueil ? Cela <strong class="text-red-400">annulera définitivement</strong> la partie en cours pour les deux joueurs.
-						</p>
-						<div class="flex flex-col-reverse sm:flex-row gap-3 mt-4">
-							<button (click)="closeCancelModal()" class="flex-1 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium transition-colors">
-								Non, rester
-							</button>
-							<button (click)="confirmCancel()" [disabled]="isCancelling" class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm font-bold text-white transition-colors">
-								{{ isCancelling ? 'Annulation...' : 'Oui, quitter' }}
-							</button>
-						</div>
-					</div>
-				</div>
+				<app-cancel-modal
+					[isCancelling]="isCancelling"
+					(confirm)="confirmCancel()"
+					(cancel)="closeCancelModal()"
+				/>
 			}
 		</div>
 	`,
@@ -378,6 +487,17 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	private readonly pokemonService = inject(PokemonService);
 	private readonly supabaseService = inject(SupabaseService);
 	private readonly router = inject(Router);
+
+	constructor() {
+		// Re-applique le filtre dès que les settings de la room changent
+		// (résout la race condition Realtime vs getRoomById)
+		effect(() => {
+			this.gameService.settings(); // dépendance réactive
+			untracked(() => {
+				if (this.allPokemons.length > 0) this.onSearch();
+			});
+		});
+	}
 
 	// États
 	room = computed(() => this.gameService.currentRoom());
@@ -411,10 +531,16 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	inviteLink = '';
 	copied = false;
 
+	// Configuration de partie (Player 1 uniquement, phase 'waiting'/'ready')
+	gameSettings: GameSettings = { ...DEFAULT_SETTINGS };
+	isLaunching = false;
+	launchError = '';
+
 	// Annulation / mode dev
 	isCancelling = false;
 	showRulesModal = signal(false);
 	showCancelModal = signal(false);
+	simulateError = '';
 
 	openRulesModal(): void { this.showRulesModal.set(true); }
 	closeRulesModal(): void { this.showRulesModal.set(false); }
@@ -442,9 +568,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		// 4. Charger tous les Pokémon
 		this.pokemonsSub = this.pokemonService.loadAll().subscribe((pokemons) => {
 			this.allPokemons = pokemons;
-			this.filteredPokemons = pokemons;
-			this.displayedCount = this.PAGE_SIZE;
-			this.visiblePokemons = pokemons.slice(0, this.displayedCount);
+			this.onSearch(); // applique les restrictions dès le chargement
 		});
 
 		// 5. Watcher Realtime : si status 'playing' → navigate /game/:roomId
@@ -456,6 +580,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 			.subscribe(() => {
 				this.router.navigate(['/game', this.roomId()]);
 			});
+
 	}
 
 	ngOnDestroy(): void {
@@ -479,14 +604,23 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
 	pickRandom(): void {
 		if (this.isReady) return;
-		this.pokemonService
-			.random()
-			.pipe(take(1))
-			.subscribe((p) => this.selectPokemon(p));
+		const restrictedGens = this.gameService.settings().generations;
+		const pool = restrictedGens.length > 0
+			? this.allPokemons.filter(p => restrictedGens.includes(p.generation))
+			: this.allPokemons;
+		if (pool.length === 0) return;
+		const random = pool[Math.floor(Math.random() * pool.length)];
+		void this.selectPokemon(random);
 	}
 
 	onSearch(): void {
-		this.filteredPokemons = this.allPokemons.filter((p) => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
+		const q = this.searchQuery.toLowerCase();
+		const restrictedGens = this.gameService.settings().generations;
+		this.filteredPokemons = this.allPokemons.filter((p) => {
+			if (q && !p.name.toLowerCase().includes(q)) return false;
+			if (restrictedGens.length > 0 && !restrictedGens.includes(p.generation)) return false;
+			return true;
+		});
 		this.displayedCount = this.PAGE_SIZE;
 		this.visiblePokemons = this.filteredPokemons.slice(0, this.displayedCount);
 	}
@@ -526,16 +660,68 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	async simulateOpponent(): Promise<void> {
 		if (this.isSimulating) return;
 		this.isSimulating = true;
+		this.simulateError = '';
 		try {
-			let pokemons = this.allPokemons;
-			if (pokemons.length === 0) {
-				pokemons = await firstValueFrom(this.pokemonService.loadAll());
-			}
-			if (pokemons.length === 0) return;
-			const randomPokemon = pokemons[Math.floor(Math.random() * pokemons.length)];
-			await this.gameService.simulateOpponent(this.roomId(), randomPokemon.id);
+			await this.gameService.simulateOpponent(this.roomId());
+		} catch (err) {
+			this.simulateError = `Erreur simulation: ${err instanceof Error ? err.message : JSON.stringify(err)}`;
 		} finally {
 			this.isSimulating = false;
+		}
+	}
+
+	async launchGame(): Promise<void> {
+		if (this.isLaunching) return;
+		this.isLaunching = true;
+		this.launchError = '';
+		try {
+			await this.gameService.launchGame(this.roomId(), this.gameSettings);
+		} catch {
+			this.launchError = 'Erreur lors du lancement. Réessaie.';
+		} finally {
+			this.isLaunching = false;
+		}
+	}
+
+	toggleGenMode(): void {
+		if (this.isConfigLocked()) return;
+		const wasActive = this.gameSettings.generations.length > 0;
+		this.gameSettings = { ...this.gameSettings, generations: wasActive ? [] : [1] };
+		void this.saveSettings();
+	}
+
+	toggleGeneration(gen: number): void {
+		if (this.isConfigLocked()) return;
+		const gens = this.gameSettings.generations;
+		const filtered = gens.filter(g => g !== gen);
+		const newGens = gens.includes(gen)
+			? (filtered.length === 0 ? [gen] : filtered)
+			: [...gens, gen];
+		this.gameSettings = { ...this.gameSettings, generations: newGens };
+		void this.saveSettings();
+	}
+
+	toggleNoPokedex(): void {
+		if (this.isConfigLocked()) return;
+		this.gameSettings = { ...this.gameSettings, noPokedex: !this.gameSettings.noPokedex };
+		void this.saveSettings();
+	}
+
+	toggleNoSearch(): void {
+		if (this.isConfigLocked()) return;
+		this.gameSettings = { ...this.gameSettings, noSearch: !this.gameSettings.noSearch };
+		void this.saveSettings();
+	}
+
+	isConfigLocked(): boolean {
+		return this.room()?.status === 'ready';
+	}
+
+	private async saveSettings(): Promise<void> {
+		try {
+			await this.gameService.updateSettings(this.roomId(), this.gameSettings);
+		} catch (err) {
+			console.error('saveSettings error:', JSON.stringify(err));
 		}
 	}
 
@@ -547,6 +733,13 @@ export class LobbyComponent implements OnInit, OnDestroy {
 			if (pokemons.length === 0) {
 				pokemons = await firstValueFrom(this.pokemonService.loadAll());
 			}
+			
+			// RESTRICTION: Filtrer par génération si nécessaire
+			const restrictedGens = this.gameService.settings().generations;
+			if (restrictedGens.length > 0) {
+				pokemons = pokemons.filter(p => restrictedGens.includes(p.generation));
+			}
+
 			if (pokemons.length === 0) return;
 			const randomPokemon = pokemons[Math.floor(Math.random() * pokemons.length)];
 			await this.gameService.simulateOpponentReady(this.roomId(), randomPokemon.id);

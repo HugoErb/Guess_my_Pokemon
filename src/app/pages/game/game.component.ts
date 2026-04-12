@@ -8,13 +8,14 @@ import { SupabaseService } from '../../services/supabase.service';
 import { Pokemon } from '../../models/pokemon.model';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { PokedexComponent } from '../../components/pokedex/pokedex.component';
+import { CancelModalComponent } from '../../components/cancel-modal/cancel-modal.component';
 import { ICONS } from '../../constants/icons';
 import { modalAnimation } from '../../constants/animations';
 import { environment } from '../../../environments/environment';
 
 @Component({
 	selector: 'app-game',
-	imports: [PokemonCardComponent, PokedexComponent],
+	imports: [PokemonCardComponent, PokedexComponent, CancelModalComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
 	animations: [modalAnimation],
 	template: `
@@ -86,6 +87,12 @@ import { environment } from '../../../environments/environment';
 								</div>
 
 								<div class="h-4 w-px bg-slate-700"></div>
+								<button (click)="openGameSettingsModal()" class="flex items-center gap-2 px-2 py-1 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all group">
+									<iconify-icon [icon]="ICONS.rules" class="text-xs group-hover:scale-110 transition-transform"></iconify-icon>
+									Configuration
+								</button>
+
+								<div class="h-4 w-px bg-slate-700"></div>
 								<div class="flex items-center text-slate-400">
 									<span class="text-[11px] font-bold uppercase tracking-wider">Tour <strong class="ml-0.5 text-slate-100 font-mono text-[13px]">{{ gameTurn() }}</strong></span>
 								</div>
@@ -106,7 +113,13 @@ import { environment } from '../../../environments/environment';
 					}
 
 					<div class="flex-1 overflow-y-auto p-4">
-						<app-pokedex [showGuessButton]="isMyTurn()" (guess)="onGuess($event)" />
+						<app-pokedex
+						[showGuessButton]="isMyTurn()"
+						[restrictedGenerations]="settings().generations"
+						[noPokedex]="settings().noPokedex"
+						[noSearch]="settings().noSearch"
+						(guess)="onGuess($event)"
+					/>
 					</div>
 				</div>
 			</div>
@@ -152,21 +165,84 @@ import { environment } from '../../../environments/environment';
 						<li class="flex gap-3"><span class="text-red-500 font-bold text-base leading-snug">4.</span><span>Tentez votre chance en tapant le nom du Pokémon.</span></li>
 						<li class="flex gap-3"><span class="text-red-500 font-bold text-base leading-snug">5.</span><span>Le premier à deviner gagne !</span></li>
 					</ol>
-					<button (click)="closeRulesModal()" class="mt-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium transition-colors">Fermer</button>
+					<button (click)="closeRulesModal()" class="mt-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium text-white transition-colors">Fermer</button>
 				</div>
 			</div>
 		}
 
 		@if (showCancelModal()) {
-			<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[110] p-4" (click)="closeCancelModal()" [@modalAnimation]>
-				<div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-4 text-center modal-content" (click)="$event.stopPropagation()">
-					<iconify-icon [icon]="ICONS.alert" class="text-5xl text-red-500 mx-auto"></iconify-icon>
-					<h2 class="text-xl font-bold text-white uppercase tracking-wider">Quitter la partie ?</h2>
-					<p class="text-slate-300 text-sm">Cela annulera définitivement la partie en cours pour les deux joueurs.</p>
-					<div class="flex flex-col-reverse sm:flex-row gap-3 mt-4">
-						<button (click)="closeCancelModal()" class="flex-1 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium transition-colors">Non, rester</button>
-						<button (click)="confirmCancel()" [disabled]="isCancelling" class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-500 rounded-xl text-sm font-bold text-white transition-colors">Oui, quitter</button>
+			<app-cancel-modal
+				[isCancelling]="isCancelling"
+				(confirm)="confirmCancel()"
+				(cancel)="closeCancelModal()"
+			/>
+		}
+
+		@if (showGameSettingsModal()) {
+			<div 
+				class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" 
+				(click)="closeGameSettingsModal()"
+				[@modalAnimation]
+			>
+				<div 
+					class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-5 modal-content" 
+					(click)="$event.stopPropagation()"
+				>
+					<div class="flex items-center gap-3">
+						<div class="w-10 h-10 rounded-xl bg-blue-600/20 flex items-center justify-center border border-blue-500/30">
+							<iconify-icon [icon]="ICONS.rules" class="text-2xl text-blue-400"></iconify-icon>
+						</div>
+						<div>
+							<h2 class="text-lg font-bold text-white uppercase tracking-wider">Configuration</h2>
+							<p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.1em]">Paramètres de la partie</p>
+						</div>
 					</div>
+
+					<div class="space-y-3">
+						<!-- Générations -->
+						<div class="bg-slate-900/40 border border-slate-700/50 rounded-xl p-3 flex flex-col gap-2">
+							<div class="flex items-center justify-between">
+								<span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Générations</span>
+								<span class="px-2 py-0.5 bg-blue-600/20 text-blue-400 text-[10px] font-black rounded uppercase">
+									{{ settings().generations.length === 9 ? 'Toutes' : settings().generations.length + ' Actives' }}
+								</span>
+							</div>
+							<div class="flex flex-wrap gap-1.5">
+								@for (gen of settings().generations; track gen) {
+									<span class="text-[11px] font-bold text-slate-300 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">Gén {{ gen }}</span>
+								}
+							</div>
+						</div>
+
+						<!-- Restrictions Pokédex -->
+						<div class="grid grid-cols-2 gap-3">
+							<div class="bg-slate-900/40 border border-slate-700/50 rounded-xl p-3 flex flex-col gap-1 items-center text-center">
+								<span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Pokédex</span>
+								@if (settings().noPokedex) {
+									<iconify-icon [icon]="ICONS.close" class="text-xl text-red-500"></iconify-icon>
+									<span class="text-[11px] font-bold text-red-400 uppercase">Désactivé</span>
+								} @else {
+									<iconify-icon [icon]="ICONS.check" class="text-xl text-green-500"></iconify-icon>
+									<span class="text-[11px] font-bold text-green-400 uppercase">Activé</span>
+								}
+							</div>
+
+							<div class="bg-slate-900/40 border border-slate-700/50 rounded-xl p-3 flex flex-col gap-1 items-center text-center">
+								<span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Recherche</span>
+								@if (settings().noSearch) {
+									<iconify-icon [icon]="ICONS.close" class="text-xl text-red-500"></iconify-icon>
+									<span class="text-[11px] font-bold text-red-400 uppercase">Désactivée</span>
+								} @else {
+									<iconify-icon [icon]="ICONS.check" class="text-xl text-green-500"></iconify-icon>
+									<span class="text-[11px] font-bold text-green-400 uppercase">Activée</span>
+								}
+							</div>
+						</div>
+					</div>
+
+					<button (click)="closeGameSettingsModal()" class="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-bold text-white transition-colors">
+						Fermer
+					</button>
 				</div>
 			</div>
 		}
@@ -183,6 +259,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
 	room = computed(() => this.gameService.currentRoom());
 	isMyTurn = this.gameService.isMyTurn;
+	readonly settings = this.gameService.settings;
 
 	myPokemon: Pokemon | null = null;
 	opponentPokemon: Pokemon | null = null;
@@ -194,9 +271,13 @@ export class GameComponent implements OnInit, OnDestroy {
 
 	showRulesModal = signal(false);
 	showCancelModal = signal(false);
+	showGameSettingsModal = signal(false);
 
 	openRulesModal(): void { this.showRulesModal.set(true); }
 	closeRulesModal(): void { this.showRulesModal.set(false); }
+
+	openGameSettingsModal(): void { this.showGameSettingsModal.set(true); }
+	closeGameSettingsModal(): void { this.showGameSettingsModal.set(false); }
 	isCancelling = false;
 
 	private guessMessageTimer: ReturnType<typeof setTimeout> | null = null;

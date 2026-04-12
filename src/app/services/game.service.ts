@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, OnDestroy, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Room, RoomPatch } from '../models/room.model';
+import { DEFAULT_SETTINGS, GameSettings, Room, RoomPatch } from '../models/room.model';
 import { SupabaseService } from './supabase.service';
 
 @Injectable({ providedIn: 'root' })
@@ -52,17 +52,13 @@ export class GameService implements OnDestroy {
     });
   }
 
-  async simulateOpponent(roomId: string, pokemonId: number): Promise<void> {
+  async simulateOpponent(roomId: string): Promise<void> {
     const user = this.supabaseService.getCurrentUser();
     if (!user) throw new Error('Utilisateur non connecté');
 
-    const room = this.currentRoom();
-    if (!room) throw new Error('Aucune room active');
-
     await this.updateAndRefresh(roomId, {
       player2_id: user.id,
-      pokemon_p2: pokemonId,
-      p2_ready: true,
+      status: 'ready',
     });
   }
 
@@ -71,6 +67,16 @@ export class GameService implements OnDestroy {
   }
 
   // ─── Actions de jeu ──────────────────────────────────────────────────────────
+
+  async launchGame(roomId: string, settings: GameSettings): Promise<void> {
+    await this.updateAndRefresh(roomId, { status: 'selecting', settings });
+  }
+
+  async updateSettings(roomId: string, settings: GameSettings): Promise<void> {
+    await this.supabaseService.updateRoom(roomId, { settings });
+    const refreshed = await this.supabaseService.getRoomById(roomId);
+    this.currentRoom.set(refreshed);
+  }
 
   async selectPokemon(roomId: string, pokemonId: number): Promise<void> {
     const user = this.supabaseService.getCurrentUser();
@@ -171,4 +177,6 @@ export class GameService implements OnDestroy {
     if (!room || !user) return false;
     return room.player1_id === user.id;
   });
+
+  readonly settings = computed(() => this.currentRoom()?.settings ?? DEFAULT_SETTINGS);
 }
