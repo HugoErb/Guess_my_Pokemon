@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, computed, effect, inject, input, isDevMode, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, effect, inject, input, isDevMode, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom, Subscription } from 'rxjs';
 
@@ -22,6 +22,9 @@ import { environment } from '../../../environments/environment';
 				<div class="flex items-center gap-3">
 					<iconify-icon [icon]="ICONS.pokeball" class="text-2xl text-red-500"></iconify-icon>
 					<h1 class="text-lg font-bold text-white">Guess my Pokémon</h1>
+					<button (click)="openRulesModal()" class="px-3 py-1 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors text-sm font-medium">
+						Règles
+					</button>
 				</div>
 
 				<!-- Statut du tour -->
@@ -133,7 +136,42 @@ import { environment } from '../../../environments/environment';
 			}
 
 			<!-- Modal de confirmation d'annulation -->
-			@if (showCancelModal) {
+			<!-- Modal règles -->
+			@if (showRulesModal()) {
+				<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeRulesModal()">
+					<div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4 text-center" (click)="$event.stopPropagation()">
+						<iconify-icon [icon]="ICONS.pokedex" class="text-5xl text-red-500 mx-auto"></iconify-icon>
+						<h2 class="text-xl font-bold text-white uppercase tracking-wider">Règles du jeu</h2>
+						<ol class="space-y-3 text-sm text-slate-300 list-none text-justify">
+							<li class="flex gap-3">
+								<span class="text-red-500 font-bold text-base leading-snug">1.</span>
+								<span>Au début de la partie, chaque joueur choisit secrètement un Pokémon que son adversaire devra deviner.</span>
+							</li>
+							<li class="flex gap-3">
+								<span class="text-red-500 font-bold text-base leading-snug">2.</span>
+								<span>À chaque tour, le joueur actif pose <strong class="text-white">une question à l'oral</strong> à son adversaire sur son Pokémon.</span>
+							</li>
+							<li class="flex gap-3">
+								<span class="text-red-500 font-bold text-base leading-snug">3.</span>
+								<span>L'adversaire doit répondre <strong class="text-white">par oui ou par non</strong>, en disant la vérité.</span>
+							</li>
+							<li class="flex gap-3">
+								<span class="text-red-500 font-bold text-base leading-snug">4.</span>
+								<span>Quand un joueur pense avoir trouvé, il tape le nom du Pokémon dans le champ de recherche pour tenter sa chance.</span>
+							</li>
+							<li class="flex gap-3">
+								<span class="text-red-500 font-bold text-base leading-snug">5.</span>
+								<span>Le <strong class="text-white">premier à deviner</strong> le Pokémon de son adversaire remporte la partie !</span>
+							</li>
+						</ol>
+						<button (click)="closeRulesModal()" class="mt-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium transition-colors">
+							Fermer
+						</button>
+					</div>
+				</div>
+			}
+
+			@if (showCancelModal()) {
 				<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[110] p-4" (click)="closeCancelModal()">
 					<div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-4 text-center" (click)="$event.stopPropagation()">
 						<iconify-icon [icon]="ICONS.alert" class="text-5xl text-red-500 mx-auto"></iconify-icon>
@@ -175,7 +213,11 @@ export class GameComponent implements OnInit, OnDestroy {
 	isWinner = false;
 	readonly isDev = environment.devMode && isDevMode();
 
-	showCancelModal = false;
+	showRulesModal = signal(false);
+	showCancelModal = signal(false);
+
+	openRulesModal(): void { this.showRulesModal.set(true); }
+	closeRulesModal(): void { this.showRulesModal.set(false); }
 	isCancelling = false;
 
 	private guessMessageTimer: ReturnType<typeof setTimeout> | null = null;
@@ -267,11 +309,11 @@ export class GameComponent implements OnInit, OnDestroy {
 	// ─── Annulation de partie ──────────────────────────────────────────────────
 
 	promptCancel(): void {
-		this.showCancelModal = true;
+		this.showCancelModal.set(true);
 	}
 
 	closeCancelModal(): void {
-		this.showCancelModal = false;
+		this.showCancelModal.set(false);
 	}
 
 	confirmCancel(): void {

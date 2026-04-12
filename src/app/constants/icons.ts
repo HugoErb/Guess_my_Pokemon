@@ -32,6 +32,9 @@ export const ICONS = {
   share: 'mdi:share-variant',
   sword: 'mdi:sword-cross',
   shield: 'mdi:shield-outline',
+
+  // Règles
+  rules: 'mdi:help-circle-outline',
 } as const;
 
 export type IconName = keyof typeof ICONS;

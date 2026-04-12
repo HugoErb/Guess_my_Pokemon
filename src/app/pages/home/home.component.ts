@@ -1,4 +1,4 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
 import { ICONS } from '../../constants/icons';
@@ -11,6 +11,10 @@ import { ICONS } from '../../constants/icons';
 })
 export class HomeComponent implements OnInit {
   protected readonly ICONS = ICONS;
+  showRulesModal = signal(false);
+
+  openRulesModal(): void { this.showRulesModal.set(true); }
+  closeRulesModal(): void { this.showRulesModal.set(false); }
   username = '';
   isCreating = false;
   createError = '';
