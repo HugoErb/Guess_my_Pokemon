@@ -35,6 +35,12 @@ export const ICONS = {
 
   // Règles
   rules: 'mdi:help-circle-outline',
+
+  // Filtres
+  weight: 'mdi:weight-kilogram',
+  height: 'mdi:ruler',
+  category: 'mdi:shape-outline',
+  evolution: 'mdi:auto-fix', // can represent evolution/upgrade
 } as const;
 
 export type IconName = keyof typeof ICONS;

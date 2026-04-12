@@ -45,11 +45,16 @@ export class PokemonService {
     generations?: number[];
     types?: string[];
     categories?: string[];
+    evoStages?: number[];
+    minWeight?: number;
+    maxWeight?: number;
+    minHeight?: number;
+    maxHeight?: number;
   }): Observable<Pokemon[]> {
     return this.all$.pipe(
       map(pokemons =>
         pokemons.filter(p => {
-          // Filtre par nom (insensible à la casse)
+          // Filtre par nom
           if (options.query && options.query.trim() !== '') {
             const q = options.query.trim().toLowerCase();
             if (!p.name.toLowerCase().includes(q)) return false;
@@ -70,6 +75,18 @@ export class PokemonService {
           if (options.categories && options.categories.length > 0) {
             if (!options.categories.includes(p.category)) return false;
           }
+
+          // Filtre par stade d'évolution
+          if (options.evoStages && options.evoStages.length > 0) {
+            const stage = parseInt(p.evolution_stage?.split('/')[0] || '1');
+            if (!options.evoStages.includes(stage)) return false;
+          }
+
+          // Filtres physiques
+          if (options.minWeight !== undefined && p.weight < options.minWeight) return false;
+          if (options.maxWeight !== undefined && p.weight > options.maxWeight) return false;
+          if (options.minHeight !== undefined && p.height < options.minHeight) return false;
+          if (options.maxHeight !== undefined && p.height > options.maxHeight) return false;
 
           return true;
         })
