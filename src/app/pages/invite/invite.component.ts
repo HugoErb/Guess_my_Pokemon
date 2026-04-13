@@ -30,7 +30,7 @@ export class InviteComponent implements OnInit {
 		try {
 			const room = await this.supabaseService.getRoomById(this.roomId());
 
-			if (room?.status !== 'waiting') {
+			if (room?.status !== 'waiting' && room?.status !== 'ready') {
 				this.state = 'error';
 				this.errorMessage = "Cette invitation n'est plus valide.";
 				return;
@@ -52,11 +52,13 @@ export class InviteComponent implements OnInit {
 				await this.supabaseService.joinRoom(this.roomId());
 				console.log('JOIN OK');
 				await this.router.navigate(['/lobby', this.roomId()]);
+				return;
 			} catch (err) {
 				console.error('JOIN FAIL', err);
+				this.state = 'error';
+				this.errorMessage = 'Impossible de rejoindre la partie.';
+				return;
 			}
-			await this.router.navigate(['/lobby', this.roomId()]);
-			return;
 		} catch {
 			this.state = 'error';
 			this.errorMessage = "Cette invitation n'est plus valide.";
