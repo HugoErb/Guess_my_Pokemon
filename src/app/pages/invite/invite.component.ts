@@ -48,7 +48,13 @@ export class InviteComponent implements OnInit {
 				return;
 			}
 
-			await this.supabaseService.joinRoom(this.roomId());
+			try {
+				await this.supabaseService.joinRoom(this.roomId());
+				console.log('JOIN OK');
+				await this.router.navigate(['/lobby', this.roomId()]);
+			} catch (err) {
+				console.error('JOIN FAIL', err);
+			}
 			await this.router.navigate(['/lobby', this.roomId()]);
 			return;
 		} catch {

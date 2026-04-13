@@ -184,7 +184,9 @@ export class SupabaseService implements OnDestroy {
 		if (room.status !== 'waiting') throw new Error('Room non joignable');
 		if (room.player1_id === user.id) throw new Error('Le créateur ne peut pas rejoindre sa propre room');
 
-		const { error } = await this.supabase.from('rooms').update({ player2_id: user.id, status: 'ready' }).eq('id', roomId);
+		const { data, error } = await this.supabase.from('rooms').update({ player2_id: user.id, status: 'ready' }).eq('id', roomId).select('*');
+
+		console.log('JOIN RESULT', data);
 
 		if (error) throw error;
 	}

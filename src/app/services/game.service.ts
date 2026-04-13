@@ -6,307 +6,305 @@ import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class GameService implements OnDestroy {
-  private readonly supabaseService = inject(SupabaseService);
+	private readonly supabaseService = inject(SupabaseService);
+	private pollInterval: any;
 
-  /** Signal Angular : room en cours de jeu, null si aucune. */
-  currentRoom = signal<Room | null>(null);
-  
-  isDev(): boolean {
-    return environment.devMode && isDevMode();
-  }
-  
-  /** Événements diffusés en direct (broadcast) */
-  broadcastEvents$ = this.supabaseService.broadcastEvents$;
+	/** Signal Angular : room en cours de jeu, null si aucune. */
+	currentRoom = signal<Room | null>(null);
 
-  private roomSubscription: Subscription | null = null;
+	isDev(): boolean {
+		return environment.devMode && isDevMode();
+	}
 
-  // ─── Watch de la room ────────────────────────────────────────────────────────
+	/** Événements diffusés en direct (broadcast) */
+	broadcastEvents$ = this.supabaseService.broadcastEvents$;
 
-  async joinAndWatch(roomId: string): Promise<void> {
-    this.stopWatching();
-    this.roomSubscription = this.supabaseService
-      .subscribeToRoom(roomId)
-      .subscribe({
-        next: updatedRoom => {
-          this.currentRoom.set(updatedRoom);
-        },
-        error: err => {
-          console.error('[GameService] Erreur Realtime:', err);
-          // Si on perd la connexion, on tente quand même de rafraîchir une fois manuellement
-          void this.refreshRoom(roomId);
-        }
-      });
-    // 2. Charger l'état initial ensuite
-    const room = await this.supabaseService.getRoomById(roomId);
-    this.currentRoom.set(room);
+	private roomSubscription: Subscription | null = null;
 
-    setInterval(() => {
-		const room = this.currentRoom();
-		if (room?.status === 'waiting') {
-			this.refreshRoom(roomId);
+	// ─── Watch de la room ────────────────────────────────────────────────────────
+
+	async joinAndWatch(roomId: string): Promise<void> {
+		this.stopWatching();
+		this.roomSubscription = this.supabaseService.subscribeToRoom(roomId).subscribe({
+			next: (updatedRoom) => {
+				this.currentRoom.set(updatedRoom);
+			},
+			error: (err) => {
+				console.error('[GameService] Erreur Realtime:', err);
+				// Si on perd la connexion, on tente quand même de rafraîchir une fois manuellement
+				void this.refreshRoom(roomId);
+			},
+		});
+		// 2. Charger l'état initial ensuite
+		const room = await this.supabaseService.getRoomById(roomId);
+		this.currentRoom.set(room);
+
+		this.pollInterval && clearInterval(this.pollInterval);
+		this.pollInterval = setInterval(() => {
+			const room = this.currentRoom();
+			if (room?.status === 'waiting') {
+				this.refreshRoom(roomId);
+			}
+		}, 2000);
+	}
+
+	stopWatching(): void {
+		if (this.roomSubscription) {
+			this.roomSubscription.unsubscribe();
+			this.roomSubscription = null;
 		}
-	}, 2000);
-  }
+	}
 
-  stopWatching(): void {
-    if (this.roomSubscription) {
-      this.roomSubscription.unsubscribe();
-      this.roomSubscription = null;
-    }
-  }
+	async cancelRoom(roomId: string): Promise<void> {
+		this.stopWatching();
+		await this.supabaseService.deleteRoom(roomId);
+		this.currentRoom.set(null);
+	}
 
-  async cancelRoom(roomId: string): Promise<void> {
-    this.stopWatching();
-    await this.supabaseService.deleteRoom(roomId);
-    this.currentRoom.set(null);
-  }
+	async simulateOpponentReady(roomId: string, pokemonId: number): Promise<void> {
+		const room = this.currentRoom();
+		if (!room) throw new Error('Aucune room active');
 
-  async simulateOpponentReady(roomId: string, pokemonId: number): Promise<void> {
-    const room = this.currentRoom();
-    if (!room) throw new Error('Aucune room active');
+		await this.updateAndRefresh(roomId, {
+			pokemon_p2: pokemonId,
+			p2_ready: true,
+			status: 'playing',
+			current_turn: room.player1_id,
+		});
+	}
 
-    await this.updateAndRefresh(roomId, {
-      pokemon_p2: pokemonId,
-      p2_ready: true,
-      status: 'playing',
-      current_turn: room.player1_id,
-    });
-  }
+	async simulateOpponent(roomId: string): Promise<void> {
+		const user = this.supabaseService.getCurrentUser();
+		if (!user) throw new Error('Utilisateur non connecté');
 
-  async simulateOpponent(roomId: string): Promise<void> {
-    const user = this.supabaseService.getCurrentUser();
-    if (!user) throw new Error('Utilisateur non connecté');
+		await this.updateAndRefresh(roomId, {
+			player2_id: null,
+			status: 'ready',
+		});
+	}
 
-    await this.updateAndRefresh(roomId, {
-      player2_id: null,
-      status: 'ready',
-    });
-  }
+	ngOnDestroy(): void {
+		this.stopWatching();
+	}
 
-  ngOnDestroy(): void {
-    this.stopWatching();
-  }
+	// ─── Actions de jeu ──────────────────────────────────────────────────────────
 
-  // ─── Actions de jeu ──────────────────────────────────────────────────────────
+	async launchGame(roomId: string, settings: GameSettings): Promise<void> {
+		await this.updateAndRefresh(roomId, { status: 'selecting', settings });
+	}
 
-  async launchGame(roomId: string, settings: GameSettings): Promise<void> {
-    await this.updateAndRefresh(roomId, { status: 'selecting', settings });
-  }
+	async updateSettings(roomId: string, settings: GameSettings): Promise<void> {
+		await this.supabaseService.updateRoom(roomId, { settings });
+		const refreshed = await this.supabaseService.getRoomById(roomId);
+		this.currentRoom.set(refreshed);
+	}
 
-  async updateSettings(roomId: string, settings: GameSettings): Promise<void> {
-    await this.supabaseService.updateRoom(roomId, { settings });
-    const refreshed = await this.supabaseService.getRoomById(roomId);
-    this.currentRoom.set(refreshed);
-  }
+	async selectPokemon(roomId: string, pokemonId: number): Promise<void> {
+		const user = this.supabaseService.getCurrentUser();
+		if (!user) throw new Error('Utilisateur non connecté');
 
-  async selectPokemon(roomId: string, pokemonId: number): Promise<void> {
-    const user = this.supabaseService.getCurrentUser();
-    if (!user) throw new Error('Utilisateur non connecté');
+		const room = this.currentRoom();
+		if (!room) throw new Error('Aucune room active');
 
-    const room = this.currentRoom();
-    if (!room) throw new Error('Aucune room active');
+		const patch: RoomPatch = user.id === room.player1_id ? { pokemon_p1: pokemonId } : { pokemon_p2: pokemonId };
 
-    const patch: RoomPatch = user.id === room.player1_id
-      ? { pokemon_p1: pokemonId }
-      : { pokemon_p2: pokemonId };
+		await this.supabaseService.updateRoom(roomId, patch);
+	}
 
-    await this.supabaseService.updateRoom(roomId, patch);
-  }
+	async setReady(roomId: string): Promise<void> {
+		const user = this.supabaseService.getCurrentUser();
+		if (!user) throw new Error('Utilisateur non connecté');
 
-  async setReady(roomId: string): Promise<void> {
-    const user = this.supabaseService.getCurrentUser();
-    if (!user) throw new Error('Utilisateur non connecté');
+		const room = this.currentRoom();
+		if (!room) throw new Error('Aucune room active');
 
-    const room = this.currentRoom();
-    if (!room) throw new Error('Aucune room active');
+		const isPlayer1 = user.id === room.player1_id;
+		const patch: RoomPatch = isPlayer1 ? { p1_ready: true } : { p2_ready: true };
 
-    const isPlayer1 = user.id === room.player1_id;
-    const patch: RoomPatch = isPlayer1 ? { p1_ready: true } : { p2_ready: true };
+		// NOTE: Cette logique de transition est calculée côté client depuis le signal currentRoom.
+		// Si deux joueurs appellent setReady() simultanément, une course est possible.
+		// Idéalement, cette transition devrait être gérée par une Postgres Function côté Supabase.
+		// Vérifier si l'adversaire est déjà prêt
+		const otherReady = isPlayer1 ? room.p2_ready : room.p1_ready;
+		if (otherReady) {
+			// Les deux joueurs sont prêts : démarrer la partie
+			Object.assign(patch, {
+				status: 'playing',
+				current_turn: room.player1_id,
+			} satisfies Partial<Room>);
+		}
 
-    // NOTE: Cette logique de transition est calculée côté client depuis le signal currentRoom.
-    // Si deux joueurs appellent setReady() simultanément, une course est possible.
-    // Idéalement, cette transition devrait être gérée par une Postgres Function côté Supabase.
-    // Vérifier si l'adversaire est déjà prêt
-    const otherReady = isPlayer1 ? room.p2_ready : room.p1_ready;
-    if (otherReady) {
-      // Les deux joueurs sont prêts : démarrer la partie
-      Object.assign(patch, {
-        status: 'playing',
-        current_turn: room.player1_id,
-      } satisfies Partial<Room>);
-    }
+		await this.updateAndRefresh(roomId, patch);
+	}
 
-    await this.updateAndRefresh(roomId, patch);
-  }
+	async guess(roomId: string, pokemonId: number): Promise<'correct' | 'incorrect'> {
+		const user = this.supabaseService.getCurrentUser();
+		if (!user) throw new Error('Utilisateur non connecté');
 
-  async guess(roomId: string, pokemonId: number): Promise<'correct' | 'incorrect'> {
-    const user = this.supabaseService.getCurrentUser();
-    if (!user) throw new Error('Utilisateur non connecté');
+		const room = this.currentRoom();
+		if (!room) throw new Error('Aucune room active');
 
-    const room = this.currentRoom();
-    if (!room) throw new Error('Aucune room active');
+		const isPlayer1 = user.id === room.player1_id;
 
-    const isPlayer1 = user.id === room.player1_id;
+		// Le Pokémon adverse : player1 cherche pokemon_p2 et vice-versa
+		const adversaryPokemonId = isPlayer1 ? room.pokemon_p2 : room.pokemon_p1;
+		let adversaryId = isPlayer1 ? room.player2_id : room.player1_id;
 
-    // Le Pokémon adverse : player1 cherche pokemon_p2 et vice-versa
-    const adversaryPokemonId = isPlayer1 ? room.pokemon_p2 : room.pokemon_p1;
-    let adversaryId = isPlayer1 ? room.player2_id : room.player1_id;
+		// Fallback pour le mode dev si l'adversaire simulé n'a pas d'ID
+		if (this.isDev() && !adversaryId) {
+			adversaryId = null; // Le tour passera à null, ce qui désactivera le tour du joueur 1
+		}
 
-    // Fallback pour le mode dev si l'adversaire simulé n'a pas d'ID
-    if (this.isDev() && !adversaryId) {
-      adversaryId = null; // Le tour passera à null, ce qui désactivera le tour du joueur 1
-    }
+		if (adversaryPokemonId === null) throw new Error("L'adversaire n'a pas encore choisi de Pokémon");
 
-    if (adversaryPokemonId === null) throw new Error('L\'adversaire n\'a pas encore choisi de Pokémon');
+		if (pokemonId === adversaryPokemonId) {
+			// Bonne réponse : fin de partie
+			await this.updateAndRefresh(roomId, {
+				winner_id: user.id,
+				status: 'finished',
+				p1_ready: false,
+				p2_ready: false,
+			});
+			return 'correct';
+		} else {
+			// Mauvaise réponse : passage de tour
+			if (!adversaryId && !this.isDev()) throw new Error('Adversaire introuvable');
 
-    if (pokemonId === adversaryPokemonId) {
-      // Bonne réponse : fin de partie
-      await this.updateAndRefresh(roomId, {
-        winner_id: user.id,
-        status: 'finished',
-        p1_ready: false,
-        p2_ready: false,
-      });
-      return 'correct';
-    } else {
-      // Mauvaise réponse : passage de tour
-      if (!adversaryId && !this.isDev()) throw new Error('Adversaire introuvable');
-      
-      // Diffuser le guess à l'adversaire via Broadcast
-      void this.supabaseService.broadcastGuess(pokemonId, user.id);
+			// Diffuser le guess à l'adversaire via Broadcast
+			void this.supabaseService.broadcastGuess(pokemonId, user.id);
 
-      await this.updateAndRefresh(roomId, {
-        current_turn: adversaryId,
-      });
-      return 'incorrect';
-    }
-  }
+			await this.updateAndRefresh(roomId, {
+				current_turn: adversaryId,
+			});
+			return 'incorrect';
+		}
+	}
 
-  /**
-   * DEV : Simule un guess de l'adversaire.
-   */
-  async simulateOpponentGuess(roomId: string, pokemonId: number): Promise<'correct' | 'incorrect'> {
-    const room = this.currentRoom();
-    if (!room) throw new Error('Aucune room active');
+	/**
+	 * DEV : Simule un guess de l'adversaire.
+	 */
+	async simulateOpponentGuess(roomId: string, pokemonId: number): Promise<'correct' | 'incorrect'> {
+		const room = this.currentRoom();
+		if (!room) throw new Error('Aucune room active');
 
-    const isPlayer1 = this.isPlayer1();
-    const targetPokemonId = isPlayer1 ? room.pokemon_p1 : room.pokemon_p2;
-    const myId = isPlayer1 ? room.player1_id : room.player2_id;
+		const isPlayer1 = this.isPlayer1();
+		const targetPokemonId = isPlayer1 ? room.pokemon_p1 : room.pokemon_p2;
+		const myId = isPlayer1 ? room.player1_id : room.player2_id;
 
-    if (pokemonId === targetPokemonId) {
-      await this.updateAndRefresh(roomId, {
-        winner_id: isPlayer1 ? room.player2_id : room.player1_id,
-        status: 'finished',
-        p1_ready: false,
-        p2_ready: false,
-      });
-      return 'correct';
-    } else {
-      void this.supabaseService.broadcastGuess(pokemonId, null);
-      await this.updateAndRefresh(roomId, {
-        current_turn: room.player1_id,
-      });
-      return 'incorrect';
-    }
-  }
+		if (pokemonId === targetPokemonId) {
+			await this.updateAndRefresh(roomId, {
+				winner_id: isPlayer1 ? room.player2_id : room.player1_id,
+				status: 'finished',
+				p1_ready: false,
+				p2_ready: false,
+			});
+			return 'correct';
+		} else {
+			void this.supabaseService.broadcastGuess(pokemonId, null);
+			await this.updateAndRefresh(roomId, {
+				current_turn: room.player1_id,
+			});
+			return 'incorrect';
+		}
+	}
 
-  /**
-   * Demande une revanche. 
-   * Si les deux joueurs acceptent, la partie repasse en mode sélection.
-   */
-  async requestReplay(roomId: string): Promise<void> {
-    const user = this.supabaseService.getCurrentUser();
-    if (!user) throw new Error('Utilisateur non connecté');
+	/**
+	 * Demande une revanche.
+	 * Si les deux joueurs acceptent, la partie repasse en mode sélection.
+	 */
+	async requestReplay(roomId: string): Promise<void> {
+		const user = this.supabaseService.getCurrentUser();
+		if (!user) throw new Error('Utilisateur non connecté');
 
-    const room = this.currentRoom();
-    if (!room) throw new Error('Aucune room active');
+		const room = this.currentRoom();
+		if (!room) throw new Error('Aucune room active');
 
-    const isPlayer1 = this.isPlayer1();
-    const patch: RoomPatch = isPlayer1 ? { p1_ready: true } : { p2_ready: true };
+		const isPlayer1 = this.isPlayer1();
+		const patch: RoomPatch = isPlayer1 ? { p1_ready: true } : { p2_ready: true };
 
-    const otherReady = isPlayer1 ? room.p2_ready : room.p1_ready;
-    
-    // Si l'autre a déjà accepté
-    if (otherReady) {
-      Object.assign(patch, {
-        status: 'selecting',
-        pokemon_p1: null,
-        pokemon_p2: null,
-        p1_ready: false,
-        p2_ready: false,
-        winner_id: null,
-        current_turn: null,
-      } satisfies RoomPatch);
-    }
+		const otherReady = isPlayer1 ? room.p2_ready : room.p1_ready;
 
-    await this.updateAndRefresh(roomId, patch);
-  }
+		// Si l'autre a déjà accepté
+		if (otherReady) {
+			Object.assign(patch, {
+				status: 'selecting',
+				pokemon_p1: null,
+				pokemon_p2: null,
+				p1_ready: false,
+				p2_ready: false,
+				winner_id: null,
+				current_turn: null,
+			} satisfies RoomPatch);
+		}
 
-  /**
-   * DEV : Simule l'acceptation d'une revanche par l'adversaire.
-   */
-  async simulateOpponentReplay(roomId: string): Promise<void> {
-    const room = this.currentRoom();
-    if (!room) throw new Error('Aucune room active');
+		await this.updateAndRefresh(roomId, patch);
+	}
 
-    const isPlayer1 = this.isPlayer1();
-    // On veut simuler l'action de l'AUTRE joueur
-    const patch: RoomPatch = isPlayer1 ? { p2_ready: true } : { p1_ready: true };
+	/**
+	 * DEV : Simule l'acceptation d'une revanche par l'adversaire.
+	 */
+	async simulateOpponentReplay(roomId: string): Promise<void> {
+		const room = this.currentRoom();
+		if (!room) throw new Error('Aucune room active');
 
-    const opponentAlreadyRequested = isPlayer1 ? room.p1_ready : room.p2_ready;
+		const isPlayer1 = this.isPlayer1();
+		// On veut simuler l'action de l'AUTRE joueur
+		const patch: RoomPatch = isPlayer1 ? { p2_ready: true } : { p1_ready: true };
 
-    if (opponentAlreadyRequested) {
-      Object.assign(patch, {
-        status: 'selecting',
-        pokemon_p1: null,
-        pokemon_p2: null,
-        p1_ready: false,
-        p2_ready: false,
-        winner_id: null,
-        current_turn: null,
-      } satisfies RoomPatch);
-    }
+		const opponentAlreadyRequested = isPlayer1 ? room.p1_ready : room.p2_ready;
 
-    await this.updateAndRefresh(roomId, patch);
-  }
+		if (opponentAlreadyRequested) {
+			Object.assign(patch, {
+				status: 'selecting',
+				pokemon_p1: null,
+				pokemon_p2: null,
+				p1_ready: false,
+				p2_ready: false,
+				winner_id: null,
+				current_turn: null,
+			} satisfies RoomPatch);
+		}
 
-  /** Rafraîchit manuellement l'état de la room. */
-  async refreshRoom(roomId: string): Promise<void> {
-    try {
-      const room = await this.supabaseService.getRoomById(roomId);
-      this.currentRoom.set(room);
-    } catch (err) {
-      console.error('[GameService] Impossible de rafraîchir la room:', err);
-    }
-  }
+		await this.updateAndRefresh(roomId, patch);
+	}
 
-  // ─── Helpers internes ─────────────────────────────────────────────────────────
+	/** Rafraîchit manuellement l'état de la room. */
+	async refreshRoom(roomId: string): Promise<void> {
+		try {
+			const room = await this.supabaseService.getRoomById(roomId);
+			this.currentRoom.set(room);
+		} catch (err) {
+			console.error('[GameService] Impossible de rafraîchir la room:', err);
+		}
+	}
 
-  /**
-   * Met à jour la room en base ET rafraîchit immédiatement le signal local.
-   * Cela garantit que le watcher réagit même si le Realtime Supabase est lent ou absent.
-   */
-  private async updateAndRefresh(roomId: string, patch: RoomPatch): Promise<void> {
-    await this.supabaseService.updateRoom(roomId, patch);
-    const refreshed = await this.supabaseService.getRoomById(roomId);
-    this.currentRoom.set(refreshed);
-  }
+	// ─── Helpers internes ─────────────────────────────────────────────────────────
 
-  // ─── Helpers d'état ──────────────────────────────────────────────────────────
+	/**
+	 * Met à jour la room en base ET rafraîchit immédiatement le signal local.
+	 * Cela garantit que le watcher réagit même si le Realtime Supabase est lent ou absent.
+	 */
+	private async updateAndRefresh(roomId: string, patch: RoomPatch): Promise<void> {
+		await this.supabaseService.updateRoom(roomId, patch);
+		const refreshed = await this.supabaseService.getRoomById(roomId);
+		this.currentRoom.set(refreshed);
+	}
 
-  readonly isMyTurn = computed(() => {
-    const room = this.currentRoom();
-    const user = this.supabaseService.currentUserSignal();
-    if (!room || !user) return false;
-    return room.current_turn === user.id;
-  });
+	// ─── Helpers d'état ──────────────────────────────────────────────────────────
 
-  readonly isPlayer1 = computed(() => {
-    const room = this.currentRoom();
-    const user = this.supabaseService.currentUserSignal();
-    if (!room || !user) return false;
-    return room.player1_id === user.id;
-  });
+	readonly isMyTurn = computed(() => {
+		const room = this.currentRoom();
+		const user = this.supabaseService.currentUserSignal();
+		if (!room || !user) return false;
+		return room.current_turn === user.id;
+	});
 
-  readonly settings = computed(() => this.currentRoom()?.settings ?? DEFAULT_SETTINGS);
+	readonly isPlayer1 = computed(() => {
+		const room = this.currentRoom();
+		const user = this.supabaseService.currentUserSignal();
+		if (!room || !user) return false;
+		return room.player1_id === user.id;
+	});
+
+	readonly settings = computed(() => this.currentRoom()?.settings ?? DEFAULT_SETTINGS);
 }
