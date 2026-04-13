@@ -48,3 +48,5 @@ src/environments/environment.prod.ts
 src/assets/pokemon.json
 
 docs/
+package-lock.json
+.gitignore
