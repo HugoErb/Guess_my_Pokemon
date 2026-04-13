@@ -20,7 +20,7 @@
 		<!-- Error / Full -->
 		@if (state === "error" || state === "full") {
 			<div class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl p-8 shadow-xl text-center">
-				<iconify-icon [icon]="ICONS.alert" class="text-4xl mb-4 text-yellow-400"></iconify-icon>
+				<iconify-icon [icon]="ICONS.alert" class="text-5xl text-red-500 mx-auto"></iconify-icon>
 				<p class="text-slate-300 text-lg">{{ errorMessage }}</p>
 				<button
 					(click)="decline()"
