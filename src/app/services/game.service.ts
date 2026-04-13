@@ -223,11 +223,12 @@ export class GameService implements OnDestroy {
         const isPlayer1 = this.isPlayer1();
         const patch: RoomPatch = isPlayer1 ? { p1_ready: true } : { p2_ready: true };
 
-        const otherReady = isPlayer1 ? room.p2_ready : room.p1_ready;
+        await this.supabaseService.updateRoom(roomId, patch);
 
-        // Si l'autre a déjà accepté
-        if (otherReady) {
-            Object.assign(patch, {
+        const refreshed = await this.supabaseService.getRoomById(roomId);
+
+        if (refreshed.p1_ready && refreshed.p2_ready && refreshed.status === 'finished') {
+            await this.supabaseService.updateRoom(roomId, {
                 status: 'selecting',
                 pokemon_p1: null,
                 pokemon_p2: null,
@@ -235,10 +236,14 @@ export class GameService implements OnDestroy {
                 p2_ready: false,
                 winner_id: null,
                 current_turn: null,
-            } satisfies RoomPatch);
+            });
+
+            const finalRoom = await this.supabaseService.getRoomById(roomId);
+            this.currentRoom.set(finalRoom);
+            return;
         }
 
-        await this.updateAndRefresh(roomId, patch);
+        this.currentRoom.set(refreshed);
     }
 
     /**

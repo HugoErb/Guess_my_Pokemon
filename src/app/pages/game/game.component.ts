@@ -314,6 +314,7 @@ export class GameComponent implements OnInit, OnDestroy {
 	private readonly pokemonService = inject(PokemonService);
 	private readonly supabaseService = inject(SupabaseService);
 	private readonly router = inject(Router);
+    private hadTurn = false;
 
 	room = computed(() => this.gameService.currentRoom());
 	isMyTurn = this.gameService.isMyTurn;
@@ -402,6 +403,17 @@ export class GameComponent implements OnInit, OnDestroy {
 					}, 2000);
 				});
 			}
+
+            const isMyTurnNow = this.isMyTurn();
+
+            if (r?.status === 'playing') {
+                if (!this.hadTurn && isMyTurnNow) {
+                    untracked(() => {
+                        this.showMyTurnModal.set(true);
+                    });
+                }
+                this.hadTurn = isMyTurnNow;
+            }
 		});
 	}
 
@@ -412,6 +424,7 @@ export class GameComponent implements OnInit, OnDestroy {
 	private async init(): Promise<void> {
 		await firstValueFrom(this.supabaseService.authReady$);
 		await this.gameService.joinAndWatch(this.roomId());
+        this.hadTurn = this.isMyTurn();
 
 		const r = this.room();
 		if (!r) return;
