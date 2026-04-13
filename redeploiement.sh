@@ -6,18 +6,14 @@ export PATH="$NVM_DIR/versions/node/v22.22.2/bin:$PATH"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # Sortie console + fichier log
-exec > >(tee -a /home/ubuntu/Guess-my-Pokemon/redeploy.log) 2>&1
+exec > >(tee -a /home/ubuntu/Guess_my_Pokemon/redeploy.log) 2>&1
 echo "======== $(date) | Déploiement de Guess my Pokemon démarré ========"
 
 # Aller dans le bon dossier
 cd /home/ubuntu/Guess-my-Pokemon || exit 1
 
-# Chemins
-dossierRacine=$(pwd)
-dossierDistRacine="$dossierRacine/dist"
+# Variables
 nomApplication="Guess-my-Pokemon"
-
-# Déterminer les chemins dynamiques
 NPM_CMD=$(which npm)
 PM2_CMD=$(which pm2)
 
@@ -26,34 +22,17 @@ if [ -z "$NPM_CMD" ] || [ -z "$PM2_CMD" ]; then
     exit 1
 fi
 
-# Git pull
+# Mise à jour du dépôt
 echo "Mise à jour du dépôt Git..."
 git pull origin
 
-# Nettoyage
-echo "Suppression des anciens dossiers dist..."
-rm -rf "$dossierDistRacine"
-rm -rf "$dossierRacine/frontend/dist"
-
-# Build frontend
+# Installation des dépendances
 echo "Installation des dépendances..."
-cd frontend || exit 1
 $NPM_CMD install
 
-echo "Lancement du build frontend..."
+# Build
+echo "Lancement du build..."
 $NPM_CMD run build
-
-# Copier le build
-cd "$dossierRacine"
-dossierDistFrontend=$(find "$dossierRacine/frontend/dist" -mindepth 1 -maxdepth 1 -type d)
-
-if [ -d "$dossierDistFrontend" ]; then
-    echo "Copie du build dans $dossierDistRacine"
-    cp -r "$dossierDistFrontend" "$dossierDistRacine"
-else
-    echo "Erreur : Aucun dossier trouvé dans frontend/dist"
-    exit 1
-fi
 
 # Lancement/redémarrage avec PM2
 echo "(Re)démarrage de l'application '$nomApplication' via PM2..."
