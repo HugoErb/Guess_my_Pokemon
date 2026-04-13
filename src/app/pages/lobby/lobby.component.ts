@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, computed, effect, inject, input, signal, untracked, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, effect, inject, input, signal, untracked, CUSTOM_ELEMENTS_SCHEMA, Injector } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { firstValueFrom, filter, take, Subscription } from 'rxjs';
@@ -470,6 +470,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	private readonly pokemonService = inject(PokemonService);
 	private readonly supabaseService = inject(SupabaseService);
 	private readonly router = inject(Router);
+	private readonly injector = inject(Injector);
 
 	constructor() {
 		// Re-applique le filtre dès que les settings de la room changent
@@ -560,7 +561,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		});
 
 		// 5. Watcher Realtime : si status 'playing' → navigate /game/:roomId
-		toObservable(this.room)
+		toObservable(this.room, { injector: this.injector })
 			.pipe(
 				filter((r) => r?.status === 'playing'),
 				take(1),
