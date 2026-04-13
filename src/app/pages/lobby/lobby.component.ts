@@ -55,40 +55,56 @@ import { modalAnimation } from '../../constants/animations';
 				<div class="flex-1 flex items-center justify-center p-6">
 					<div class="bg-slate-800 rounded-2xl p-8 max-w-md w-full text-center shadow-xl border border-slate-700">
 						<iconify-icon [icon]="ICONS.timer" class="text-4xl mb-4 text-blue-400 animate-pulse"></iconify-icon>
-						<h2 class="text-2xl font-bold mb-2">En attente de ton adversaire…</h2>
+						<h2 class="text-2xl font-bold mb-2">
+							@if (room()?.status === 'waiting') {
+								<span>En attente de ton adversaire…</span>
+							}
+							@if (room()?.status === 'ready' && isPlayer1()) {
+								<span>Ton adversaire est connecté !</span>
+							}
+							@if (room()?.status === 'ready' && !isPlayer1()) {
+								<span>Tu as rejoint la partie !</span>
+							}
+						</h2>
 						@if (room()?.status === 'waiting' && isPlayer1()) {
 							<p class="text-slate-400 mb-6">Partage ce lien à ton ami pour qu'il rejoigne la partie :</p>
 						}
 
+						@if (room()?.status === 'ready' && isPlayer1()) {
+							<p class="text-green-400 mb-6">Ton ami a rejoint la partie.</p>
+						}
+
 						@if (room()?.status === 'ready' && !isPlayer1()) {
-							<p class="text-green-400 mb-6">Tu as rejoint la partie ! En attente de ton adversaire…</p>
+							<p class="text-green-400 mb-6">Tu as rejoint la partie. En attente du lancement.</p>
 						}
 
 						<!-- Lien d'invitation -->
-						<div class="flex gap-2 mb-4">
-							<input
-								type="text"
-								[value]="inviteLink"
-								readonly
-								class="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-300 truncate focus:outline-none"
-							/>
-							<button
-								(click)="copyInviteLink()"
-								[class]="
-									copied
-										? 'bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors whitespace-nowrap'
-										: 'bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors whitespace-nowrap'
-								"
-							>
-								@if (copied) {
-									<iconify-icon [icon]="ICONS.checkCircle" class="mr-1"></iconify-icon>
-									Lien copié !
-								} @else {
-									<iconify-icon [icon]="ICONS.copy" class="mr-1"></iconify-icon>
-									Copier
-								}
-							</button>
-						</div>
+						@if (isPlayer1()) {
+							<div class="flex gap-2 mb-4">
+								<input
+									type="text"
+									[value]="inviteLink"
+									readonly
+									class="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-300 truncate focus:outline-none"
+								/>
+								<button
+									(click)="copyInviteLink()"
+									[class]="
+										copied
+											? 'bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors whitespace-nowrap'
+											: 'bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors whitespace-nowrap'
+									"
+								>
+									@if (copied) {
+										<iconify-icon [icon]="ICONS.checkCircle" class="mr-1"></iconify-icon>
+										Lien copié !
+									} @else {
+										<iconify-icon [icon]="ICONS.copy" class="mr-1"></iconify-icon>
+										Copier
+									}
+								</button>
+							</div>
+						}
 
 						<!-- Panneau de configuration (Player 1 uniquement) -->
 						@if (isPlayer1()) {
@@ -216,14 +232,6 @@ import { modalAnimation } from '../../constants/animations';
 								@if (launchError) {
 									<p class="text-red-400 text-xs text-center">{{ launchError }}</p>
 								}
-							</div>
-						}
-
-						@if (room()?.status === 'ready' && !isPlayer1()) {
-							<!-- Player 2 attend que le maître lance -->
-							<div class="mt-6 flex flex-col items-center gap-3">
-								<div class="w-10 h-10 border-4 border-slate-600 border-t-green-500 rounded-full animate-spin"></div>
-								<p class="text-slate-400 text-sm">En attente du lancement par le maître de partie…</p>
 							</div>
 						}
 

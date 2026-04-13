@@ -5,74 +5,75 @@ import { SupabaseService } from '../../services/supabase.service';
 import { ICONS } from '../../constants/icons';
 
 @Component({
-  selector: 'app-invite',
-  imports: [],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  templateUrl: './invite.component.html',
+	selector: 'app-invite',
+	imports: [],
+	schemas: [CUSTOM_ELEMENTS_SCHEMA],
+	templateUrl: './invite.component.html',
 })
 export class InviteComponent implements OnInit {
-  protected readonly ICONS = ICONS;
-  readonly roomId = input.required<string>();
+	protected readonly ICONS = ICONS;
+	readonly roomId = input.required<string>();
 
-  state: 'loading' | 'valid' | 'error' | 'full' = 'loading';
-  errorMessage = '';
-  inviterUsername = '';
-  isJoining = false;
+	state: 'loading' | 'valid' | 'error' | 'full' = 'loading';
+	errorMessage = '';
+	inviterUsername = '';
+	isJoining = false;
 
-  constructor(
-    private readonly supabaseService: SupabaseService,
-    private readonly router: Router
-  ) {}
+	constructor(
+		private readonly supabaseService: SupabaseService,
+		private readonly router: Router,
+	) {}
 
-  ngOnInit(): void {
-    this.loadRoom();
-  }
+	ngOnInit(): void {
+		this.loadRoom();
+	}
 
-  private async loadRoom(): Promise<void> {
-    try {
-      const room = await this.supabaseService.getRoomById(this.roomId());
+	private async loadRoom(): Promise<void> {
+		try {
+			const room = await this.supabaseService.getRoomById(this.roomId());
 
-      if (room?.status !== 'waiting') {
-        this.state = 'error';
-        this.errorMessage = "Cette invitation n'est plus valide.";
-        return;
-      }
+			if (room?.status !== 'waiting') {
+				this.state = 'error';
+				this.errorMessage = "Cette invitation n'est plus valide.";
+				return;
+			}
 
-      if (room.player2_id) {
-        this.state = 'full';
-        this.errorMessage = 'Cette partie est déjà complète.';
-        return;
-      }
+			if (room.player2_id) {
+				this.state = 'full';
+				this.errorMessage = 'Cette partie est déjà complète.';
+				return;
+			}
 
-      const currentUser = await firstValueFrom(this.supabaseService.authReady$);
-      if (currentUser?.id === room.player1_id) {
-        this.router.navigate(['/lobby', this.roomId()]);
-        return;
-      }
+			const currentUser = await firstValueFrom(this.supabaseService.authReady$);
+			if (currentUser?.id === room.player1_id) {
+				this.router.navigate(['/lobby', this.roomId()]);
+				return;
+			}
 
-      const profile = await this.supabaseService.getProfile(room.player1_id);
-      this.inviterUsername = profile.username;
-      this.state = 'valid';
-    } catch {
-      this.state = 'error';
-      this.errorMessage = "Cette invitation n'est plus valide.";
-    }
-  }
+			const profile = await this.supabaseService.getProfile(room.player1_id);
+			this.inviterUsername = profile.username;
+			this.state = 'valid';
+		} catch {
+			this.state = 'error';
+			this.errorMessage = "Cette invitation n'est plus valide.";
+		}
+	}
 
-  async accept(): Promise<void> {
-    this.isJoining = true;
-    try {
-      await this.supabaseService.joinRoom(this.roomId());
-      this.router.navigate(['/lobby', this.roomId()]);
-    } catch {
-      this.state = 'error';
-      this.errorMessage = "Impossible de rejoindre la partie.";
-    } finally {
-      this.isJoining = false;
-    }
-  }
+	async accept(): Promise<void> {
+		this.isJoining = true;
+		try {
+			await this.supabaseService.joinRoom(this.roomId());
+			await this.router.navigate(['/lobby', this.roomId()]);
+		} catch (err) {
+			console.error('[InviteComponent] join failed', err);
+			this.state = 'error';
+			this.errorMessage = 'Impossible de rejoindre la partie.';
+		} finally {
+			this.isJoining = false;
+		}
+	}
 
-  decline(): void {
-    this.router.navigate(['/home']);
-  }
+	decline(): void {
+		this.router.navigate(['/home']);
+	}
 }
