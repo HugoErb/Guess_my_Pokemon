@@ -30,46 +30,5 @@
 				</button>
 			</div>
 		}
-
-		<!-- Valid invitation -->
-		@if (state === "valid") {
-			<div class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl p-8 shadow-xl">
-				<div class="flex flex-col items-center text-center gap-4">
-					<iconify-icon [icon]="ICONS.game" class="text-4xl text-red-400"></iconify-icon>
-					<h2 class="text-xl font-semibold">Invitation à jouer&nbsp;!</h2>
-					<p class="text-slate-300 leading-relaxed">
-						<span class="text-red-400 font-bold">{{ inviterUsername }}</span>
-						t'invite à une partie de Guess my Pokémon&nbsp;!
-					</p>
-					<div class="flex gap-3 mt-4 w-full">
-						<button
-							(click)="accept()"
-							[disabled]="isJoining"
-							class="flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-white transition-colors shadow-lg"
-						>
-							@if (!isJoining) {
-								<span class="flex items-center justify-center gap-1">
-									<iconify-icon [icon]="ICONS.checkCircle"></iconify-icon>
-									Accepter
-								</span>
-							}
-							@if (isJoining) {
-								<span>Connexion…</span>
-							}
-						</button>
-						<button
-							(click)="decline()"
-							[disabled]="isJoining"
-							class="flex-1 py-3 px-4 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
-						>
-							<span class="flex items-center justify-center gap-1">
-								<iconify-icon [icon]="ICONS.close"></iconify-icon>
-								Refuser
-							</span>
-						</button>
-					</div>
-				</div>
-			</div>
-		}
 	</main>
 </div>

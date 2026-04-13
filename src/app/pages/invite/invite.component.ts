@@ -16,8 +16,6 @@ export class InviteComponent implements OnInit {
 
 	state: 'loading' | 'valid' | 'error' | 'full' = 'loading';
 	errorMessage = '';
-	inviterUsername = '';
-	isJoining = false;
 
 	constructor(
 		private readonly supabaseService: SupabaseService,
@@ -50,26 +48,12 @@ export class InviteComponent implements OnInit {
 				return;
 			}
 
-			const profile = await this.supabaseService.getProfile(room.player1_id);
-			this.inviterUsername = profile.username;
-			this.state = 'valid';
+			await this.supabaseService.joinRoom(this.roomId());
+			await this.router.navigate(['/lobby', this.roomId()]);
+			return;
 		} catch {
 			this.state = 'error';
 			this.errorMessage = "Cette invitation n'est plus valide.";
-		}
-	}
-
-	async accept(): Promise<void> {
-		this.isJoining = true;
-		try {
-			await this.supabaseService.joinRoom(this.roomId());
-			await this.router.navigate(['/lobby', this.roomId()]);
-		} catch (err) {
-			console.error('[InviteComponent] join failed', err);
-			this.state = 'error';
-			this.errorMessage = 'Impossible de rejoindre la partie.';
-		} finally {
-			this.isJoining = false;
 		}
 	}
 
