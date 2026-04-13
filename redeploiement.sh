@@ -3,19 +3,19 @@
 # Charger NVM et rendre npm/pm2 disponibles dans un contexte systemd
 export NVM_DIR="/home/ubuntu/.nvm"
 export PATH="$NVM_DIR/versions/node/v22.22.2/bin:$PATH"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # Sortie console + fichier log
-exec > >(tee -a /home/ubuntu/Portfolio/redeploy.log) 2>&1
-echo "======== $(date) | Déploiement du Portfolio démarré ========"
+exec > >(tee -a /home/ubuntu/Guess-my-Pokemon/redeploy.log) 2>&1
+echo "======== $(date) | Déploiement de Guess my Pokemon démarré ========"
 
 # Aller dans le bon dossier
-cd /home/ubuntu/Portfolio || exit 1
+cd /home/ubuntu/Guess-my-Pokemon || exit 1
 
 # Chemins
 dossierRacine=$(pwd)
 dossierDistRacine="$dossierRacine/dist"
-nomApplication="Portfolio"
+nomApplication="Guess-my-Pokemon"
 
 # Déterminer les chemins dynamiques
 NPM_CMD=$(which npm)
@@ -66,4 +66,4 @@ else
     exit 1
 fi
 
-echo "======== Déploiement du Portfolio terminé avec succès ========"
+echo "======== Déploiement de Guess my Pokemon terminé avec succès ========"
