@@ -177,16 +177,16 @@ export class SupabaseService implements OnDestroy {
 		const user = this.userSubject.getValue();
 		if (!user) throw new Error('Utilisateur non connecté');
 
-		const { data, error } = await this.supabase
-			.from('rooms')
-			.update({ player2_id: user.id, status: 'ready' })
-			.eq('id', roomId)
-			.is('player2_id', null)
-			.select('*')
-			.single();
+		const room = await this.getRoomById(roomId);
+
+		if (!room) throw new Error('Room introuvable');
+		if (room.player2_id) throw new Error('Room déjà complète');
+		if (room.status !== 'waiting') throw new Error('Room non joignable');
+		if (room.player1_id === user.id) throw new Error('Le créateur ne peut pas rejoindre sa propre room');
+
+		const { error } = await this.supabase.from('rooms').update({ player2_id: user.id, status: 'ready' }).eq('id', roomId);
 
 		if (error) throw error;
-		if (!data) throw new Error('Room introuvable ou déjà rejointe');
 	}
 
 	async launchGame(roomId: string, settings: GameSettings): Promise<void> {
