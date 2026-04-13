@@ -43,6 +43,7 @@ export class InviteComponent implements OnInit {
 			}
 
 			const currentUser = await firstValueFrom(this.supabaseService.authReady$);
+            console.log('INVITE USERS', currentUser?.id, room.player1_id);
 			if (currentUser?.id === room.player1_id) {
 				this.router.navigate(['/lobby', this.roomId()]);
 				return;
