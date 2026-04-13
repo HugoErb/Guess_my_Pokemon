@@ -28,11 +28,17 @@ import { modalAnimation } from '../../constants/animations';
 				<div class="flex items-center gap-3">
 					<iconify-icon [icon]="ICONS.pokeball" class="text-2xl text-red-500"></iconify-icon>
 					<h1 class="text-xl font-bold text-white">Guess my Pokémon</h1>
-					<button (click)="openRulesModal()" class="px-3 py-1 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors text-sm font-medium">
+					<button
+						(click)="openRulesModal()"
+						class="px-3 py-1 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors text-sm font-medium"
+					>
 						Règles
 					</button>
 				</div>
-				<button (click)="promptCancel()" class="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-red-600 border border-slate-600 hover:border-red-500 rounded text-sm text-slate-300 hover:text-white transition-colors">
+				<button
+					(click)="promptCancel()"
+					class="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-red-600 border border-slate-600 hover:border-red-500 rounded text-sm text-slate-300 hover:text-white transition-colors"
+				>
 					<iconify-icon [icon]="ICONS.logout" class="text-lg"></iconify-icon>
 					<span class="hidden sm:inline">Quitter la partie</span>
 				</button>
@@ -50,7 +56,13 @@ import { modalAnimation } from '../../constants/animations';
 					<div class="bg-slate-800 rounded-2xl p-8 max-w-md w-full text-center shadow-xl border border-slate-700">
 						<iconify-icon [icon]="ICONS.timer" class="text-4xl mb-4 text-blue-400 animate-pulse"></iconify-icon>
 						<h2 class="text-2xl font-bold mb-2">En attente de ton adversaire…</h2>
-						<p class="text-slate-400 mb-6">Partage ce lien à ton ami pour qu'il rejoigne la partie :</p>
+						@if (room()?.status === 'waiting' && isPlayer1()) {
+							<p class="text-slate-400 mb-6">Partage ce lien à ton ami pour qu'il rejoigne la partie :</p>
+						}
+
+						@if (room()?.status === 'ready' && !isPlayer1()) {
+							<p class="text-green-400 mb-6">Tu as rejoint la partie ! En attente de ton adversaire…</p>
+						}
 
 						<!-- Lien d'invitation -->
 						<div class="flex gap-2 mb-4">
@@ -83,10 +95,11 @@ import { modalAnimation } from '../../constants/animations';
 							<div class="mt-6 text-left">
 								<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Configuration de la partie</h3>
 								<div class="flex flex-col gap-3">
-
 									<!-- Mode par génération -->
-									<div class="bg-slate-700/50 border border-slate-600 rounded-xl p-3 flex flex-col gap-2"
-										 [class.opacity-60]="isConfigLocked()">
+									<div
+										class="bg-slate-700/50 border border-slate-600 rounded-xl p-3 flex flex-col gap-2"
+										[class.opacity-60]="isConfigLocked()"
+									>
 										<div class="flex items-center justify-between">
 											<div>
 												<p class="text-sm font-semibold text-white">Par génération</p>
@@ -107,22 +120,28 @@ import { modalAnimation } from '../../constants/animations';
 										</div>
 										@if (gameSettings.generations.length > 0) {
 											<div class="flex flex-wrap gap-1 pt-1">
-												@for (gen of [1,2,3,4,5,6,7,8,9]; track gen) {
+												@for (gen of [1, 2, 3, 4, 5, 6, 7, 8, 9]; track gen) {
 													<button
 														(click)="toggleGeneration(gen)"
 														[disabled]="isConfigLocked()"
-														[class]="gameSettings.generations.includes(gen)
-															? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-red-600 text-white border border-red-500 transition-colors'
-															: 'px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-600 text-slate-300 border border-slate-500 hover:bg-slate-500 transition-colors'"
-													>{{ gen }}</button>
+														[class]="
+															gameSettings.generations.includes(gen)
+																? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-red-600 text-white border border-red-500 transition-colors'
+																: 'px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-600 text-slate-300 border border-slate-500 hover:bg-slate-500 transition-colors'
+														"
+													>
+														{{ gen }}
+													</button>
 												}
 											</div>
 										}
 									</div>
 
 									<!-- Mode sans Pokédex -->
-									<div class="bg-slate-700/50 border border-slate-600 rounded-xl p-3 flex items-center justify-between"
-										 [class.opacity-60]="isConfigLocked()">
+									<div
+										class="bg-slate-700/50 border border-slate-600 rounded-xl p-3 flex items-center justify-between"
+										[class.opacity-60]="isConfigLocked()"
+									>
 										<div>
 											<p class="text-sm font-semibold text-white">Sans Pokédex</p>
 											<p class="text-xs text-slate-400">Les Pokémon n'affichent que leur nom</p>
@@ -142,8 +161,10 @@ import { modalAnimation } from '../../constants/animations';
 									</div>
 
 									<!-- Mode sans recherche -->
-									<div class="bg-slate-700/50 border border-slate-600 rounded-xl p-3 flex items-center justify-between"
-										 [class.opacity-60]="isConfigLocked()">
+									<div
+										class="bg-slate-700/50 border border-slate-600 rounded-xl p-3 flex items-center justify-between"
+										[class.opacity-60]="isConfigLocked()"
+									>
 										<div>
 											<p class="text-sm font-semibold text-white">Sans filtres avancés</p>
 											<p class="text-xs text-slate-400">Les filtres par génération et type sont désactivés</p>
@@ -161,7 +182,6 @@ import { modalAnimation } from '../../constants/animations';
 											></span>
 										</button>
 									</div>
-
 								</div>
 							</div>
 						}
@@ -353,12 +373,7 @@ import { modalAnimation } from '../../constants/animations';
 														: 'w-full h-full flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-700/60 border-2 border-transparent hover:bg-slate-700 hover:border-slate-500 transition-all'
 												"
 											>
-												<img
-													[src]="pokemon.sprite"
-													[alt]="pokemon.name"
-													class="w-16 h-16 object-contain"
-													loading="lazy"
-												/>
+												<img [src]="pokemon.sprite" [alt]="pokemon.name" class="w-16 h-16 object-contain" loading="lazy" />
 												<span class="text-xs text-center capitalize leading-tight">{{ pokemon.name }}</span>
 											</button>
 											<button
@@ -389,24 +404,25 @@ import { modalAnimation } from '../../constants/animations';
 							{{ selectError }}
 						</div>
 					}
-
 				</div>
 			}
 
 			<!-- Modal Pokédex -->
 			@if (selectedPokemonDetails) {
-				<div 
-					class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" 
+				<div
+					class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
 					(click)="closePokemonDetails()"
 					[@modalAnimation]
 				>
-					<div 
-						class="bg-slate-800 border border-slate-600 rounded-2xl p-3 max-w-md w-full shadow-2xl relative flex flex-col gap-3 max-h-[95vh] modal-content" 
+					<div
+						class="bg-slate-800 border border-slate-600 rounded-2xl p-3 max-w-md w-full shadow-2xl relative flex flex-col gap-3 max-h-[95vh] modal-content"
 						(click)="$event.stopPropagation()"
 					>
-						
 						<!-- Bouton Fermer Absolu -->
-						<button (click)="closePokemonDetails()" class="absolute top-5 right-5 z-10 bg-slate-900/60 hover:bg-red-600 rounded-full w-8 h-8 flex items-center justify-center text-slate-300 hover:text-white transition-colors backdrop-blur-sm">
+						<button
+							(click)="closePokemonDetails()"
+							class="absolute top-5 right-5 z-10 bg-slate-900/60 hover:bg-red-600 rounded-full w-8 h-8 flex items-center justify-center text-slate-300 hover:text-white transition-colors backdrop-blur-sm"
+						>
 							<iconify-icon [icon]="ICONS.close" class="text-lg"></iconify-icon>
 						</button>
 
@@ -416,7 +432,7 @@ import { modalAnimation } from '../../constants/animations';
 						</div>
 
 						<!-- Footer action -->
-						<button 
+						<button
 							(click)="selectFromDetails(selectedPokemonDetails)"
 							class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-xl font-bold text-white transition-colors mt-2 shadow-lg flex items-center justify-center gap-2"
 						>
@@ -432,11 +448,7 @@ import { modalAnimation } from '../../constants/animations';
 			}
 
 			@if (showCancelModal()) {
-				<app-cancel-modal
-					[isCancelling]="isCancelling"
-					(confirm)="confirmCancel()"
-					(cancel)="closeCancelModal()"
-				/>
+				<app-cancel-modal [isCancelling]="isCancelling" (confirm)="confirmCancel()" (cancel)="closeCancelModal()" />
 			}
 		</div>
 	`,
@@ -506,8 +518,12 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	showCancelModal = signal(false);
 	simulateError = '';
 
-	openRulesModal(): void { this.showRulesModal.set(true); }
-	closeRulesModal(): void { this.showRulesModal.set(false); }
+	openRulesModal(): void {
+		this.showRulesModal.set(true);
+	}
+	closeRulesModal(): void {
+		this.showRulesModal.set(false);
+	}
 	isSimulating = false;
 	isSimulatingReady = false;
 	readonly devMode = environment.devMode;
@@ -544,7 +560,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
 			.subscribe(() => {
 				this.router.navigate(['/game', this.roomId()]);
 			});
-
 	}
 
 	ngOnDestroy(): void {
@@ -569,9 +584,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	pickRandom(): void {
 		if (this.isReady) return;
 		const restrictedGens = this.gameService.settings().generations;
-		const pool = restrictedGens.length > 0
-			? this.allPokemons.filter(p => restrictedGens.includes(p.generation))
-			: this.allPokemons;
+		const pool = restrictedGens.length > 0 ? this.allPokemons.filter((p) => restrictedGens.includes(p.generation)) : this.allPokemons;
 		if (pool.length === 0) return;
 		const random = pool[Math.floor(Math.random() * pool.length)];
 		void this.selectPokemon(random);
@@ -615,8 +628,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	cancelRoom(): void {
 		if (this.isCancelling) return;
 		this.isCancelling = true;
-		void this.gameService.cancelRoom(this.roomId()).catch(err => {
-			console.error('[LobbyComponent] Erreur lors de l\'annulation', err);
+		void this.gameService.cancelRoom(this.roomId()).catch((err) => {
+			console.error("[LobbyComponent] Erreur lors de l'annulation", err);
 		});
 		void this.router.navigate(['/home']);
 	}
@@ -657,10 +670,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	toggleGeneration(gen: number): void {
 		if (this.isConfigLocked()) return;
 		const gens = this.gameSettings.generations;
-		const filtered = gens.filter(g => g !== gen);
-		const newGens = gens.includes(gen)
-			? (filtered.length === 0 ? [gen] : filtered)
-			: [...gens, gen];
+		const filtered = gens.filter((g) => g !== gen);
+		const newGens = gens.includes(gen) ? (filtered.length === 0 ? [gen] : filtered) : [...gens, gen];
 		this.gameSettings = { ...this.gameSettings, generations: newGens };
 		void this.saveSettings();
 	}
@@ -697,11 +708,11 @@ export class LobbyComponent implements OnInit, OnDestroy {
 			if (pokemons.length === 0) {
 				pokemons = await firstValueFrom(this.pokemonService.loadAll());
 			}
-			
+
 			// RESTRICTION: Filtrer par génération si nécessaire
 			const restrictedGens = this.gameService.settings().generations;
 			if (restrictedGens.length > 0) {
-				pokemons = pokemons.filter(p => restrictedGens.includes(p.generation));
+				pokemons = pokemons.filter((p) => restrictedGens.includes(p.generation));
 			}
 
 			if (pokemons.length === 0) return;
@@ -746,7 +757,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	}
 
 	// ─── Modal d'annulation ──────────────────────────────────────────────────────
-	
+
 	promptCancel(): void {
 		this.showCancelModal.set(true);
 	}

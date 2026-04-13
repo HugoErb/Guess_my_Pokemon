@@ -39,6 +39,13 @@ export class GameService implements OnDestroy {
     // 2. Charger l'état initial ensuite
     const room = await this.supabaseService.getRoomById(roomId);
     this.currentRoom.set(room);
+
+    setInterval(() => {
+		const room = this.currentRoom();
+		if (room?.status === 'waiting') {
+			this.refreshRoom(roomId);
+		}
+	}, 2000);
   }
 
   stopWatching(): void {

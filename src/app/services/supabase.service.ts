@@ -199,10 +199,7 @@ export class SupabaseService implements OnDestroy {
     const user = this.userSubject.getValue();
     if (!user) throw new Error('Utilisateur non connecté');
 
-    const { error } = await this.supabase
-      .from('rooms')
-      .update({ player2_id: user.id, status: 'ready' })
-      .eq('id', roomId);
+    const { error } = await this.supabase.from('rooms').update({ player2_id: user.id, status: 'ready' }).eq('id', roomId).is('player2_id', null);
 
     if (error) throw error;
   }
@@ -219,32 +216,31 @@ export class SupabaseService implements OnDestroy {
   subscribeToRoom(roomId: string): Observable<Room> {
     return new Observable<Room>(observer => {
       const channel = this.supabase
-        .channel(`room-${roomId}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'rooms',
-            filter: `id=eq.${roomId}`,
-          },
-          payload => {
-            observer.next(payload.new as Room);
-          }
-        )
-        .on(
-          'broadcast',
-          { event: '*' },
-          ({ event, payload }) => {
-            console.log(`[SupabaseService] Broadcast reçu sur canal : ${event}`, payload);
-            this.broadcastSubject.next({ event, payload });
-          }
-        )
-        .subscribe(status => {
-          if (status === 'CHANNEL_ERROR') {
-            observer.error(new Error(`Erreur de connexion au canal room-${roomId}`));
-          }
-        });
+			.channel(`room-${roomId}`)
+			.on(
+				'postgres_changes',
+				{
+					event: '*',
+					schema: 'public',
+					table: 'rooms',
+					filter: `id=eq.${roomId}`,
+				},
+				(payload) => {
+					console.log('[Realtime] update reçu:', payload.new);
+					observer.next(payload.new as Room);
+				},
+			)
+			.on('broadcast', { event: '*' }, ({ event, payload }) => {
+				console.log(`[SupabaseService] Broadcast reçu sur canal : ${event}`, payload);
+				this.broadcastSubject.next({ event, payload });
+			})
+			.subscribe((status) => {
+				console.log('[Realtime] status:', status, roomId);
+
+				if (status === 'CHANNEL_ERROR') {
+					observer.error(new Error(`Erreur canal room-${roomId}`));
+				}
+			});
 
       this.activeRoomChannel = channel;
 
