@@ -94,11 +94,6 @@ import { environment } from '../../../environments/environment';
 							</div>
 
 							<div class="flex items-center gap-3">
-								<div class="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-900/40 px-3 py-1 rounded-lg border border-slate-700/50">
-									<span class="text-slate-400 font-black">Salon :</span>
-									<span class="text-slate-300 font-mono">{{ roomId() }}</span>
-								</div>
-								
 								<button (click)="promptCancel()" class="flex items-center gap-2 px-2.5 py-1 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 hover:border-slate-500 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all duration-200 group">
 									<iconify-icon [icon]="ICONS.logout" class="text-xs transition-transform"></iconify-icon>
 									<span>Quitter la partie</span>

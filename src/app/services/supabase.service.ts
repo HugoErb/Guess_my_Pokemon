@@ -236,11 +236,20 @@ export class SupabaseService implements OnDestroy {
 		});
 	}
 
-	async updateRoom(roomId: string, patch: RoomPatch): Promise<void> {
-		const { error } = await this.supabase.from('rooms').update(patch).eq('id', roomId);
+    async updateRoom(roomId: string, patch: RoomPatch): Promise<void> {
+        const { data, error } = await this.supabase
+            .from('rooms')
+            .update(patch)
+            .eq('id', roomId)
+            .select('*');
 
-		if (error) throw error;
-	}
+        console.log('UPDATE ROOM RESULT', patch, data);
+
+        if (error) throw error;
+        if (!data || data.length === 0) {
+            throw new Error('UPDATE rooms refusé ou aucune ligne modifiée');
+        }
+    }
 
 	async deleteRoom(roomId: string): Promise<void> {
 		const { error } = await this.supabase.from('rooms').delete().eq('id', roomId);
