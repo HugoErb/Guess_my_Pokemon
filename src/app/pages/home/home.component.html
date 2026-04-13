@@ -79,7 +79,7 @@
 
 				<div class="flex gap-3 mt-2">
 					<button (click)="closePasswordModal()" class="flex-1 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium text-white transition-colors">Annuler</button>
-					<button (click)="changePassword()" [disabled]="isUpdatingPassword" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-xl text-sm font-bold text-white transition-colors">
+					<button (click)="changePassword()" [disabled]="isUpdatingPassword" class="flex-1 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-50 rounded-xl text-sm font-bold text-white transition-colors shadow-lg shadow-red-600/20">
 						{{ isUpdatingPassword ? 'En cours...' : 'Valider' }}
 					</button>
 				</div>
@@ -109,7 +109,7 @@
 
 				<div class="flex gap-3 mt-2">
 					<button (click)="closeUsernameModal()" class="flex-1 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium text-white transition-colors">Annuler</button>
-					<button (click)="changeUsername()" [disabled]="isUpdatingUsername" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-xl text-sm font-bold text-white transition-colors">
+					<button (click)="changeUsername()" [disabled]="isUpdatingUsername" class="flex-1 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-50 rounded-xl text-sm font-bold text-white transition-colors shadow-lg shadow-red-600/20">
 						{{ isUpdatingUsername ? 'En cours...' : 'Valider' }}
 					</button>
 				</div>
@@ -136,9 +136,10 @@
 				<button
 					(click)="createGame()"
 					[disabled]="isCreating"
-					class="mt-auto w-full py-3 px-6 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed font-black text-white transition-all text-md shadow-lg shadow-red-600/20 tracking-wide flex items-center justify-center gap-3"
+					class="mt-auto w-full py-4 px-6 rounded-2xl bg-red-600 hover:bg-red-500 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed font-black text-white transition-all text-sm shadow-xl shadow-red-600/30 uppercase tracking-[0.2em] flex items-center justify-center gap-3 group"
 				>
 					@if (!isCreating) {
+						<iconify-icon [icon]="ICONS.sword" class="text-xl group-hover:rotate-12 transition-transform"></iconify-icon>
 						<span>Créer une partie</span>
 					}
 					@if (isCreating) {
@@ -190,12 +191,12 @@
 
 					<div class="mt-auto space-y-3">
 						<button (click)="openUsernameModal()" class="w-full py-3 bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 rounded-xl text-sm font-bold text-slate-300 hover:text-white transition-all flex items-center justify-center gap-3 group">
-							<iconify-icon [icon]="ICONS.user" class="text-lg text-slate-500 group-hover:text-blue-400"></iconify-icon>
+							<iconify-icon [icon]="ICONS.user" class="text-lg text-slate-500 group-hover:text-red-400 transition-colors"></iconify-icon>
 							Modifier mon pseudo
 						</button>
 
 						<button (click)="openPasswordModal()" class="w-full py-3 bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 rounded-xl text-sm font-bold text-slate-300 hover:text-white transition-all flex items-center justify-center gap-3 group">
-							<iconify-icon [icon]="ICONS.password" class="text-lg text-slate-500 group-hover:text-blue-400"></iconify-icon>
+							<iconify-icon [icon]="ICONS.password" class="text-lg text-slate-500 group-hover:text-red-400 transition-colors"></iconify-icon>
 							Changer de mot de passe
 						</button>
 						

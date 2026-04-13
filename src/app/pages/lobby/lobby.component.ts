@@ -248,7 +248,7 @@ import { modalAnimation } from '../../constants/animations';
 										<span class="text-sm font-medium capitalize">{{ selectedPokemon.name }}</span>
 										<button
 											(click)="openPokemonDetails(selectedPokemon)"
-											class="absolute top-2 right-2 w-7 h-7 flex items-center justify-center bg-slate-800/90 hover:bg-blue-500 rounded-full text-slate-300 hover:text-white transition-colors border border-slate-600 shadow-sm"
+											class="absolute top-2 right-2 w-7 h-7 flex items-center justify-center bg-slate-800/90 hover:bg-red-600 rounded-full text-slate-300 hover:text-white transition-colors border border-slate-600 shadow-sm"
 											title="Voir ton Pokémon"
 										>
 											<iconify-icon [icon]="ICONS.search" class="text-sm"></iconify-icon>
@@ -363,7 +363,7 @@ import { modalAnimation } from '../../constants/animations';
 											</button>
 											<button
 												(click)="openPokemonDetails(pokemon); $event.stopPropagation()"
-												class="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-slate-800/90 hover:bg-blue-500 rounded-full text-slate-300 hover:text-white transition-colors border border-slate-600 shadow-sm"
+												class="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-slate-800/90 hover:bg-red-600 rounded-full text-slate-300 hover:text-white transition-colors border border-slate-600 shadow-sm"
 												title="Voir le Pokédex complet"
 											>
 												<iconify-icon [icon]="ICONS.search" class="text-xs"></iconify-icon>
