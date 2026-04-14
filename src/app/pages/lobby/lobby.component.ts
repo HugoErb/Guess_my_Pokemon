@@ -87,22 +87,19 @@ import { modalAnimation } from '../../constants/animations';
 									readonly
 									class="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-300 truncate focus:outline-none"
 								/>
-								<button
-									(click)="copyInviteLink()"
-									[class]="
-										copied
-											? 'bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors whitespace-nowrap'
-											: 'bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors whitespace-nowrap'
-									"
-								>
+								<div class="relative self-stretch">
+									<button
+										(click)="copyInviteLink()"
+										class="h-full bg-slate-700 hover:bg-slate-600 px-4 rounded-lg text-white transition-colors flex items-center justify-center"
+									>
+										<iconify-icon [icon]="ICONS.copy" class="text-lg"></iconify-icon>
+									</button>
 									@if (copied) {
-										<iconify-icon [icon]="ICONS.checkCircle" class="mr-1"></iconify-icon>
-										Lien copié !
-									} @else {
-										<iconify-icon [icon]="ICONS.copy" class="mr-1"></iconify-icon>
-										Copier
+										<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none">
+											Lien copié
+										</div>
 									}
-								</button>
+								</div>
 							</div>
 						}
 
