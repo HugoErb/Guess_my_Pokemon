@@ -161,7 +161,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
       <!-- Filtres type -->
       <div>
         <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">
-          Type @if (onlyDualType()) { (2 max) }
+          Type
         </p>
         <div class="flex flex-wrap items-center gap-1">
           @for (type of allTypes; track type) {
@@ -175,9 +175,18 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
             </button>
           }
           
-          <!-- Délimiteur et bouton spécial -->
+          <!-- Délimiteur et boutons spéciaux -->
           <div class="h-6 w-px bg-slate-600 mx-2"></div>
-          
+
+          <button
+            (click)="toggleOnlyMonoType()"
+            [class]="onlyMonoType()
+              ? 'px-3 py-1 rounded-lg text-xs font-bold bg-teal-600 text-white border border-teal-500 shadow-lg shadow-teal-500/20 transition-all'
+              : 'px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
+          >
+            Mono type seulement
+          </button>
+
           <button
             (click)="toggleOnlyDualType()"
             [class]="onlyDualType()
@@ -313,6 +322,7 @@ export class PokedexComponent implements OnInit {
   minHeight = signal<number | null>(0);
   maxHeight = signal<number | null>(null);
   onlyDualType = signal(false);
+  onlyMonoType = signal(false);
 
   // Pagination (Signal)
   displayedCount = signal(100);
@@ -343,7 +353,8 @@ export class PokedexComponent implements OnInit {
     const cats = this.selectedCategories();
     const evos = this.selectedEvoStages();
     const isDualOnly = this.onlyDualType();
-    
+    const isMonoOnly = this.onlyMonoType();
+
     const minW = this.minWeight();
     const maxW = this.maxWeight();
     const minH = this.minHeight();
@@ -353,16 +364,12 @@ export class PokedexComponent implements OnInit {
       if (restricted.length > 0 && !restricted.includes(p.generation)) return false;
       if (q && !p.name.toLowerCase().includes(q)) return false;
       if (gens.length > 0 && !gens.includes(p.generation)) return false;
-      
-      if (isDualOnly) {
-        if (p.types.length !== 2) return false;
-        if (types.length > 0) {
-          if (types.length === 2) {
-            if (!types.every(t => p.types.includes(t))) return false;
-          } else {
-            if (!p.types.some(t => types.includes(t))) return false;
-          }
-        }
+
+      if (isDualOnly && p.types.length !== 2) return false;
+
+      if (isMonoOnly) {
+        if (p.types.length !== 1) return false;
+        if (types.length > 0 && !p.types.some(t => types.includes(t))) return false;
       } else if (types.length > 0) {
         if (!p.types.some(t => types.includes(t))) return false;
       }
@@ -415,7 +422,6 @@ export class PokedexComponent implements OnInit {
   toggleType(type: string): void {
     this.selectedTypes.update(list => {
       if (list.includes(type)) return list.filter(t => t !== type);
-      if (this.onlyDualType() && list.length >= 2) return list;
       return [...list, type];
     });
     this.displayedCount.set(this.PAGE_SIZE);
@@ -424,6 +430,11 @@ export class PokedexComponent implements OnInit {
   toggleOnlyDualType(): void {
     this.onlyDualType.update(v => !v);
     this.selectedTypes.set([]);
+    this.displayedCount.set(this.PAGE_SIZE);
+  }
+
+  toggleOnlyMonoType(): void {
+    this.onlyMonoType.update(v => !v);
     this.displayedCount.set(this.PAGE_SIZE);
   }
 
@@ -464,6 +475,7 @@ export class PokedexComponent implements OnInit {
     this.minHeight.set(0);
     this.maxHeight.set(null);
     this.onlyDualType.set(false);
+    this.onlyMonoType.set(false);
     this.displayedCount.set(this.PAGE_SIZE);
   }
 
