@@ -10,9 +10,30 @@ import { modalAnimation } from '../../constants/animations';
 
 const ALL_TYPES = [
   'Normal', 'Feu', 'Eau', 'Électrik', 'Plante', 'Glace',
-  'Combat', 'Poison', 'Sol', 'Vol', 'Psy', 'Insecte',
+  'Combat', 'Vol', 'Insecte', 'Poison', 'Psy', 'Sol',
   'Roche', 'Spectre', 'Dragon', 'Ténèbres', 'Acier', 'Fée',
 ];
+
+const TYPE_ICONS: Record<string, string> = {
+  'Normal':   'mdi:circle-outline',
+  'Feu':      'mdi:fire',
+  'Eau':      'mdi:water',
+  'Électrik': 'mdi:lightning-bolt',
+  'Plante':   'mdi:leaf',
+  'Glace':    'mdi:snowflake',
+  'Combat':   'mdi:boxing-glove',
+  'Poison':   'mdi:skull-crossbones',
+  'Sol':      'mdi:terrain',
+  'Vol':      'mdi:feather',
+  'Psy':      'mdi:eye',
+  'Insecte':  'mdi:bug',
+  'Roche':    'mdi:hexagon',
+  'Spectre':  'mdi:ghost',
+  'Dragon':   'mdi:snake',
+  'Ténèbres': 'mdi:weather-night',
+  'Acier':    'mdi:shield',
+  'Fée':      'mdi:star-four-points',
+};
 
 const TYPE_COLORS: Record<string, string> = {
   'Normal': 'bg-gray-400',
@@ -45,30 +66,27 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
   template: `
     <div class="flex flex-col gap-5 h-full">
 
-      <!-- Titre + Reset -->
-      <div class="flex justify-between items-end">
-        <h2 class="text-lg font-bold text-white tracking-wide uppercase">Pokédex</h2>
+      <!-- Barre de recherche + Reset -->
+      <div class="flex items-center gap-2">
+        <div class="relative flex-1">
+          <iconify-icon [icon]="ICONS.search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></iconify-icon>
+          <input
+            type="text"
+            placeholder="Rechercher un Pokémon..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+            class="w-full bg-slate-700 border border-slate-600 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
+          />
+        </div>
         @if (!noSearch()) {
-          <button 
+          <button
             (click)="clearFilters()"
-            class="flex items-center gap-2 px-2.5 py-1 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 hover:border-slate-500 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all duration-200 group"
+            class="self-center flex items-center gap-1.5 px-2.5 py-1 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 hover:border-slate-500 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all duration-200 group shrink-0"
           >
             <iconify-icon [icon]="ICONS.refresh" class="text-sm group-hover:rotate-180 transition-transform duration-500"></iconify-icon>
             <span>Réinitialiser les filtres</span>
           </button>
         }
-      </div>
-
-      <!-- Barre de recherche -->
-      <div class="relative">
-        <iconify-icon [icon]="ICONS.search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></iconify-icon>
-        <input
-          type="text"
-          placeholder="Rechercher un Pokémon..."
-          [ngModel]="searchQuery()"
-          (ngModelChange)="searchQuery.set($event)"
-          class="w-full bg-slate-700 border border-slate-600 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
-        />
       </div>
 
       <!-- Filtres principaux -->
@@ -163,38 +181,59 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">
           Type
         </p>
-        <div class="flex flex-wrap items-center gap-1">
-          @for (type of allTypes; track type) {
+        <div class="flex items-stretch gap-1">
+          <!-- Types -->
+          <div class="flex flex-col gap-1">
+            <div class="flex flex-wrap gap-1">
+              @for (type of allTypes.slice(0, 9); track type) {
+                <button
+                  (click)="toggleType(type)"
+                  [class]="isTypeSelected(type)
+                    ? 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline ring-1 ring-white/50 transition-all flex items-center gap-1 ' + getTypeColor(type)
+                    : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 hover:opacity-70 transition-all flex items-center gap-1 ' + getTypeColor(type)"
+                >
+                  <iconify-icon [icon]="getTypeIcon(type)" class="text-sm"></iconify-icon>
+                  {{ type }}
+                </button>
+              }
+            </div>
+            <div class="flex flex-wrap gap-1">
+              @for (type of allTypes.slice(9); track type) {
+                <button
+                  (click)="toggleType(type)"
+                  [class]="isTypeSelected(type)
+                    ? 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline ring-1 ring-white/50 transition-all flex items-center gap-1 ' + getTypeColor(type)
+                    : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 hover:opacity-70 transition-all flex items-center gap-1 ' + getTypeColor(type)"
+                >
+                  <iconify-icon [icon]="getTypeIcon(type)" class="text-sm"></iconify-icon>
+                  {{ type }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Séparateur -->
+          <div class="w-px bg-slate-600 mx-1 self-stretch"></div>
+
+          <!-- Boutons empilés -->
+          <div class="flex flex-col gap-1 justify-around">
             <button
-              (click)="toggleType(type)"
-              [class]="isTypeSelected(type)
-                ? 'px-2.5 py-1 rounded-full text-xs font-semibold text-white ring-2 ring-white transition-all ' + getTypeColor(type)
-                : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white opacity-50 hover:opacity-80 transition-all ' + getTypeColor(type)"
+              (click)="toggleOnlyMonoType()"
+              [class]="onlyMonoType()
+                ? 'px-3 py-1 rounded-lg text-xs font-bold bg-teal-600 text-white border border-teal-500 shadow-lg shadow-teal-500/20 transition-all'
+                : 'px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
             >
-              {{ type }}
+              Mono type seulement
             </button>
-          }
-          
-          <!-- Délimiteur et boutons spéciaux -->
-          <div class="h-6 w-px bg-slate-600 mx-2"></div>
-
-          <button
-            (click)="toggleOnlyMonoType()"
-            [class]="onlyMonoType()
-              ? 'px-3 py-1 rounded-lg text-xs font-bold bg-teal-600 text-white border border-teal-500 shadow-lg shadow-teal-500/20 transition-all'
-              : 'px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
-          >
-            Mono type seulement
-          </button>
-
-          <button
-            (click)="toggleOnlyDualType()"
-            [class]="onlyDualType()
-              ? 'px-3 py-1 rounded-lg text-xs font-bold bg-indigo-600 text-white border border-indigo-500 shadow-lg shadow-indigo-500/20 transition-all'
-              : 'px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
-          >
-            Double type seulement
-          </button>
+            <button
+              (click)="toggleOnlyDualType()"
+              [class]="onlyDualType()
+                ? 'px-3 py-1 rounded-lg text-xs font-bold bg-indigo-600 text-white border border-indigo-500 shadow-lg shadow-indigo-500/20 transition-all'
+                : 'px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
+            >
+              Double type seulement
+            </button>
+          </div>
         </div>
       </div>
       }
@@ -314,7 +353,7 @@ export class PokedexComponent implements OnInit {
   // États des filtres (Signals)
   searchQuery = signal('');
   selectedGenerations = signal<number[]>([]);
-  selectedTypes = signal<string[]>([]);
+  selectedTypes = signal<string[]>([...ALL_TYPES]);
   selectedCategories = signal<string[]>([]);
   selectedEvoStages = signal<number[]>([]);
   minWeight = signal<number | null>(0);
@@ -429,7 +468,7 @@ export class PokedexComponent implements OnInit {
 
   toggleOnlyDualType(): void {
     this.onlyDualType.update(v => !v);
-    this.selectedTypes.set([]);
+    this.selectedTypes.set([...ALL_TYPES]);
     this.displayedCount.set(this.PAGE_SIZE);
   }
 
@@ -467,7 +506,7 @@ export class PokedexComponent implements OnInit {
   clearFilters(): void {
     this.searchQuery.set('');
     this.selectedGenerations.set([]);
-    this.selectedTypes.set([]);
+    this.selectedTypes.set([...ALL_TYPES]);
     this.selectedCategories.set([]);
     this.selectedEvoStages.set([]);
     this.minWeight.set(0);
@@ -481,6 +520,10 @@ export class PokedexComponent implements OnInit {
 
   getTypeColor(type: string): string {
     return TYPE_COLORS[type] ?? 'bg-gray-500';
+  }
+
+  getTypeIcon(type: string): string {
+    return TYPE_ICONS[type] ?? 'mdi:circle-outline';
   }
 
   selectPokemon(pokemon: Pokemon): void {

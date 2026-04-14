@@ -43,7 +43,7 @@ const TYPE_COLORS: Record<string, string> = {
         <div class="flex flex-wrap gap-1 justify-center">
           @for (type of pokemon().types; track type) {
             <span
-              class="px-2 py-0.5 rounded-full text-xs font-semibold text-white"
+              class="px-2 py-0.5 rounded-full text-xs font-semibold text-white type-text-outline"
               [ngClass]="getTypeColor(type)"
             >
               {{ type }}
