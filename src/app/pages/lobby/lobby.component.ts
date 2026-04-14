@@ -697,9 +697,9 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		void this.saveSettings();
 	}
 
-	isConfigLocked(): boolean {
-		return this.room()?.status === 'ready';
-	}
+    isConfigLocked(): boolean {
+        return this.room()?.status === 'selecting' || this.room()?.status === 'playing';
+    }
 
 	private async saveSettings(): Promise<void> {
 		try {

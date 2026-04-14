@@ -312,5 +312,8 @@ export class GameService implements OnDestroy {
         return room.player1_id === user.id;
     });
 
-    readonly settings = computed(() => this.currentRoom()?.settings ?? DEFAULT_SETTINGS);
+    readonly settings = computed(() => {
+        const room = this.currentRoom();
+        return room?.settings ? { ...room.settings } : { ...DEFAULT_SETTINGS };
+    });
 }
