@@ -366,6 +366,7 @@ export class PokedexComponent implements OnInit {
   // Pagination (Signal)
   displayedCount = signal(100);
   private readonly PAGE_SIZE = 100;
+  private isLoadingMore = false;
 
   // Sélections
   selectedPokemon: Pokemon | null = null;
@@ -437,9 +438,12 @@ export class PokedexComponent implements OnInit {
   }
 
   onGridScroll(event: Event): void {
+    if (this.isLoadingMore) return;
     const el = event.target as HTMLElement;
     if (el.scrollHeight - el.scrollTop - el.clientHeight < 300 && this.displayedCount() < this.filteredPokemons().length) {
+      this.isLoadingMore = true;
       this.displayedCount.update(c => c + this.PAGE_SIZE);
+      requestAnimationFrame(() => { this.isLoadingMore = false; });
     }
   }
 
