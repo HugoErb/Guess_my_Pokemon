@@ -134,6 +134,9 @@ import { environment } from '../../../environments/environment';
 
 					@if (opponentPokemon) {
 						<div class="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 flex flex-col items-center gap-2">
+							@if (!isWinner) {
+								<p class="text-slate-400 text-sm">Le pokémon de l'adversaire était :</p>
+							}
 							<div class="flex flex-col items-center gap-1">
 								<img [src]="opponentPokemon.sprite" [alt]="opponentPokemon.name" class="w-24 h-24 object-contain" />
 								<h3 class="text-lg font-bold text-white capitalize">{{ opponentPokemon.name }}</h3>
@@ -146,27 +149,29 @@ import { environment } from '../../../environments/environment';
 						<p class="text-lg font-mono font-bold text-white">{{ gameTurn() }} tours</p>
 					</div>
 
-					<button 
-						(click)="requestReplay()" 
-						[disabled]="iWantReplay()"
-						class="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold text-white transition-colors flex flex-col items-center justify-center gap-0.5 mt-2"
-					>
-						<div class="flex items-center gap-2">
-							<iconify-icon [icon]="ICONS.dice" class="text-lg"></iconify-icon>
-							<span>{{ iWantReplay() ? 'En attente...' : 'Rejouer' }}</span>
-						</div>
-						@if (iWantReplay() && !opponentWantsReplay()) {
-							<span class="text-[9px] font-medium uppercase tracking-wider opacity-80 italic">En attente de l'adversaire</span>
-						}
-					</button>
+					<div class="w-full flex flex-col gap-2">
+						<button
+							(click)="requestReplay()"
+							[disabled]="iWantReplay()"
+							class="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold text-white transition-colors flex flex-col items-center justify-center gap-0.5"
+						>
+							<div class="flex items-center gap-2">
+								<iconify-icon [icon]="ICONS.dice" class="text-lg"></iconify-icon>
+								<span>{{ iWantReplay() ? 'En attente...' : 'Rejouer' }}</span>
+							</div>
+							@if (iWantReplay() && !opponentWantsReplay()) {
+								<span class="text-[9px] font-medium uppercase tracking-wider opacity-80 italic">En attente de l'adversaire</span>
+							}
+						</button>
 
-					<button 
-						(click)="goHome()" 
-						class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 mt-2"
-					>
-						<iconify-icon [icon]="ICONS.home" class="text-lg"></iconify-icon>
-						Retour à l'accueil
-					</button>
+						<button
+							(click)="goHome()"
+							class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2"
+						>
+							<iconify-icon [icon]="ICONS.home" class="text-lg"></iconify-icon>
+							Retour à l'accueil
+						</button>
+					</div>
 				</div>
 			</div>
 		}
