@@ -65,11 +65,12 @@ export class GameService implements OnDestroy {
         const room = this.currentRoom();
         if (!room) throw new Error('Aucune room active');
 
+        const refreshedForTurn = await this.supabaseService.getRoomById(roomId);
         await this.updateAndRefresh(roomId, {
             pokemon_p2: pokemonId,
             p2_ready: true,
             status: 'playing',
-            current_turn: room.player1_id,
+            current_turn: this.resolveFirstTurn(refreshedForTurn),
         });
     }
 
@@ -128,7 +129,7 @@ export class GameService implements OnDestroy {
         if (refreshed.p1_ready && refreshed.p2_ready && refreshed.status === 'selecting') {
             await this.supabaseService.updateRoom(roomId, {
                 status: 'playing',
-                current_turn: refreshed.player1_id,
+                current_turn: this.resolveFirstTurn(refreshed),
             });
             const finalRoom = await this.supabaseService.getRoomById(roomId);
             this.currentRoom.set(finalRoom);
@@ -282,6 +283,14 @@ export class GameService implements OnDestroy {
         } catch (err) {
             console.error('[GameService] Impossible de rafraîchir la room:', err);
         }
+    }
+
+    private resolveFirstTurn(room: Room): string {
+        const fp = room.settings?.firstPlayer ?? 'player1';
+        // player2_id peut être null en mode dev (adversaire simulé sans compte réel) : fallback sur player1
+        if (fp === 'player2') return room.player2_id ?? room.player1_id;
+        if (fp === 'random') return Math.random() < 0.5 ? room.player1_id : (room.player2_id ?? room.player1_id);
+        return room.player1_id; // 'player1' ou fallback
     }
 
     // ─── Helpers internes ─────────────────────────────────────────────────────────

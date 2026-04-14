@@ -9,7 +9,7 @@ import { GameService } from '../../services/game.service';
 import { PokemonService } from '../../services/pokemon.service';
 import { SupabaseService } from '../../services/supabase.service';
 import { Pokemon } from '../../models/pokemon.model';
-import { DEFAULT_SETTINGS, GameSettings } from '../../models/room.model';
+import { DEFAULT_SETTINGS, FirstPlayer, GameSettings } from '../../models/room.model';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { CancelModalComponent } from '../../components/cancel-modal/cancel-modal.component';
 import { RulesModalComponent } from '../../components/rules-modal/rules-modal.component';
@@ -194,6 +194,32 @@ import { modalAnimation } from '../../constants/animations';
 												[class.translate-x-5]="gameSettings.noSearch"
 											></span>
 										</button>
+									</div>
+
+									<!-- Premier joueur -->
+									<div
+										class="bg-slate-700/50 border border-slate-600 rounded-xl p-3 flex flex-col gap-2"
+										[class.opacity-60]="isConfigLocked()"
+									>
+										<div>
+											<p class="text-sm font-semibold text-white">Premier joueur</p>
+											<p class="text-xs text-slate-400">Qui joue en premier au démarrage</p>
+										</div>
+										<div class="flex gap-2">
+											@for (option of firstPlayerOptions; track option.value) {
+												<button
+													(click)="setFirstPlayer(option.value)"
+													[disabled]="isConfigLocked()"
+													[class]="
+														gameSettings.firstPlayer === option.value
+															? 'flex-1 px-2 py-1.5 rounded-lg text-xs font-bold bg-red-600 text-white border border-red-500 transition-colors'
+															: 'flex-1 px-2 py-1.5 rounded-lg text-xs font-bold bg-slate-600 text-slate-300 border border-slate-500 hover:bg-slate-500 transition-colors'
+													"
+												>
+													{{ option.label }}
+												</button>
+											}
+										</div>
 									</div>
 								</div>
 							</div>
@@ -533,6 +559,11 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	isSimulating = false;
 	isSimulatingReady = false;
 	readonly devMode = environment.devMode;
+	readonly firstPlayerOptions: { value: FirstPlayer; label: string }[] = [
+		{ value: 'player1', label: 'Vous' },
+		{ value: 'player2', label: 'Adversaire' },
+		{ value: 'random', label: 'Aléatoire' },
+	];
 
 	private pokemonsSub?: Subscription;
 
@@ -691,6 +722,12 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	toggleNoSearch(): void {
 		if (this.isConfigLocked()) return;
 		this.gameSettings = { ...this.gameSettings, noSearch: !this.gameSettings.noSearch };
+		void this.saveSettings();
+	}
+
+	setFirstPlayer(value: FirstPlayer): void {
+		if (this.isConfigLocked()) return;
+		this.gameSettings = { ...this.gameSettings, firstPlayer: value };
 		void this.saveSettings();
 	}
 

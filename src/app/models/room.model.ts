@@ -1,15 +1,19 @@
 export type RoomStatus = 'waiting' | 'ready' | 'selecting' | 'playing' | 'finished';
 
+export type FirstPlayer = 'player1' | 'player2' | 'random';
+
 export interface GameSettings {
   generations: number[];  // [] = toutes les générations
   noPokedex: boolean;     // cache tout sauf le nom
   noSearch: boolean;      // désactive les filtres avancés (garde la recherche par nom)
+  firstPlayer: FirstPlayer; // qui joue en premier
 }
 
 export const DEFAULT_SETTINGS: GameSettings = {
   generations: [],
   noPokedex: false,
   noSearch: false,
+  firstPlayer: 'player1',
 };
 
 export interface Room {
