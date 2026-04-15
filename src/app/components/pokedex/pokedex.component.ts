@@ -480,7 +480,7 @@ export class PokedexComponent implements OnInit {
       if (isDualOnly && p.types.length !== 2) return false;
       if (isMonoOnly && p.types.length !== 1) return false;
 
-      if (types.length > 0 && !p.types.every(t => types.includes(t))) return false;
+      if (types.length > 0 && !p.types.some(t => types.includes(t))) return false;
 
       if (cats.length > 0 && !cats.includes(p.category)) return false;
       if (evos.length > 0 && !evos.includes((p as any)._stage)) return false;
