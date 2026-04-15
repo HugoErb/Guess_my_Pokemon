@@ -199,14 +199,14 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
           Type
         </p>
         <div class="flex flex-col md:flex-row md:items-stretch gap-2 md:gap-1">
-          <!-- Types -->
-          <div class="flex flex-wrap gap-1 flex-1">
-            @for (type of allTypes; track type) {
+          <!-- Types : version mobile (un seul flex-wrap, wrapping naturel) -->
+          <div class="flex flex-wrap gap-1 flex-1 md:hidden">
+            @for (type of mobileAllTypes; track type) {
               <button
                 (click)="toggleType(type)"
                 [class]="isTypeSelected(type)
-                  ? 'flex-1 md:flex-none px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline ring-1 ring-white/50 transition-all flex items-center justify-center gap-1 ' + getTypeColor(type)
-                  : 'flex-1 md:flex-none px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 hover:opacity-70 transition-all flex items-center justify-center gap-1 ' + getTypeColor(type)"
+                  ? 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline ring-1 ring-white/50 transition-all flex items-center gap-1 ' + getTypeColor(type)
+                  : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 hover:opacity-70 transition-all flex items-center gap-1 ' + getTypeColor(type)"
               >
                 <iconify-icon [icon]="getTypeIcon(type)" class="text-sm"></iconify-icon>
                 {{ type }}
@@ -214,11 +214,41 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
             }
           </div>
 
+          <!-- Types : version bureau (deux rangées de 9, identique à l'original) -->
+          <div class="hidden md:flex flex-col gap-1">
+            <div class="flex flex-wrap gap-1">
+              @for (type of allTypes.slice(0, 9); track type) {
+                <button
+                  (click)="toggleType(type)"
+                  [class]="isTypeSelected(type)
+                    ? 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline ring-1 ring-white/50 transition-all flex items-center gap-1 ' + getTypeColor(type)
+                    : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 hover:opacity-70 transition-all flex items-center gap-1 ' + getTypeColor(type)"
+                >
+                  <iconify-icon [icon]="getTypeIcon(type)" class="text-sm"></iconify-icon>
+                  {{ type }}
+                </button>
+              }
+            </div>
+            <div class="flex flex-wrap gap-1">
+              @for (type of allTypes.slice(9); track type) {
+                <button
+                  (click)="toggleType(type)"
+                  [class]="isTypeSelected(type)
+                    ? 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline ring-1 ring-white/50 transition-all flex items-center gap-1 ' + getTypeColor(type)
+                    : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 hover:opacity-70 transition-all flex items-center gap-1 ' + getTypeColor(type)"
+                >
+                  <iconify-icon [icon]="getTypeIcon(type)" class="text-sm"></iconify-icon>
+                  {{ type }}
+                </button>
+              }
+            </div>
+          </div>
+
           <!-- Séparateur (desktop uniquement) -->
           <div class="hidden md:block w-px bg-slate-600 mx-1 self-stretch"></div>
 
           <!-- Boutons Mono/Double : en ligne sur mobile, empilés sur desktop -->
-          <div class="flex md:flex-col gap-1 md:justify-around">
+          <div class="flex md:flex-col gap-1 md:justify-around mt-1 md:mt-0">
             <button
               (click)="toggleOnlyMonoType()"
               [class]="onlyMonoType()
@@ -390,6 +420,11 @@ export class PokedexComponent implements OnInit {
   // Données constantes
   readonly generations = GENERATIONS;
   readonly allTypes = ALL_TYPES;
+  readonly mobileAllTypes = [
+    'Normal', 'Feu', 'Eau', 'Électrik', 'Fée', 'Plante', 'Glace',
+    'Combat', 'Vol', 'Insecte', 'Poison', 'Psy', 'Sol',
+    'Roche', 'Spectre', 'Dragon', 'Ténèbres', 'Acier',
+  ];
   readonly categories = [
     { id: 'normal', label: 'Normal' },
     { id: 'starter', label: 'Starter' },
