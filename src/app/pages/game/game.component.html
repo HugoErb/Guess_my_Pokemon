@@ -12,7 +12,7 @@
 
 
 	<!-- Contenu principal : deux colonnes -->
-	<div class="flex-1 flex overflow-hidden">
+	<div class="flex-1 flex overflow-hidden pb-[44px] md:pb-0">
 		<!-- Colonne gauche : Ton Pokémon -->
 		<div class="w-full md:w-80 shrink-0 overflow-y-auto p-3 md:p-4 flex flex-col gap-4 md:gap-6" [class.mobile-hidden]="activeTab() !== 'pokemon'">
 			<div>
@@ -40,7 +40,7 @@
 		</div>
 
 		<!-- Colonne droite : Pokédex -->
-		<div class="flex-1 flex flex-col overflow-hidden md:border-l md:border-slate-800" [class.mobile-hidden]="activeTab() !== 'pokedex'">
+		<div class="flex-1 flex flex-col overflow-hidden md:border-l md:border-slate-800" [class.mobile-hidden]="activeTab() !== 'pokedex' && activeTab() !== 'filtres'">
 			<!-- Bandeau d'infos de la partie (Indicateur de tour, etc.) -->
 			@if (room()?.status === 'playing') {
 				<div class="bg-slate-800/50 border-b border-slate-700 px-3 py-2 flex items-center justify-between gap-2 shrink-0">
@@ -82,6 +82,8 @@
 				[noPokedex]="settings().noPokedex"
 				[noSearch]="settings().noSearch"
 				[guessedPokemonIds]="guessedPokemonIds()"
+				[showFilters]="activeTab() === 'filtres'"
+				[filtersOnly]="activeTab() === 'filtres'"
 				(guess)="onGuess($event)"
 			/>
 			</div>
@@ -89,24 +91,33 @@
 	</div>
 
 	<!-- Barre d'onglets mobile (masquée sur md+) -->
-	<nav class="md:hidden flex shrink-0 border-t border-slate-700 bg-slate-800">
+	<nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 flex border-t border-slate-700 bg-slate-800">
 		<button
 			(click)="activeTab.set('pokemon')"
-			class="flex-1 py-3 flex flex-col items-center gap-1 text-[10px] font-bold uppercase tracking-wider transition-colors"
+			class="flex-1 py-1.5 flex flex-col items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider transition-colors"
 			[class.text-red-500]="activeTab() === 'pokemon'"
 			[class.text-slate-400]="activeTab() !== 'pokemon'"
 		>
-			<iconify-icon [icon]="ICONS.pokeball" class="text-xl"></iconify-icon>
+			<iconify-icon [icon]="ICONS.pokeball" class="text-lg"></iconify-icon>
 			Mon Pokémon
 		</button>
 		<button
 			(click)="activeTab.set('pokedex')"
-			class="flex-1 py-3 flex flex-col items-center gap-1 text-[10px] font-bold uppercase tracking-wider transition-colors"
+			class="flex-1 py-1.5 flex flex-col items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider transition-colors"
 			[class.text-red-500]="activeTab() === 'pokedex'"
 			[class.text-slate-400]="activeTab() !== 'pokedex'"
 		>
-			<iconify-icon [icon]="ICONS.pokedex" class="text-xl"></iconify-icon>
+			<iconify-icon [icon]="ICONS.pokedex" class="text-lg"></iconify-icon>
 			Pokédex
+		</button>
+		<button
+			(click)="activeTab.set('filtres')"
+			class="flex-1 py-1.5 flex flex-col items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider transition-colors"
+			[class.text-blue-400]="activeTab() === 'filtres'"
+			[class.text-slate-400]="activeTab() !== 'filtres'"
+		>
+			<iconify-icon icon="mdi:filter-variant" class="text-lg"></iconify-icon>
+			Filtres
 		</button>
 	</nav>
 </div>

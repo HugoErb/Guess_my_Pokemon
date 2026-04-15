@@ -67,7 +67,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     <div class="flex flex-col gap-5 h-full">
 
       <!-- Barre de recherche + Reset -->
-      <div class="flex items-center gap-2">
+      <div [class.mobile-hidden]="filtersOnly()" class="flex items-center gap-2">
         <div class="relative flex-1">
           <iconify-icon [icon]="ICONS.search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></iconify-icon>
           <input
@@ -79,18 +79,6 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
           />
         </div>
         @if (!noSearch()) {
-          <!-- Bouton toggle filtres (mobile uniquement) -->
-          <button
-            (click)="showMobileFilters = !showMobileFilters"
-            class="md:hidden flex items-center gap-1 px-2.5 py-1.5 bg-slate-700 border rounded-lg text-[10px] font-black uppercase tracking-wider shrink-0 transition-colors"
-            [class.border-blue-500]="showMobileFilters"
-            [class.text-blue-400]="showMobileFilters"
-            [class.border-slate-600]="!showMobileFilters"
-            [class.text-slate-400]="!showMobileFilters"
-          >
-            <iconify-icon icon="mdi:filter-variant" class="text-sm"></iconify-icon>
-            Filtres
-          </button>
           <!-- Bouton réinitialiser (desktop uniquement) -->
           <button
             (click)="clearFilters()"
@@ -104,7 +92,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
       <!-- Filtres (masqués sur mobile sauf si ouverts via le bouton) -->
       @if (!noSearch()) {
-      <div [class.mobile-hidden]="!showMobileFilters" class="flex flex-col gap-5">
+      <div [class.mobile-hidden]="!showFilters()" class="flex flex-col gap-5">
       <div class="flex flex-wrap gap-x-8 gap-y-6">
         <!-- Génération -->
         <div class="shrink-0">
@@ -271,7 +259,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
       <!-- Bouton réinitialiser (mobile uniquement, dans le panneau filtres) -->
       <button
-        (click)="clearFilters(); showMobileFilters = false"
+        (click)="clearFilters()"
         class="md:hidden self-start flex items-center gap-1.5 px-2.5 py-1 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all duration-200"
       >
         <iconify-icon [icon]="ICONS.refresh" class="text-sm"></iconify-icon>
@@ -282,7 +270,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
       }
 
       <!-- Résultats -->
-      <div class="flex flex-col gap-2 min-h-0 flex-1">
+      <div [class.mobile-hidden]="filtersOnly()" class="flex flex-col gap-2 min-h-0 flex-1">
         <div class="flex justify-between items-center text-xs text-slate-400">
           <span>
             Résultats ({{ filteredPokemons().length }} Pokémon)
@@ -414,9 +402,9 @@ export class PokedexComponent implements OnInit {
   noPokedex = input<boolean>(false);
   noSearch = input<boolean>(false);
   guessedPokemonIds = input<number[]>([]);
+  showFilters = input<boolean>(false);
+  filtersOnly = input<boolean>(false);
   guess = output<number>();
-
-  showMobileFilters = false;
 
   allPokemons = signal<Pokemon[]>([]);
   
