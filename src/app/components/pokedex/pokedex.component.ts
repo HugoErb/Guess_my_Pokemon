@@ -163,6 +163,9 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
             </div>
           </div>
 
+          <!-- Séparateur mobile -->
+          <div class="w-px bg-slate-600/60 self-stretch md:hidden"></div>
+
           <!-- Taille -->
           <div class="shrink-0 flex-1 md:flex-none">
             <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">Taille (m)</p>

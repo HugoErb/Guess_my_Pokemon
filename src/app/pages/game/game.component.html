@@ -113,7 +113,7 @@
 		<button
 			(click)="activeTab.set('filtres')"
 			class="flex-1 py-1.5 flex flex-col items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider transition-colors"
-			[class.text-blue-400]="activeTab() === 'filtres'"
+			[class.text-red-500]="activeTab() === 'filtres'"
 			[class.text-slate-400]="activeTab() !== 'filtres'"
 		>
 			<iconify-icon icon="mdi:filter-variant" class="text-lg"></iconify-icon>
