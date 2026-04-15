@@ -231,17 +231,28 @@ export class GameComponent implements OnInit, OnDestroy {
 	}
 
 	private launchConfetti(): void {
+		const colors = ['#ef4444', '#facc15', '#3b82f6', '#ffffff'];
+
+		if (window.innerWidth < 768) {
+			confetti({
+				particleCount: 120,
+				spread: 90,
+				origin: { x: 0.5, y: 0.6 },
+				colors,
+			});
+			return;
+		}
+
 		const duration = 3000;
 		const end = Date.now() + duration;
-		const isMobile = window.innerWidth < 768;
 
 		const fire = (originX: number) => {
 			confetti({
-				particleCount: isMobile ? 3 : 6,
+				particleCount: 6,
 				angle: originX === 0.1 ? 60 : 120,
 				spread: 55,
 				origin: { x: originX, y: 1 },
-				colors: ['#ef4444', '#facc15', '#3b82f6', '#ffffff'],
+				colors,
 			});
 		};
 
@@ -253,7 +264,7 @@ export class GameComponent implements OnInit, OnDestroy {
 			}
 			fire(0.1);
 			fire(0.9);
-		}, isMobile ? 80 : 50);
+		}, 50);
 	}
 
 	async onGuess(pokemonId: number): Promise<void> {
