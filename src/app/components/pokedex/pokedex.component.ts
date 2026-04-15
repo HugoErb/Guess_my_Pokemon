@@ -298,22 +298,29 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
             @for (pokemon of visiblePokemons(); track pokemon.id) {
               <div class="relative w-full h-full">
                 <button
-                  (click)="openPokemonDetails(pokemon)"
-                  [class]="selectedPokemonDetails?.id === pokemon.id
-                    ? 'w-full h-full flex flex-col items-center gap-1 p-2 rounded-xl bg-red-900/40 border-2 border-red-500 transition-all'
-                    : 'w-full h-full flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-700/60 border-2 border-transparent hover:bg-slate-700 hover:border-slate-500 transition-all'"
+                  (click)="!guessedPokemonIds().includes(pokemon.id) && openPokemonDetails(pokemon)"
+                  [disabled]="guessedPokemonIds().includes(pokemon.id)"
+                  [class]="guessedPokemonIds().includes(pokemon.id)
+                    ? 'w-full h-full flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-800/40 border-2 border-slate-700 opacity-40 cursor-not-allowed transition-all'
+                    : selectedPokemonDetails?.id === pokemon.id
+                      ? 'w-full h-full flex flex-col items-center gap-1 p-2 rounded-xl bg-red-900/40 border-2 border-red-500 transition-all'
+                      : 'w-full h-full flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-700/60 border-2 border-transparent hover:bg-slate-700 hover:border-slate-500 transition-all'"
                 >
                   @if (!noPokedex()) {
                     <img
                       [src]="pokemon.sprite"
                       [alt]="pokemon.name"
                       class="w-12 h-12 object-contain"
+                      [class.grayscale]="guessedPokemonIds().includes(pokemon.id)"
                       loading="lazy"
                     />
                   } @else {
                     <div class="w-12 h-12 flex items-center justify-center text-3xl text-slate-500">?</div>
                   }
-                  <span class="text-xs text-center capitalize leading-tight text-slate-300 truncate w-full">
+                  <span class="text-xs text-center capitalize leading-tight truncate w-full"
+                    [class.text-slate-500]="guessedPokemonIds().includes(pokemon.id)"
+                    [class.text-slate-300]="!guessedPokemonIds().includes(pokemon.id)"
+                  >
                     {{ pokemon.name }}
                   </span>
                 </button>
@@ -365,12 +372,15 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
             </div>
 
             @if (showGuessButton()) {
-              <button 
+              <button
                 (click)="onGuessFromDetails(selectedPokemonDetails)"
-                class="w-full bg-red-600 hover:bg-red-500 py-3 rounded-xl font-bold text-white transition-colors mt-2 shadow-lg flex items-center justify-center gap-2"
+                [disabled]="guessedPokemonIds().includes(selectedPokemonDetails.id)"
+                [class]="guessedPokemonIds().includes(selectedPokemonDetails.id)
+                  ? 'w-full bg-slate-700 py-3 rounded-xl font-bold text-slate-500 cursor-not-allowed mt-2 flex items-center justify-center gap-2'
+                  : 'w-full bg-red-600 hover:bg-red-500 py-3 rounded-xl font-bold text-white transition-colors mt-2 shadow-lg flex items-center justify-center gap-2'"
               >
                 <iconify-icon [icon]="ICONS.sword" class="text-xl"></iconify-icon>
-                Deviner ce Pokémon
+                {{ guessedPokemonIds().includes(selectedPokemonDetails.id) ? 'Déjà tenté' : 'Deviner ce Pokémon' }}
               </button>
             }
           </div>
@@ -389,6 +399,7 @@ export class PokedexComponent implements OnInit {
   restrictedGenerations = input<number[]>([]);
   noPokedex = input<boolean>(false);
   noSearch = input<boolean>(false);
+  guessedPokemonIds = input<number[]>([]);
   guess = output<number>();
 
   showMobileFilters = false;

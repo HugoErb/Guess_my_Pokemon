@@ -62,6 +62,8 @@ export class GameComponent implements OnInit, OnDestroy {
 	private isSimulatingTurn = false;
 	readonly isDev = environment.devMode && isDevMode();
 
+	guessedPokemonIds = signal<number[]>([]);
+
 	showRulesModal = signal(false);
 	showCancelModal = signal(false);
 	showGameSettingsModal = signal(false);
@@ -213,6 +215,7 @@ export class GameComponent implements OnInit, OnDestroy {
 		try {
 			const result = await this.gameService.guess(this.roomId(), pokemonId);
 			if (result === 'incorrect') {
+				this.guessedPokemonIds.update(ids => [...ids, pokemonId]);
 				this.pokemonService.getById(pokemonId).subscribe(p => {
 					this.lastGuessedPokemon = p ?? null;
 					this.showIncorrectModal.set(true);
