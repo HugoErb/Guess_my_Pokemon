@@ -357,7 +357,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
           [@modalAnimation]
         >
           <div 
-            class="bg-slate-800 border border-slate-600 rounded-2xl p-3 max-w-md w-full shadow-2xl relative flex flex-col gap-3 max-h-[95vh] modal-content" 
+            class="bg-slate-800 border border-slate-600 rounded-2xl p-3 max-w-md w-full shadow-2xl relative flex flex-col gap-3 max-h-[95dvh] modal-content"
             (click)="$event.stopPropagation()"
           >
             
