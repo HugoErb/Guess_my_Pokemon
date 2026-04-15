@@ -13,6 +13,7 @@ import { RulesModalComponent } from '../../components/rules-modal/rules-modal.co
 import { ICONS } from '../../constants/icons';
 import { modalAnimation } from '../../constants/animations';
 import { environment } from '../../../environments/environment';
+import confetti from 'canvas-confetti';
 
 @Component({
 	selector: 'app-game',
@@ -221,7 +222,35 @@ export class GameComponent implements OnInit, OnDestroy {
 		this.showMyTurnModal.set(false);
 		this.showIncorrectModal.set(false);
 		this.pendingMyTurnModal.set(false);
+
+		if (this.isWinner) {
+			this.launchConfetti();
+		}
 		this.showEndModal = true;
+	}
+
+	private launchConfetti(): void {
+		const duration = 3000;
+		const end = Date.now() + duration;
+
+		const fire = (originX: number) => {
+			confetti({
+				particleCount: 6,
+				angle: originX === 0.1 ? 60 : 120,
+				spread: 55,
+				origin: { x: originX, y: 1 },
+				colors: ['#ef4444', '#facc15', '#3b82f6', '#ffffff'],
+			});
+		};
+
+		const interval = setInterval(() => {
+			if (Date.now() > end) {
+				clearInterval(interval);
+				return;
+			}
+			fire(0.1);
+			fire(0.9);
+		}, 50);
 	}
 
 	async onGuess(pokemonId: number): Promise<void> {
