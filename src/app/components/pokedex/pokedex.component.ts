@@ -79,9 +79,22 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
           />
         </div>
         @if (!noSearch()) {
+          <!-- Bouton toggle filtres (mobile uniquement) -->
+          <button
+            (click)="showMobileFilters = !showMobileFilters"
+            class="md:hidden flex items-center gap-1 px-2.5 py-1.5 bg-slate-700 border rounded-lg text-[10px] font-black uppercase tracking-wider shrink-0 transition-colors"
+            [class.border-blue-500]="showMobileFilters"
+            [class.text-blue-400]="showMobileFilters"
+            [class.border-slate-600]="!showMobileFilters"
+            [class.text-slate-400]="!showMobileFilters"
+          >
+            <iconify-icon icon="mdi:filter-variant" class="text-sm"></iconify-icon>
+            Filtres
+          </button>
+          <!-- Bouton réinitialiser (desktop uniquement) -->
           <button
             (click)="clearFilters()"
-            class="self-center flex items-center gap-1.5 px-2.5 py-1 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 hover:border-slate-500 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all duration-200 group shrink-0"
+            class="hidden md:flex self-center items-center gap-1.5 px-2.5 py-1 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 hover:border-slate-500 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all duration-200 group shrink-0"
           >
             <iconify-icon [icon]="ICONS.refresh" class="text-sm group-hover:rotate-180 transition-transform duration-500"></iconify-icon>
             <span>Réinitialiser les filtres</span>
@@ -89,8 +102,9 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         }
       </div>
 
-      <!-- Filtres principaux -->
+      <!-- Filtres (masqués sur mobile sauf si ouverts via le bouton) -->
       @if (!noSearch()) {
+      <div [class.mobile-hidden]="!showMobileFilters" class="flex flex-col gap-5">
       <div class="flex flex-wrap gap-x-8 gap-y-6">
         <!-- Génération -->
         <div class="shrink-0">
@@ -143,35 +157,38 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
           </div>
         </div>
 
-        <!-- Poids -->
-        <div class="shrink-0">
-          <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">Poids (kg)</p>
-          <div class="flex items-center gap-2">
-             <input type="number" 
-                    [ngModel]="minWeight()" 
-                    (ngModelChange)="minWeight.set($event)"
-                    placeholder="Min" class="w-20 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-500" />
-             <span class="text-slate-600 text-xs">à</span>
-             <input type="number" 
-                    [ngModel]="maxWeight()" 
-                    (ngModelChange)="maxWeight.set($event)"
-                    placeholder="Max" class="w-20 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-500" />
+        <!-- Poids + Taille : côte à côte sur mobile, items séparés sur desktop -->
+        <div class="flex gap-4 md:contents">
+          <!-- Poids -->
+          <div class="shrink-0 flex-1 md:flex-none">
+            <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">Poids (kg)</p>
+            <div class="flex items-center gap-1.5">
+               <input type="number"
+                      [ngModel]="minWeight()"
+                      (ngModelChange)="minWeight.set($event)"
+                      placeholder="Min" class="w-full md:w-20 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-500" />
+               <span class="text-slate-600 text-xs shrink-0">à</span>
+               <input type="number"
+                      [ngModel]="maxWeight()"
+                      (ngModelChange)="maxWeight.set($event)"
+                      placeholder="Max" class="w-full md:w-20 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-500" />
+            </div>
           </div>
-        </div>
 
-        <!-- Taille -->
-        <div class="shrink-0">
-          <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">Taille (m)</p>
-          <div class="flex items-center gap-2">
-             <input type="number" 
-                    [ngModel]="minHeight()" 
-                    (ngModelChange)="minHeight.set($event)"
-                    placeholder="Min" class="w-20 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-500" />
-             <span class="text-slate-600 text-xs">à</span>
-             <input type="number" 
-                    [ngModel]="maxHeight()" 
-                    (ngModelChange)="maxHeight.set($event)"
-                    placeholder="Max" class="w-20 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-500" />
+          <!-- Taille -->
+          <div class="shrink-0 flex-1 md:flex-none">
+            <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">Taille (m)</p>
+            <div class="flex items-center gap-1.5">
+               <input type="number"
+                      [ngModel]="minHeight()"
+                      (ngModelChange)="minHeight.set($event)"
+                      placeholder="Min" class="w-full md:w-20 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-500" />
+               <span class="text-slate-600 text-xs shrink-0">à</span>
+               <input type="number"
+                      [ngModel]="maxHeight()"
+                      (ngModelChange)="maxHeight.set($event)"
+                      placeholder="Max" class="w-full md:w-20 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-500" />
+            </div>
           </div>
         </div>
       </div>
@@ -181,61 +198,57 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">
           Type
         </p>
-        <div class="flex items-stretch gap-1">
+        <div class="flex flex-col md:flex-row md:items-stretch gap-2 md:gap-1">
           <!-- Types -->
-          <div class="flex flex-col gap-1">
-            <div class="flex flex-wrap gap-1">
-              @for (type of allTypes.slice(0, 9); track type) {
-                <button
-                  (click)="toggleType(type)"
-                  [class]="isTypeSelected(type)
-                    ? 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline ring-1 ring-white/50 transition-all flex items-center gap-1 ' + getTypeColor(type)
-                    : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 hover:opacity-70 transition-all flex items-center gap-1 ' + getTypeColor(type)"
-                >
-                  <iconify-icon [icon]="getTypeIcon(type)" class="text-sm"></iconify-icon>
-                  {{ type }}
-                </button>
-              }
-            </div>
-            <div class="flex flex-wrap gap-1">
-              @for (type of allTypes.slice(9); track type) {
-                <button
-                  (click)="toggleType(type)"
-                  [class]="isTypeSelected(type)
-                    ? 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline ring-1 ring-white/50 transition-all flex items-center gap-1 ' + getTypeColor(type)
-                    : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 hover:opacity-70 transition-all flex items-center gap-1 ' + getTypeColor(type)"
-                >
-                  <iconify-icon [icon]="getTypeIcon(type)" class="text-sm"></iconify-icon>
-                  {{ type }}
-                </button>
-              }
-            </div>
+          <div class="flex flex-wrap gap-1 flex-1">
+            @for (type of allTypes; track type) {
+              <button
+                (click)="toggleType(type)"
+                [class]="isTypeSelected(type)
+                  ? 'flex-1 md:flex-none px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline ring-1 ring-white/50 transition-all flex items-center justify-center gap-1 ' + getTypeColor(type)
+                  : 'flex-1 md:flex-none px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 hover:opacity-70 transition-all flex items-center justify-center gap-1 ' + getTypeColor(type)"
+              >
+                <iconify-icon [icon]="getTypeIcon(type)" class="text-sm"></iconify-icon>
+                {{ type }}
+              </button>
+            }
           </div>
 
-          <!-- Séparateur -->
-          <div class="w-px bg-slate-600 mx-1 self-stretch"></div>
+          <!-- Séparateur (desktop uniquement) -->
+          <div class="hidden md:block w-px bg-slate-600 mx-1 self-stretch"></div>
 
-          <!-- Boutons empilés -->
-          <div class="flex flex-col gap-1 justify-around">
+          <!-- Boutons Mono/Double : en ligne sur mobile, empilés sur desktop -->
+          <div class="flex md:flex-col gap-1 md:justify-around">
             <button
               (click)="toggleOnlyMonoType()"
               [class]="onlyMonoType()
-                ? 'px-3 py-1 rounded-lg text-xs font-bold bg-teal-600 text-white border border-teal-500 shadow-lg shadow-teal-500/20 transition-all'
-                : 'px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
+                ? 'flex-1 md:flex-none px-3 py-1 rounded-lg text-xs font-bold bg-teal-600 text-white border border-teal-500 shadow-lg shadow-teal-500/20 transition-all'
+                : 'flex-1 md:flex-none px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
             >
               Mono type seulement
             </button>
             <button
               (click)="toggleOnlyDualType()"
               [class]="onlyDualType()
-                ? 'px-3 py-1 rounded-lg text-xs font-bold bg-indigo-600 text-white border border-indigo-500 shadow-lg shadow-indigo-500/20 transition-all'
-                : 'px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
+                ? 'flex-1 md:flex-none px-3 py-1 rounded-lg text-xs font-bold bg-indigo-600 text-white border border-indigo-500 shadow-lg shadow-indigo-500/20 transition-all'
+                : 'flex-1 md:flex-none px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
             >
               Double type seulement
             </button>
           </div>
         </div>
       </div>
+
+      <!-- Bouton réinitialiser (mobile uniquement, dans le panneau filtres) -->
+      <button
+        (click)="clearFilters(); showMobileFilters = false"
+        class="md:hidden self-start flex items-center gap-1.5 px-2.5 py-1 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all duration-200"
+      >
+        <iconify-icon [icon]="ICONS.refresh" class="text-sm"></iconify-icon>
+        Réinitialiser les filtres
+      </button>
+
+      </div><!-- fin wrapper mobile-hidden -->
       }
 
       <!-- Résultats -->
@@ -251,7 +264,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
         <!-- Grille scrollable -->
         <div class="flex-1 overflow-y-auto pr-2" (scroll)="onGridScroll($event)">
-          <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 pb-2">
+          <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 pb-2">
             @for (pokemon of visiblePokemons(); track pokemon.id) {
               <div class="relative w-full h-full">
                 <button
@@ -347,6 +360,8 @@ export class PokedexComponent implements OnInit {
   noPokedex = input<boolean>(false);
   noSearch = input<boolean>(false);
   guess = output<number>();
+
+  showMobileFilters = false;
 
   allPokemons = signal<Pokemon[]>([]);
   

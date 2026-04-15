@@ -52,6 +52,8 @@ export class GameComponent implements OnInit, OnDestroy {
 	devOpponentPokemon: Pokemon | null = null;
 	lastGuessedPokemon: Pokemon | null = null;
 	opponentLastGuess: Pokemon | null = null;
+	activeTab = signal<'pokemon' | 'pokedex'>('pokedex');
+
 	showEndModal = false;
 	showIncorrectModal = signal(false);
 	showMyTurnModal = signal(false);

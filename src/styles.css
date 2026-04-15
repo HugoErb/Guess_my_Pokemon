@@ -38,6 +38,11 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
+/* Responsive : masqué sur mobile uniquement, sans conflit avec md:flex/md:block de Tailwind */
+@media (max-width: 767px) {
+  .mobile-hidden { display: none; }
+}
+
 /* Contour noir sur texte blanc des badges de type */
 .type-text-outline {
   text-shadow:

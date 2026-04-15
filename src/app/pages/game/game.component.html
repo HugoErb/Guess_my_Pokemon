@@ -1,6 +1,6 @@
 <div class="h-screen bg-slate-900 text-white flex flex-col overflow-hidden">
 	<!-- Header -->
-	<header class="bg-slate-800 border-b border-slate-700 px-6 py-3 flex items-center justify-between">
+	<header class="bg-slate-800 border-b border-slate-700 px-3 md:px-6 py-3 flex items-center justify-between">
 		<div class="flex items-center gap-3">
 			<iconify-icon [icon]="ICONS.pokeball" class="text-2xl text-red-500"></iconify-icon>
 			<h1 class="text-lg font-bold text-white">Guess my Pokémon</h1>
@@ -14,7 +14,7 @@
 	<!-- Contenu principal : deux colonnes -->
 	<div class="flex-1 flex overflow-hidden">
 		<!-- Colonne gauche : Ton Pokémon -->
-		<div class="w-80 shrink-0 overflow-y-auto p-4 flex flex-col gap-6">
+		<div class="w-full md:w-80 shrink-0 overflow-y-auto p-3 md:p-4 flex flex-col gap-4 md:gap-6" [class.mobile-hidden]="activeTab() !== 'pokemon'">
 			<div>
 				<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Ton Pokémon</h3>
 				@if (myPokemon) {
@@ -40,41 +40,36 @@
 		</div>
 
 		<!-- Colonne droite : Pokédex -->
-		<div class="flex-1 flex flex-col overflow-hidden border-l border-slate-800">
+		<div class="flex-1 flex flex-col overflow-hidden md:border-l md:border-slate-800" [class.mobile-hidden]="activeTab() !== 'pokedex'">
 			<!-- Bandeau d'infos de la partie (Indicateur de tour, etc.) -->
 			@if (room()?.status === 'playing') {
-				<div class="bg-slate-800/50 border-b border-slate-700 px-6 py-2 flex items-center justify-between shrink-0">
-					<div class="flex items-center gap-6">
-						<div class="flex items-center gap-2">
-							@if (isMyTurn()) {
-								<span class="flex items-center gap-2 px-3 py-1 bg-red-600/20 border border-red-500/50 rounded-lg text-[10px] font-black text-red-500 uppercase tracking-[0.1em] shadow-lg shadow-red-500/10 animate-pulse">
-									<span class="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span>
-									À toi de jouer
-								</span>
-							} @else {
-								<span class="flex items-center gap-2 px-3 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-500 uppercase tracking-[0.1em]">
-									<span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
-									Tour adverse
-								</span>
-							}
-						</div>
-
-						<div class="h-4 w-px bg-slate-700"></div>
-						<button (click)="openGameSettingsModal()" class="flex items-center gap-2 px-2 py-1 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all group">
-							<iconify-icon [icon]="ICONS.rules" class="text-xs group-hover:scale-110 transition-transform"></iconify-icon>
-							Configuration
-						</button>
-
-						<div class="h-4 w-px bg-slate-700"></div>
-						<div class="flex items-center text-slate-400">
-							<span class="text-[11px] font-bold uppercase tracking-wider">Tour <strong class="ml-0.5 text-slate-100 font-mono text-[13px]">{{ gameTurn() }}</strong></span>
-						</div>
+				<div class="bg-slate-800/50 border-b border-slate-700 px-3 py-2 flex items-center justify-between gap-2 shrink-0">
+					<!-- Gauche : indicateur de tour + compteur -->
+					<div class="flex items-center gap-2 min-w-0">
+						@if (isMyTurn()) {
+							<span class="flex items-center gap-1.5 px-2.5 py-1 bg-red-600/20 border border-red-500/50 rounded-lg text-[10px] font-black text-red-500 uppercase tracking-[0.1em] shadow-lg shadow-red-500/10 animate-pulse whitespace-nowrap">
+								<span class="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span>
+								À toi de jouer
+							</span>
+						} @else {
+							<span class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-500 uppercase tracking-[0.1em] whitespace-nowrap">
+								<span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
+								Tour adverse
+							</span>
+						}
+						<div class="hidden sm:block h-4 w-px bg-slate-700"></div>
+						<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">Tour <strong class="text-slate-100 font-mono text-[13px]">{{ gameTurn() }}</strong></span>
 					</div>
 
-					<div class="flex items-center gap-3">
-						<button (click)="promptCancel()" class="flex items-center gap-2 px-2.5 py-1 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 hover:border-slate-500 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all duration-200 group">
-							<iconify-icon [icon]="ICONS.logout" class="text-xs transition-transform"></iconify-icon>
-							<span>Quitter la partie</span>
+					<!-- Droite : boutons d'action -->
+					<div class="flex items-center gap-2 shrink-0">
+						<button (click)="openGameSettingsModal()" class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all">
+							<iconify-icon [icon]="ICONS.rules" class="text-sm"></iconify-icon>
+							<span class="hidden sm:inline">Configuration</span>
+						</button>
+						<button (click)="promptCancel()" class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-red-900/50 border border-slate-600/50 hover:border-red-800 rounded-lg text-[10px] font-black text-slate-400 hover:text-red-300 uppercase tracking-wider transition-all">
+							<iconify-icon [icon]="ICONS.logout" class="text-sm"></iconify-icon>
+							<span class="hidden sm:inline">Quitter</span>
 						</button>
 					</div>
 				</div>
@@ -91,6 +86,28 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Barre d'onglets mobile (masquée sur md+) -->
+	<nav class="md:hidden flex shrink-0 border-t border-slate-700 bg-slate-800">
+		<button
+			(click)="activeTab.set('pokemon')"
+			class="flex-1 py-3 flex flex-col items-center gap-1 text-[10px] font-bold uppercase tracking-wider transition-colors"
+			[class.text-red-500]="activeTab() === 'pokemon'"
+			[class.text-slate-400]="activeTab() !== 'pokemon'"
+		>
+			<iconify-icon [icon]="ICONS.pokeball" class="text-xl"></iconify-icon>
+			Mon Pokémon
+		</button>
+		<button
+			(click)="activeTab.set('pokedex')"
+			class="flex-1 py-3 flex flex-col items-center gap-1 text-[10px] font-bold uppercase tracking-wider transition-colors"
+			[class.text-red-500]="activeTab() === 'pokedex'"
+			[class.text-slate-400]="activeTab() !== 'pokedex'"
+		>
+			<iconify-icon [icon]="ICONS.pokedex" class="text-xl"></iconify-icon>
+			Pokédex
+		</button>
+	</nav>
 </div>
 
 <!-- Modale de Fin de Partie -->
