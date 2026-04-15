@@ -339,5 +339,5 @@ export class GameService implements OnDestroy {
     readonly settings = computed(() => {
         const room = this.currentRoom();
         return room?.settings ?? DEFAULT_SETTINGS;
-    });
+    }, { equal: (a, b) => JSON.stringify(a) === JSON.stringify(b) });
 }
