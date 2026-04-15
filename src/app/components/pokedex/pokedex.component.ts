@@ -92,7 +92,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
       <!-- Filtres (masqués sur mobile sauf si ouverts via le bouton) -->
       @if (!noSearch()) {
-      <div [class.mobile-hidden]="!showFilters()" class="flex flex-col gap-5">
+      <div [class.mobile-hidden]="!showFilters()" class="flex flex-col gap-5" [class.flex-1]="filtersOnly()" [class.overflow-y-auto]="filtersOnly()">
       <div class="flex flex-wrap gap-x-8 gap-y-6">
         <!-- Génération -->
         <div class="shrink-0">
@@ -100,10 +100,13 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
           <div class="flex flex-nowrap gap-1">
             @for (gen of generations; track gen) {
               <button
-                (click)="toggleGeneration(gen)"
-                [class]="isGenSelected(gen)
-                  ? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white border border-blue-500 transition-colors'
-                  : 'px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 border border-slate-600 hover:bg-slate-600 transition-colors'"
+                (click)="!isGenRestricted(gen) && toggleGeneration(gen)"
+                [disabled]="isGenRestricted(gen)"
+                [class]="isGenRestricted(gen)
+                  ? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-600 border border-slate-700 cursor-not-allowed opacity-40'
+                  : isGenSelected(gen)
+                    ? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white border border-blue-500 transition-colors'
+                    : 'px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 border border-slate-600 hover:bg-slate-600 transition-colors'"
               >
                 {{ gen }}
               </button>
@@ -413,7 +416,7 @@ export class PokedexComponent implements OnInit {
   
   // États des filtres (Signals)
   searchQuery = signal('');
-  selectedGenerations = signal<number[]>([]);
+  selectedGenerations = signal<number[]>([...GENERATIONS]);
   selectedTypes = signal<string[]>([...ALL_TYPES]);
   selectedCategories = signal<string[]>([]);
   selectedEvoStages = signal<number[]>([]);
@@ -527,6 +530,11 @@ export class PokedexComponent implements OnInit {
     return this.selectedGenerations().includes(gen);
   }
 
+  isGenRestricted(gen: number): boolean {
+    const restricted = this.restrictedGenerations();
+    return restricted.length > 0 && !restricted.includes(gen);
+  }
+
   toggleType(type: string): void {
     this.selectedTypes.update(list => {
       if (list.includes(type)) return list.filter(t => t !== type);
@@ -574,7 +582,7 @@ export class PokedexComponent implements OnInit {
 
   clearFilters(): void {
     this.searchQuery.set('');
-    this.selectedGenerations.set([]);
+    this.selectedGenerations.set([...GENERATIONS]);
     this.selectedTypes.set([...ALL_TYPES]);
     this.selectedCategories.set([]);
     this.selectedEvoStages.set([]);

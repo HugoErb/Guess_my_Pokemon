@@ -1,4 +1,4 @@
-<div class="h-screen bg-slate-900 text-white flex flex-col overflow-hidden">
+<div class="h-dvh bg-slate-900 text-white flex flex-col overflow-hidden">
 	<!-- Header -->
 	<header class="bg-slate-800 border-b border-slate-700 px-3 md:px-6 py-3 flex items-center justify-between">
 		<div class="flex items-center gap-3">
@@ -75,7 +75,7 @@
 				</div>
 			}
 
-			<div class="flex-1 overflow-y-auto p-4">
+			<div class="flex-1 overflow-hidden p-4">
 				<app-pokedex
 				[showGuessButton]="isMyTurn()"
 				[restrictedGenerations]="settings().generations"
@@ -221,12 +221,16 @@
 					<div class="flex items-center justify-between">
 						<span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Générations</span>
 						<span class="px-2 py-0.5 bg-blue-600/20 text-blue-400 text-[10px] font-black rounded uppercase">
-							{{ settings().generations.length === 9 ? 'Toutes' : settings().generations.length + ' Actives' }}
+							{{ settings().generations.length === 0 ? 'Toutes' : settings().generations.length + ' Actives' }}
 						</span>
 					</div>
 					<div class="flex flex-wrap gap-1.5">
-						@for (gen of settings().generations; track gen) {
-							<span class="text-[11px] font-bold text-slate-300 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">Gén {{ gen }}</span>
+						@for (gen of [1,2,3,4,5,6,7,8,9]; track gen) {
+							@if (settings().generations.length === 0 || settings().generations.includes(gen)) {
+								<span class="text-[11px] font-bold text-slate-300 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">Gén {{ gen }}</span>
+							} @else {
+								<span class="text-[11px] font-bold text-slate-600 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 opacity-40 line-through">Gén {{ gen }}</span>
+							}
 						}
 					</div>
 				</div>
