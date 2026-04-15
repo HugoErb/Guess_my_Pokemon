@@ -296,11 +296,25 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         <div class="flex-1 overflow-y-auto pr-2" (scroll)="onGridScroll($event)">
           <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 pb-2">
             @for (pokemon of visiblePokemons(); track pokemon.id) {
-              <div class="relative w-full h-full">
-                <button
-                  (click)="!guessedPokemonIds().includes(pokemon.id) && openPokemonDetails(pokemon)"
-                  [disabled]="guessedPokemonIds().includes(pokemon.id)"
-                  [class]="guessedPokemonIds().includes(pokemon.id)
+              <div class="relative w-full h-full group">
+
+                <!-- Bouton grisage manuel (toujours visible, sauf sur les guessés) -->
+                @if (!guessedPokemonIds().includes(pokemon.id)) {
+                  <button
+                    (click)="toggleManualDim(pokemon.id, $event)"
+                    class="absolute top-1 right-1 z-10 w-5 h-5 flex items-center justify-center rounded-full transition-all"
+                    [class]="isManuallyDimmed(pokemon.id)
+                      ? 'opacity-100 bg-slate-600/90 text-slate-300 hover:bg-red-600/80 hover:text-white'
+                      : 'opacity-100 bg-slate-800/70 text-slate-400 hover:text-white'"
+                  >
+                    <iconify-icon [icon]="isManuallyDimmed(pokemon.id) ? ICONS.eye : ICONS.eyeOff" class="text-[10px]"></iconify-icon>
+                  </button>
+                }
+
+<button
+                  (click)="!guessedPokemonIds().includes(pokemon.id) && !isManuallyDimmed(pokemon.id) && openPokemonDetails(pokemon)"
+                  [disabled]="guessedPokemonIds().includes(pokemon.id) || isManuallyDimmed(pokemon.id)"
+                  [class]="guessedPokemonIds().includes(pokemon.id) || isManuallyDimmed(pokemon.id)
                     ? 'w-full h-full flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-800/40 border-2 border-slate-700 opacity-40 cursor-not-allowed transition-all'
                     : selectedPokemonDetails?.id === pokemon.id
                       ? 'w-full h-full flex flex-col items-center gap-1 p-2 rounded-xl bg-red-900/40 border-2 border-red-500 transition-all'
@@ -311,15 +325,15 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
                       [src]="pokemon.sprite"
                       [alt]="pokemon.name"
                       class="w-12 h-12 object-contain"
-                      [class.grayscale]="guessedPokemonIds().includes(pokemon.id)"
+                      [class.grayscale]="guessedPokemonIds().includes(pokemon.id) || isManuallyDimmed(pokemon.id)"
                       loading="lazy"
                     />
                   } @else {
                     <div class="w-12 h-12 flex items-center justify-center text-3xl text-slate-500">?</div>
                   }
                   <span class="text-xs text-center capitalize leading-tight truncate w-full"
-                    [class.text-slate-500]="guessedPokemonIds().includes(pokemon.id)"
-                    [class.text-slate-300]="!guessedPokemonIds().includes(pokemon.id)"
+                    [class.text-slate-500]="guessedPokemonIds().includes(pokemon.id) || isManuallyDimmed(pokemon.id)"
+                    [class.text-slate-300]="!guessedPokemonIds().includes(pokemon.id) && !isManuallyDimmed(pokemon.id)"
                   >
                     {{ pokemon.name }}
                   </span>
@@ -418,6 +432,9 @@ export class PokedexComponent implements OnInit {
   maxHeight = signal<number | null>(null);
   onlyDualType = signal(false);
   onlyMonoType = signal(false);
+
+  // Grisage manuel
+  manuallyDimmedIds = signal<number[]>([]);
 
   // Pagination (Signal)
   displayedCount = signal(100);
@@ -608,5 +625,16 @@ export class PokedexComponent implements OnInit {
   onGuessFromDetails(pokemon: Pokemon): void {
     this.guess.emit(pokemon.id);
     this.closePokemonDetails();
+  }
+
+  isManuallyDimmed(id: number): boolean {
+    return this.manuallyDimmedIds().includes(id);
+  }
+
+  toggleManualDim(id: number, event: Event): void {
+    event.stopPropagation();
+    this.manuallyDimmedIds.update(ids =>
+      ids.includes(id) ? ids.filter(i => i !== id) : [...ids, id]
+    );
   }
 }
