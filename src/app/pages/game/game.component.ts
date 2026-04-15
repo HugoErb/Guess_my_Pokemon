@@ -233,10 +233,11 @@ export class GameComponent implements OnInit, OnDestroy {
 	private launchConfetti(): void {
 		const duration = 3000;
 		const end = Date.now() + duration;
+		const isMobile = window.innerWidth < 768;
 
 		const fire = (originX: number) => {
 			confetti({
-				particleCount: 6,
+				particleCount: isMobile ? 3 : 6,
 				angle: originX === 0.1 ? 60 : 120,
 				spread: 55,
 				origin: { x: originX, y: 1 },
@@ -252,7 +253,7 @@ export class GameComponent implements OnInit, OnDestroy {
 			}
 			fire(0.1);
 			fire(0.9);
-		}, 50);
+		}, isMobile ? 80 : 50);
 	}
 
 	async onGuess(pokemonId: number): Promise<void> {
