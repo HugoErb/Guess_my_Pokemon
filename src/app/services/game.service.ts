@@ -10,7 +10,22 @@ export class GameService implements OnDestroy {
     private pollInterval: any;
 
     /** Signal Angular : room en cours de jeu, null si aucune. */
-    currentRoom = signal<Room | null>(null);
+    currentRoom = signal<Room | null>(null, {
+        equal: (a, b) => {
+            if (a === b) return true;
+            if (!a || !b) return false;
+            return (
+                a.status === b.status &&
+                a.current_turn === b.current_turn &&
+                a.winner_id === b.winner_id &&
+                a.p1_ready === b.p1_ready &&
+                a.p2_ready === b.p2_ready &&
+                a.pokemon_p1 === b.pokemon_p1 &&
+                a.pokemon_p2 === b.pokemon_p2 &&
+                JSON.stringify(a.settings) === JSON.stringify(b.settings)
+            );
+        }
+    });
 
     isDev(): boolean {
         return environment.devMode && isDevMode();
@@ -323,6 +338,6 @@ export class GameService implements OnDestroy {
 
     readonly settings = computed(() => {
         const room = this.currentRoom();
-        return room?.settings ? { ...room.settings } : { ...DEFAULT_SETTINGS };
+        return room?.settings ?? DEFAULT_SETTINGS;
     });
 }
