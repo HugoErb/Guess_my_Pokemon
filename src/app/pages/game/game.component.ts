@@ -62,6 +62,7 @@ export class GameComponent implements OnInit, OnDestroy {
 	isWinner = false;
 	devOpponentTries = signal(0);
 	private isSimulatingTurn = false;
+	private confettiInterval: ReturnType<typeof setInterval> | null = null;
 	readonly isDev = environment.devMode && isDevMode();
 
 	guessedPokemonIds = signal<number[]>([]);
@@ -243,9 +244,10 @@ export class GameComponent implements OnInit, OnDestroy {
 			});
 		};
 
-		const interval = setInterval(() => {
+		this.confettiInterval = setInterval(() => {
 			if (Date.now() > end) {
-				clearInterval(interval);
+				clearInterval(this.confettiInterval!);
+				this.confettiInterval = null;
 				return;
 			}
 			fire(0.1);
@@ -336,6 +338,10 @@ export class GameComponent implements OnInit, OnDestroy {
 	}
 
 	ngOnDestroy(): void {
+		if (this.confettiInterval !== null) {
+			clearInterval(this.confettiInterval);
+			this.confettiInterval = null;
+		}
 		this.gameService.stopWatching();
 		this.pokemonSub?.unsubscribe();
 		this.opponentSub?.unsubscribe();
