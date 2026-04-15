@@ -42,7 +42,7 @@ export class GameService implements OnDestroy {
         this.pollInterval && clearInterval(this.pollInterval);
         this.pollInterval = setInterval(() => {
             const room = this.currentRoom();
-            if (room && room.status !== 'finished') {
+            if (room && room.status !== 'selecting') {
                 void this.refreshRoom(roomId);
             }
         }, 1000);

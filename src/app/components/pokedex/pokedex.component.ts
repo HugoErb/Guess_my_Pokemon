@@ -443,7 +443,7 @@ export class PokedexComponent implements OnInit {
     if (el.scrollHeight - el.scrollTop - el.clientHeight < 300 && this.displayedCount() < this.filteredPokemons().length) {
       this.isLoadingMore = true;
       this.displayedCount.update(c => c + this.PAGE_SIZE);
-      requestAnimationFrame(() => { this.isLoadingMore = false; });
+      setTimeout(() => { this.isLoadingMore = false; }, 300);
     }
   }
 
