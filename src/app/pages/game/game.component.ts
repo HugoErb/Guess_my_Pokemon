@@ -69,6 +69,11 @@ export class GameComponent implements OnInit, OnDestroy {
 	showCancelModal = signal(false);
 	showGameSettingsModal = signal(false);
 
+	onMyTurnModalClose(): void {
+		this.showMyTurnModal.set(false);
+		this.opponentLastGuess.set(null); // Reset pour le tour suivant
+	}
+
 	onIncorrectModalClose(): void {
 		this.showIncorrectModal.set(false);
 		if (this.pendingMyTurnModal()) {
@@ -108,7 +113,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
 				// Déclencher la pop-up "À toi de jouer" depuis le signal DB (fiable même si broadcast manqué)
 				if (this.isMyTurn() && !this.showEndModal) {
-					this.opponentLastGuess.set(null); // Reset pour ce nouveau tour
+					// Ne pas reset opponentLastGuess ici : le broadcast l'a déjà rempli avant que l'effect se déclenche
 					setTimeout(() => {
 						if (!this.showMyTurnModal() && !this.showEndModal) {
 							if (this.showIncorrectModal()) {

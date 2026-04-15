@@ -14,7 +14,6 @@ export interface Pokemon {
     def_spe: number;
     vitesse: number;
   };
-  abilities: string[];
   height: number;
   weight: number;
   description: string;

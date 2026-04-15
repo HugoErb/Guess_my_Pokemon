@@ -146,14 +146,6 @@ const TYPE_COLORS: Record<string, string> = {
         }
       </div>
 
-      <!-- Capacités -->
-      @if (pokemon().abilities && pokemon().abilities.length > 0) {
-        <div class="border-t border-slate-700 pt-3">
-          <p class="text-xs text-slate-400 mb-1">Capacités</p>
-          <p class="text-sm text-white">{{ pokemon().abilities.join(', ') }}</p>
-        </div>
-      }
-
       <!-- Description -->
       @if (pokemon().description) {
         <div class="border-t border-slate-700 pt-3">
