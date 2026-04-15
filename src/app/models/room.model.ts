@@ -13,7 +13,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   generations: [],
   noPokedex: false,
   noSearch: false,
-  firstPlayer: 'player1',
+  firstPlayer: 'random',
 };
 
 export interface Room {

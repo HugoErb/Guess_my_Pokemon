@@ -99,9 +99,9 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	isSimulatingReady = false;
 	readonly devMode = environment.devMode;
 	readonly firstPlayerOptions: { value: FirstPlayer; label: string }[] = [
+		{ value: 'random', label: 'Aléatoire' },
 		{ value: 'player1', label: 'Vous' },
 		{ value: 'player2', label: 'Adversaire' },
-		{ value: 'random', label: 'Aléatoire' },
 	];
 
 	private pokemonsSub?: Subscription;
