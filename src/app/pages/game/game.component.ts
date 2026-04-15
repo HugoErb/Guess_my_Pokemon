@@ -51,12 +51,13 @@ export class GameComponent implements OnInit, OnDestroy {
 	opponentPokemon: Pokemon | null = null;
 	devOpponentPokemon: Pokemon | null = null;
 	lastGuessedPokemon: Pokemon | null = null;
-	opponentLastGuess: Pokemon | null = null;
+	opponentLastGuess = signal<Pokemon | null>(null);
 	activeTab = signal<'pokemon' | 'pokedex'>('pokedex');
 
 	showEndModal = false;
 	showIncorrectModal = signal(false);
 	showMyTurnModal = signal(false);
+	pendingMyTurnModal = signal(false);
 	isWinner = false;
 	devOpponentTries = signal(0);
 	private isSimulatingTurn = false;
@@ -67,6 +68,14 @@ export class GameComponent implements OnInit, OnDestroy {
 	showRulesModal = signal(false);
 	showCancelModal = signal(false);
 	showGameSettingsModal = signal(false);
+
+	onIncorrectModalClose(): void {
+		this.showIncorrectModal.set(false);
+		if (this.pendingMyTurnModal()) {
+			this.pendingMyTurnModal.set(false);
+			this.showMyTurnModal.set(true);
+		}
+	}
 
 	openRulesModal(): void { this.showRulesModal.set(true); }
 	closeRulesModal(): void { this.showRulesModal.set(false); }
@@ -96,6 +105,20 @@ export class GameComponent implements OnInit, OnDestroy {
 			if (r?.status === 'playing' && r.current_turn !== this.lastTurnId) {
 				this.turnCounter.update(c => c + 1);
 				this.lastTurnId = r.current_turn;
+
+				// Déclencher la pop-up "À toi de jouer" depuis le signal DB (fiable même si broadcast manqué)
+				if (this.isMyTurn() && !this.showEndModal) {
+					this.opponentLastGuess.set(null); // Reset pour ce nouveau tour
+					setTimeout(() => {
+						if (!this.showMyTurnModal() && !this.showEndModal) {
+							if (this.showIncorrectModal()) {
+								this.pendingMyTurnModal.set(true);
+							} else {
+								this.showMyTurnModal.set(true);
+							}
+						}
+					}, 250);
+				}
 			}
 
 			// Simulation DEV de l'adversaire
@@ -136,10 +159,6 @@ export class GameComponent implements OnInit, OnDestroy {
 		const r = this.room();
 		if (!r) return;
 
-		if (r.status === 'playing' && this.isMyTurn()) {
-			this.showMyTurnModal.set(true);
-		}
-
 		const isPlayer1 = this.gameService.isPlayer1();
 		const myPokemonId = isPlayer1 ? r.pokemon_p1 : r.pokemon_p2;
 
@@ -170,19 +189,9 @@ export class GameComponent implements OnInit, OnDestroy {
 
 				// On ne traite que si c'est l'adversaire (ou le bot) qui a joué
 				if (senderId !== currentUserId) {
-					this.pokemonService.getById(pokemonId).subscribe(async p => {
-						this.opponentLastGuess = p ?? null;
-
-						// Si la modale "Raté" est encore ouverte, on attend qu'elle se ferme
-						if (this.showIncorrectModal()) {
-							console.log('[GameComponent] Attente fermeture modale incorrecte...');
-							while (this.showIncorrectModal()) {
-								await new Promise(resolve => setTimeout(resolve, 500));
-							}
-						}
-
-						console.log('[GameComponent] Affichage modale tour adverse');
-						this.showMyTurnModal.set(true);
+					this.pokemonService.getById(pokemonId).subscribe(p => {
+						// Stocker le pokémon deviné — la modale sera déclenchée par l'effect via current_turn
+						this.opponentLastGuess.set(p ?? null);
 					});
 				}
 			}
@@ -206,6 +215,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
 		this.showMyTurnModal.set(false);
 		this.showIncorrectModal.set(false);
+		this.pendingMyTurnModal.set(false);
 		this.showEndModal = true;
 	}
 

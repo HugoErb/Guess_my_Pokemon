@@ -272,7 +272,7 @@
 				<p class="text-slate-300">C'est maintenant au tour de l'adversaire de jouer.</p>
 			</div>
 
-			<button (click)="showIncorrectModal.set(false)" class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2">
+			<button (click)="onIncorrectModalClose()" class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2">
 				Compris
 			</button>
 		</div>
@@ -288,14 +288,14 @@
 
 			<div class="space-y-2">
 				<h2 class="text-2xl font-bold text-red-400 uppercase tracking-tight">À toi de jouer !</h2>
-				@if (opponentLastGuess) {
+				@if (opponentLastGuess()) {
 					<p class="text-slate-300">
 						L'adversaire a tenté
-						<strong class="text-white capitalize">{{ opponentLastGuess.name }}</strong>...
+						<strong class="text-white capitalize">{{ opponentLastGuess()!.name }}</strong>...
 					</p>
 					<p class="text-slate-300">C'est raté ! C'est ton tour.</p>
 				} @else {
-					<p class="text-slate-300">La partie commence, c'est à toi de jouer en premier.</p>
+					<p class="text-slate-300">C'est à toi de jouer !</p>
 				}
 				<p class="text-slate-300">Pose maintenant une question à ton adversaire !</p>
 			</div>
