@@ -77,6 +77,7 @@ export class GameComponent implements OnInit, OnDestroy {
 	showRulesModal = signal(false);
 	showCancelModal = signal(false);
 	showGameSettingsModal = signal(false);
+	showHelpModal = signal(false);
 
 	/** Ferme la modal "À ton tour" et réinitialise le dernier guess de l'adversaire. */
 	onMyTurnModalClose(): void {
@@ -101,6 +102,8 @@ export class GameComponent implements OnInit, OnDestroy {
 	openGameSettingsModal(): void { this.showGameSettingsModal.set(true); }
 	/** Ferme la modal des paramètres de la partie. */
 	closeGameSettingsModal(): void { this.showGameSettingsModal.set(false); }
+	openHelpModal(): void { this.showHelpModal.set(true); }
+	closeHelpModal(): void { this.showHelpModal.set(false); }
 	isCancelling = false;
 
 	private pokemonSub?: Subscription;

@@ -4,17 +4,22 @@
 		<div class="flex items-center gap-3">
 			<iconify-icon [icon]="ICONS.pokeball" class="text-2xl text-red-500"></iconify-icon>
 			<h1 class="text-lg font-bold text-white">Guess my Pokémon</h1>
-			<button (click)="openRulesModal()" class="px-3 py-1 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors text-sm font-medium">
+			<button
+				(click)="openRulesModal()"
+				class="px-3 py-1 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors text-sm font-medium"
+			>
 				Règles
 			</button>
 		</div>
 	</header>
 
-
 	<!-- Contenu principal : deux colonnes -->
 	<div class="flex-1 flex overflow-hidden pb-[44px] md:pb-0">
 		<!-- Colonne gauche : Ton Pokémon -->
-		<div class="w-full md:w-80 shrink-0 overflow-y-auto p-3 md:p-4 flex flex-col gap-4 md:gap-6" [class.mobile-hidden]="activeTab() !== 'pokemon'">
+		<div
+			class="w-full md:w-80 shrink-0 overflow-y-auto p-3 md:p-4 flex flex-col gap-4 md:gap-6"
+			[class.mobile-hidden]="activeTab() !== 'pokemon'"
+		>
 			<div>
 				<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Ton Pokémon</h3>
 				@if (myPokemon) {
@@ -40,34 +45,57 @@
 		</div>
 
 		<!-- Colonne droite : Pokédex -->
-		<div class="flex-1 flex flex-col overflow-hidden md:border-l md:border-slate-800" [class.mobile-hidden]="activeTab() !== 'pokedex' && activeTab() !== 'filtres'">
+		<div
+			class="flex-1 flex flex-col overflow-hidden md:border-l md:border-slate-800"
+			[class.mobile-hidden]="activeTab() !== 'pokedex' && activeTab() !== 'filtres'"
+		>
 			<!-- Bandeau d'infos de la partie (Indicateur de tour, etc.) -->
-			@if (room()?.status === 'playing') {
+			@if (room()?.status === "playing") {
 				<div class="bg-slate-800/50 border-b border-slate-700 px-3 py-2 flex items-center justify-between gap-2 shrink-0">
 					<!-- Gauche : indicateur de tour + compteur -->
 					<div class="flex items-center gap-2 min-w-0">
 						@if (isMyTurn()) {
-							<span class="flex items-center gap-1.5 px-2.5 py-1 bg-red-600/20 border border-red-500/50 rounded-lg text-[10px] font-black text-red-500 uppercase tracking-[0.1em] shadow-lg shadow-red-500/10 animate-pulse whitespace-nowrap">
+							<span
+								class="flex items-center gap-1.5 px-2.5 py-1 bg-red-600/20 border border-red-500/50 rounded-lg text-[10px] font-black text-red-500 uppercase tracking-[0.1em] shadow-lg shadow-red-500/10 animate-pulse whitespace-nowrap"
+							>
 								<span class="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span>
 								À toi de jouer
 							</span>
 						} @else {
-							<span class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-500 uppercase tracking-[0.1em] whitespace-nowrap">
+							<span
+								class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-500 uppercase tracking-[0.1em] whitespace-nowrap"
+							>
 								<span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
 								Tour adverse
 							</span>
 						}
 						<div class="hidden sm:block h-4 w-px bg-slate-700"></div>
-						<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">Tour <strong class="text-slate-100 font-mono text-[13px]">{{ gameTurn() }}</strong></span>
+						<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">
+							Tour
+							<strong class="text-slate-100 font-mono text-[13px]">{{ gameTurn() }}</strong>
+						</span>
 					</div>
 
 					<!-- Droite : boutons d'action -->
 					<div class="flex items-center gap-2 shrink-0">
-						<button (click)="openGameSettingsModal()" class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all">
+						<button
+							(click)="openHelpModal()"
+							class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all"
+						>
+							<iconify-icon [icon]="ICONS.help" class="text-sm"></iconify-icon>
+							<span class="hidden sm:inline">Aide</span>
+						</button>
+						<button
+							(click)="openGameSettingsModal()"
+							class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all"
+						>
 							<iconify-icon [icon]="ICONS.rules" class="text-sm"></iconify-icon>
 							<span class="hidden sm:inline">Configuration</span>
 						</button>
-						<button (click)="promptCancel()" class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-red-900/50 border border-slate-600/50 hover:border-red-800 rounded-lg text-[10px] font-black text-slate-400 hover:text-red-300 uppercase tracking-wider transition-all">
+						<button
+							(click)="promptCancel()"
+							class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-red-900/50 border border-slate-600/50 hover:border-red-800 rounded-lg text-[10px] font-black text-slate-400 hover:text-red-300 uppercase tracking-wider transition-all"
+						>
 							<iconify-icon [icon]="ICONS.logout" class="text-sm"></iconify-icon>
 							<span class="hidden sm:inline">Quitter</span>
 						</button>
@@ -77,15 +105,15 @@
 
 			<div class="flex-1 overflow-hidden p-4">
 				<app-pokedex
-				[showGuessButton]="isMyTurn()"
-				[restrictedGenerations]="settings().generations"
-				[noPokedex]="settings().noPokedex"
-				[noSearch]="settings().noSearch"
-				[guessedPokemonIds]="guessedPokemonIds()"
-				[showFilters]="activeTab() === 'filtres'"
-				[filtersOnly]="activeTab() === 'filtres'"
-				(guess)="onGuess($event)"
-			/>
+					[showGuessButton]="isMyTurn()"
+					[restrictedGenerations]="settings().generations"
+					[noPokedex]="settings().noPokedex"
+					[noSearch]="settings().noSearch"
+					[guessedPokemonIds]="guessedPokemonIds()"
+					[showFilters]="activeTab() === 'filtres'"
+					[filtersOnly]="activeTab() === 'filtres'"
+					(guess)="onGuess($event)"
+				/>
 			</div>
 		</div>
 	</div>
@@ -125,8 +153,9 @@
 <!-- Modale de Fin de Partie -->
 @if (showEndModal) {
 	<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4" [@modalAnimation]>
-		<div class="bg-slate-800 border border-slate-600 rounded-2xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center gap-6 text-center modal-content">
-
+		<div
+			class="bg-slate-800 border border-slate-600 rounded-2xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center gap-6 text-center modal-content"
+		>
 			<div class="flex flex-col items-center gap-2">
 				@if (isWinner) {
 					<iconify-icon [icon]="ICONS.trophy" class="text-6xl text-yellow-400 animate-bounce"></iconify-icon>
@@ -164,7 +193,7 @@
 				>
 					<div class="flex items-center gap-2">
 						<iconify-icon [icon]="ICONS.dice" class="text-lg"></iconify-icon>
-						<span>{{ iWantReplay() ? 'En attente...' : 'Rejouer' }}</span>
+						<span>{{ iWantReplay() ? "En attente..." : "Rejouer" }}</span>
 					</div>
 					@if (iWantReplay() && !opponentWantsReplay()) {
 						<span class="text-[9px] font-medium uppercase tracking-wider opacity-80 italic">En attente de l'adversaire</span>
@@ -188,11 +217,7 @@
 }
 
 @if (showCancelModal()) {
-	<app-cancel-modal
-		[isCancelling]="isCancelling"
-		(confirm)="confirmCancel()"
-		(cancel)="closeCancelModal()"
-	/>
+	<app-cancel-modal [isCancelling]="isCancelling" (confirm)="confirmCancel()" (cancel)="closeCancelModal()" />
 }
 
 @if (showGameSettingsModal()) {
@@ -221,15 +246,21 @@
 					<div class="flex items-center justify-between">
 						<span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Générations</span>
 						<span class="px-2 py-0.5 bg-blue-600/20 text-blue-400 text-[10px] font-black rounded uppercase">
-							{{ settings().generations.length === 0 ? 'Toutes' : settings().generations.length + ' Actives' }}
+							{{ settings().generations.length === 0 ? "Toutes" : settings().generations.length + " Actives" }}
 						</span>
 					</div>
 					<div class="flex flex-wrap gap-1.5">
-						@for (gen of [1,2,3,4,5,6,7,8,9]; track gen) {
+						@for (gen of [1, 2, 3, 4, 5, 6, 7, 8, 9]; track gen) {
 							@if (settings().generations.length === 0 || settings().generations.includes(gen)) {
-								<span class="text-[11px] font-bold text-slate-300 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">Gén {{ gen }}</span>
+								<span class="text-[11px] font-bold text-slate-300 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
+									Gén {{ gen }}
+								</span>
 							} @else {
-								<span class="text-[11px] font-bold text-slate-600 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 opacity-40 line-through">Gén {{ gen }}</span>
+								<span
+									class="text-[11px] font-bold text-slate-600 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 opacity-40 line-through"
+								>
+									Gén {{ gen }}
+								</span>
 							}
 						}
 					</div>
@@ -261,7 +292,301 @@
 				</div>
 			</div>
 
-			<button (click)="closeGameSettingsModal()" class="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-bold text-white transition-colors">
+			<button
+				(click)="closeGameSettingsModal()"
+				class="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-bold text-white transition-colors"
+			>
+				Fermer
+			</button>
+		</div>
+	</div>
+}
+@if (showHelpModal()) {
+	<div
+		class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+		(click)="closeHelpModal()"
+		[@modalAnimation]
+	>
+		<div
+			class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-lg w-full shadow-2xl flex flex-col gap-5 modal-content max-h-[90vh] overflow-y-auto"
+			(click)="$event.stopPropagation()"
+		>
+			<!-- En-tête -->
+			<div class="flex items-center gap-3">
+				<div class="w-10 h-10 rounded-xl bg-cyan-600/20 flex items-center justify-center border border-cyan-500/30 shrink-0">
+					<iconify-icon [icon]="ICONS.help" class="text-2xl text-cyan-400"></iconify-icon>
+				</div>
+				<div>
+					<h2 class="text-lg font-bold text-white uppercase tracking-wider">Aide — Filtres</h2>
+					<p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.1em]">Comment utiliser les filtres du Pokédex</p>
+				</div>
+			</div>
+
+			<div class="space-y-3">
+				<!-- Génération -->
+				<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 space-y-2">
+					<div class="flex items-center gap-2">
+						<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 border border-slate-600">Génération</span>
+					</div>
+					<p class="text-sm text-slate-300">
+						Filtre les Pokémon par génération (1 à 9). Tous les boutons sont actifs par défaut. Cliquer sur un bouton
+						<strong class="text-white">désactive</strong>
+						cette génération et masque ses Pokémon.
+					</p>
+					<div class="bg-slate-800 rounded-lg px-3 py-2 text-xs space-y-0.5">
+						<div class="text-slate-400 font-bold mb-1">Exemple :</div>
+						<div class="text-slate-300">Gén. 1 désactivée → Bulbizarre, Dracaufeu, Pikachu... sont masqués.</div>
+					</div>
+				</div>
+
+				<!-- Stade d'évolution -->
+				<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 space-y-2">
+					<div class="flex items-center gap-2">
+						<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 border border-slate-600">Stade Évo.</span>
+					</div>
+					<p class="text-sm text-slate-300">
+						Filtre par stade d'évolution.
+						<strong class="text-white">Stade 1</strong>
+						= formes de base,
+						<strong class="text-white">Stade 2</strong>
+						= premières évolutions,
+						<strong class="text-white">Stade 3</strong>
+						= deuxièmes évolutions.
+					</p>
+					<div class="bg-slate-800 rounded-lg px-3 py-2 text-xs space-y-0.5">
+						<div class="text-slate-400 font-bold mb-2">Exemple :</div>
+						<div class="flex gap-2 flex-col">
+							<span class="text-slate-300">
+								Stade 1 →
+								<span class="text-white font-semibold">Salamèche</span>
+							</span>
+							<span class="text-slate-300">
+								Stade 2 →
+								<span class="text-white font-semibold">Reptincel</span>
+							</span>
+							<span class="text-slate-300">
+								Stade 3 →
+								<span class="text-white font-semibold">Dracaufeu</span>
+							</span>
+						</div>
+					</div>
+				</div>
+
+				<!-- Catégorie -->
+				<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 space-y-2">
+					<div class="flex items-center gap-2">
+						<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 border border-slate-600">Catégorie</span>
+					</div>
+					<p class="text-sm text-slate-300">Filtre par catégorie de Pokémon.</p>
+					<div class="bg-slate-800 rounded-lg px-3 py-2 text-xs space-y-1">
+						<div class="text-slate-400 font-bold mb-2">Catégories :</div>
+						<div class="flex gap-2 flex-col">
+							<div class="text-slate-300">
+								<span class="text-white font-semibold">Standard</span>
+								— Pokémon classiques
+							</div>
+							<div class="text-slate-300">
+								<span class="text-white font-semibold">Starter</span>
+								— Pokémon de départ (ex. Bulbizarre, Salamèche, Carapuce)
+							</div>
+							<div class="text-slate-300">
+								<span class="text-white font-semibold">Légendaire</span>
+								— ex. Mewtwo, Lugia
+							</div>
+							<div class="text-slate-300">
+								<span class="text-white font-semibold">Fabuleux</span>
+								— ex. Mew, Celebi
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Poids & Taille -->
+				<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 space-y-2">
+					<div class="flex items-center gap-2">
+						<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 border border-slate-600">Poids (KG)</span>
+						<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 border border-slate-600">Taille (M)</span>
+					</div>
+					<p class="text-sm text-slate-300">
+						Définit une plage min/max pour le poids en kilogrammes et la taille en mètres.
+						<br />
+						Les bornes sont
+						<strong class="text-white">inclusives</strong>
+						(ex. Min "1KG" inclut les Pokémon à exactement 1kg). Laisser un champ vide signifie
+						<strong class="text-white">pas de limite</strong>
+						de ce côté.
+						<br />
+						Les valeurs décimales sont acceptées avec un
+						<strong class="text-white">point</strong>
+						(ex.
+						<span class="font-mono text-slate-200">0.6</span>
+						pour 600 g).
+					</p>
+					<div class="bg-slate-800 rounded-lg px-3 py-2 text-xs space-y-0.5">
+						<div class="text-slate-400 font-bold mb-2">Exemples :</div>
+						<div class="flex gap-2 flex-col text-slate-300">- Poids Min = 0.1 et Poids Max = 1 → Pokémon entre 0.1 et 1 kg inclus.</div>
+						<div class="text-slate-300">- Taille Max = 6 → Pokémon mesurant au plus 6 m.</div>
+					</div>
+				</div>
+
+				<!-- Séparateur -->
+				<div class="flex items-center gap-3">
+					<div class="flex-1 h-px bg-slate-700"></div>
+					<span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Filtres de types</span>
+					<div class="flex-1 h-px bg-slate-700"></div>
+				</div>
+
+				<!-- Types -->
+				<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 space-y-2">
+					<div class="flex items-center gap-2">
+						<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 border border-slate-600">Type</span>
+					</div>
+					<p class="text-sm text-slate-300">
+						Les 18 types sont tous cochés par défaut. Décocher un type masque les Pokémon dont
+						<em>tous</em>
+						les types sont décochés.
+					</p>
+					<div class="bg-slate-800 rounded-lg px-3 py-2 text-xs space-y-1">
+						<div class="text-slate-400 font-bold mb-2">Exemple avec le type "Feu" décoché :</div>
+						<div>
+							<span class="text-slate-300">- Arcanin sera masqué car il n'est que de type "Feu"</span>
+						</div>
+						<div>
+							<span class="text-slate-300">
+								- Dracaufeu sera affiché car il n'est pas que de type "Feu" mais aussi "Vol" (et le type "Vol" reste coché)
+							</span>
+						</div>
+					</div>
+				</div>
+
+				<!-- Mono type -->
+				<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 space-y-2">
+					<div class="flex items-center gap-2">
+						<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 border border-slate-600">
+							Mono type seulement
+						</span>
+					</div>
+					<p class="text-sm text-slate-300">
+						Affiche uniquement les Pokémon qui n'ont qu'
+						<strong class="text-white">un seul type</strong>
+						.
+					</p>
+					<div class="bg-slate-800 rounded-lg px-3 py-2 text-xs space-y-1">
+						<div class="text-slate-400 font-bold mb-1">Exemple :</div>
+						<div class="flex gap-2 flex-col">
+							<div>
+							<span class="text-slate-300">- Arcanin sera affiché car il n'est que de type "Feu"</span>
+						</div>
+						<div>
+							<span class="text-slate-300">
+								- Dracaufeu sera masqué car il est de type "Feu" et "Vol" (double type)
+							</span>
+						</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Double type -->
+				<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 space-y-2">
+					<div class="flex items-center gap-2">
+						<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 border border-slate-600">Double type</span>
+					</div>
+					<p class="text-sm text-slate-300">
+						Affiche uniquement les Pokémon à
+						<strong class="text-white">deux types</strong>
+						. Un Pokémon est visible s'il possède
+						<em>au moins un</em>
+						de ses types parmi les types cochés.
+					</p>
+					<div class="bg-slate-800 rounded-lg px-3 py-2 text-xs space-y-1">
+						<div class="text-slate-400 font-bold mb-1">
+							Exemple —
+							<span class="text-white">Feu coché</span>
+							,
+							<span class="text-slate-400">Vol décoché</span>
+							:
+						</div>
+						<div class="text-slate-300">
+							Dracaufeu
+							<span class="text-slate-500">(Feu/Vol)</span>
+							→
+							<span class="text-green-400 font-bold">✓ affiché</span>
+							<span class="text-slate-500 text-[10px]">car Feu est coché</span>
+						</div>
+						<div class="text-slate-300">
+							Arcanin
+							<span class="text-slate-500">(Feu)</span>
+							→
+							<span class="text-red-400 font-bold">✗ masqué</span>
+							<span class="text-slate-500 text-[10px]">car mono type</span>
+						</div>
+					</div>
+				</div>
+
+				<!-- Double type strict -->
+				<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 space-y-2">
+					<div class="flex items-center gap-2">
+						<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 border border-slate-600">
+							Double type strict
+						</span>
+					</div>
+					<p class="text-sm text-slate-300">
+						Affiche uniquement les Pokémon à
+						<strong class="text-white">deux types</strong>
+						, mais un Pokémon n'est visible que si
+						<em>ses deux types</em>
+						sont cochés.
+					</p>
+					<div class="bg-slate-800 rounded-lg px-3 py-2 text-xs space-y-1">
+						<div class="text-slate-400 font-bold mb-1">
+							Exemple —
+							<span class="text-white">Feu coché</span>
+							,
+							<span class="text-slate-400">Vol décoché</span>
+							:
+						</div>
+						<div class="text-slate-300">
+							Dracaufeu
+							<span class="text-slate-500">(Feu/Vol)</span>
+							→
+							<span class="text-red-400 font-bold">✗ masqué</span>
+							<span class="text-slate-500 text-[10px]">car Vol est décoché</span>
+						</div>
+						<div class="mt-1 text-violet-400 font-bold">
+							Exemple —
+							<span class="text-white">Feu coché</span>
+							,
+							<span class="text-white">Vol coché</span>
+							:
+						</div>
+						<div class="text-slate-300">
+							Dracaufeu
+							<span class="text-slate-500">(Feu/Vol)</span>
+							→
+							<span class="text-green-400 font-bold">✓ affiché</span>
+							<span class="text-slate-500 text-[10px]">car les deux types sont cochés</span>
+						</div>
+					</div>
+				</div>
+
+				<!-- Note exclusive -->
+				<div class="bg-amber-900/20 border border-amber-700/40 rounded-xl px-4 py-3 flex gap-2 items-start">
+					<iconify-icon [icon]="ICONS.alert" class="text-amber-400 text-base shrink-0 mt-0.5"></iconify-icon>
+					<p class="text-xs text-amber-300">
+						<strong>Mono type</strong>
+						,
+						<strong>Double type</strong>
+						et
+						<strong>Double type strict</strong>
+						sont mutuellement exclusifs : en activer un désactive automatiquement les deux autres.
+					</p>
+				</div>
+			</div>
+
+			<button
+				(click)="closeHelpModal()"
+				class="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-bold text-white transition-colors"
+			>
 				Fermer
 			</button>
 		</div>
@@ -269,7 +594,9 @@
 }
 @if (showIncorrectModal()) {
 	<div class="fixed inset-0 bg-black/70 flex items-center justify-center z-[110] p-4" [@modalAnimation]>
-		<div class="bg-slate-800 rounded-2xl p-8 max-w-sm w-full border border-slate-600 shadow-2xl flex flex-col items-center gap-6 text-center modal-content">
+		<div
+			class="bg-slate-800 rounded-2xl p-8 max-w-sm w-full border border-slate-600 shadow-2xl flex flex-col items-center gap-6 text-center modal-content"
+		>
 			<div class="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center border border-red-500/30">
 				<iconify-icon [icon]="ICONS.close" class="text-4xl text-red-500"></iconify-icon>
 			</div>
@@ -279,7 +606,8 @@
 				<p class="text-slate-300">
 					Ce n'était pas
 					@if (lastGuessedPokemon) {
-						<strong class="text-white capitalize">{{ lastGuessedPokemon.name }}</strong>.
+						<strong class="text-white capitalize">{{ lastGuessedPokemon.name }}</strong>
+						.
 					} @else {
 						le bon Pokémon
 					}
@@ -287,7 +615,10 @@
 				<p class="text-slate-300">C'est maintenant au tour de l'adversaire de jouer.</p>
 			</div>
 
-			<button (click)="onIncorrectModalClose()" class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2">
+			<button
+				(click)="onIncorrectModalClose()"
+				class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2"
+			>
 				Compris
 			</button>
 		</div>
@@ -296,7 +627,9 @@
 
 @if (showMyTurnModal()) {
 	<div class="fixed inset-0 bg-black/70 flex items-center justify-center z-[110] p-4" [@modalAnimation]>
-		<div class="bg-slate-800 border border-slate-600 rounded-2xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center gap-6 text-center modal-content">
+		<div
+			class="bg-slate-800 border border-slate-600 rounded-2xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center gap-6 text-center modal-content"
+		>
 			<div class="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center border border-red-500/30">
 				<iconify-icon [icon]="ICONS.pokeball" class="text-4xl text-red-500 animate-bounce"></iconify-icon>
 			</div>
@@ -306,14 +639,17 @@
 				@if (opponentLastGuess()) {
 					<p class="text-slate-300">
 						L'adversaire a tenté
-						<strong class="text-white capitalize">{{ opponentLastGuess()!.name }}</strong>...
-                        C'est raté ! C'est ton tour.
+						<strong class="text-white capitalize">{{ opponentLastGuess()!.name }}</strong>
+						... C'est raté ! C'est ton tour.
 					</p>
 				}
 				<p class="text-slate-300">Pose maintenant une question à ton adversaire !</p>
 			</div>
 
-			<button (click)="onMyTurnModalClose()" class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2">
+			<button
+				(click)="onMyTurnModalClose()"
+				class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2"
+			>
 				Prêt !
 			</button>
 		</div>

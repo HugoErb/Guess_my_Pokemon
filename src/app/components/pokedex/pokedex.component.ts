@@ -257,7 +257,15 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
                 ? 'flex-1 md:flex-none px-3 py-1 rounded-lg text-xs font-bold bg-indigo-600 text-white border border-indigo-500 shadow-lg shadow-indigo-500/20 transition-all'
                 : 'flex-1 md:flex-none px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
             >
-              Double type seulement
+              Double type
+            </button>
+            <button
+              (click)="toggleOnlyDualTypeStrict()"
+              [class]="onlyDualTypeStrict()
+                ? 'flex-1 md:flex-none px-3 py-1 rounded-lg text-xs font-bold bg-violet-600 text-white border border-violet-500 shadow-lg shadow-violet-500/20 transition-all'
+                : 'flex-1 md:flex-none px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
+            >
+              Double type strict
             </button>
           </div>
         </div>
@@ -422,6 +430,7 @@ export class PokedexComponent implements OnInit {
     minHeight = signal<number | null>(0);
     maxHeight = signal<number | null>(null);
     onlyDualType = signal(false);
+    onlyDualTypeStrict = signal(false);
     onlyMonoType = signal(false);
 
     // Grisage manuel
@@ -462,6 +471,7 @@ export class PokedexComponent implements OnInit {
         const cats = this.selectedCategories();
         const evos = this.selectedEvoStages();
         const isDualOnly = this.onlyDualType();
+        const isDualOnlyStrict = this.onlyDualTypeStrict();
         const isMonoOnly = this.onlyMonoType();
 
         const minW = this.minWeight();
@@ -474,10 +484,10 @@ export class PokedexComponent implements OnInit {
             if (q && !p.name.toLowerCase().includes(q)) return false;
             if (!gens.includes(p.generation)) return false;
 
-            if (isDualOnly && p.types.length !== 2) return false;
+            if ((isDualOnly || isDualOnlyStrict) && p.types.length !== 2) return false;
             if (isMonoOnly && p.types.length !== 1) return false;
 
-            if (!p.types.some(t => types.includes(t))) return false;
+            if (isDualOnlyStrict ? !p.types.every(t => types.includes(t)) : !p.types.some(t => types.includes(t))) return false;
 
             if (!cats.includes(p.category)) return false;
             if (!evos.includes(p._stage ?? 1)) return false;
@@ -546,15 +556,27 @@ export class PokedexComponent implements OnInit {
         this.displayedCount.set(this.PAGE_SIZE);
     }
 
-    /** Active ou désactive le filtre "double type uniquement". */
+    /** Active ou désactive le filtre "double type uniquement" (inclusif). */
     toggleOnlyDualType(): void {
-        this.onlyDualType.update(v => !v);
+        const next = !this.onlyDualType();
+        this.onlyDualType.set(next);
+        if (next) { this.onlyDualTypeStrict.set(false); this.onlyMonoType.set(false); }
+        this.displayedCount.set(this.PAGE_SIZE);
+    }
+
+    /** Active ou désactive le filtre "double type uniquement" (strict). */
+    toggleOnlyDualTypeStrict(): void {
+        const next = !this.onlyDualTypeStrict();
+        this.onlyDualTypeStrict.set(next);
+        if (next) { this.onlyDualType.set(false); this.onlyMonoType.set(false); }
         this.displayedCount.set(this.PAGE_SIZE);
     }
 
     /** Active ou désactive le filtre "mono type uniquement". */
     toggleOnlyMonoType(): void {
-        this.onlyMonoType.update(v => !v);
+        const next = !this.onlyMonoType();
+        this.onlyMonoType.set(next);
+        if (next) { this.onlyDualType.set(false); this.onlyDualTypeStrict.set(false); }
         this.displayedCount.set(this.PAGE_SIZE);
     }
 
@@ -601,6 +623,7 @@ export class PokedexComponent implements OnInit {
         this.minHeight.set(0);
         this.maxHeight.set(null);
         this.onlyDualType.set(false);
+        this.onlyDualTypeStrict.set(false);
         this.onlyMonoType.set(false);
         this.displayedCount.set(this.PAGE_SIZE);
     }

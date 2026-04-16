@@ -37,6 +37,7 @@ export const ICONS = {
 
   // Règles
   rules: 'mdi:help-circle-outline',
+  help: 'mdi:information-outline',
 
   // Filtres
   weight: 'mdi:weight-kilogram',
