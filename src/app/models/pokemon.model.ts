@@ -5,6 +5,7 @@ export interface Pokemon {
   generation: number;
   category: 'normal' | 'starter' | 'légendaire' | 'fabuleux';
   evolution_stage: string;
+  _stage?: number;
   sprite: string;
   stats: {
     pv: number;

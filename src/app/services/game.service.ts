@@ -64,12 +64,14 @@ export class GameService implements OnDestroy {
         }, 1000);
     }
 
-    /** Arrête l'abonnement Realtime de la room courante. */
+    /** Arrête l'abonnement Realtime de la room courante et le polling de secours. */
     stopWatching(): void {
         if (this.roomSubscription) {
             this.roomSubscription.unsubscribe();
             this.roomSubscription = null;
         }
+        clearInterval(this.pollInterval);
+        this.pollInterval = undefined;
     }
 
     /** Annule la room, arrête le watch et réinitialise l'état local. */
@@ -188,10 +190,8 @@ export class GameService implements OnDestroy {
         const adversaryPokemonId = isPlayer1 ? room.pokemon_p2 : room.pokemon_p1;
         let adversaryId = isPlayer1 ? room.player2_id : room.player1_id;
 
-        // Fallback pour le mode dev si l'adversaire simulé n'a pas d'ID
-        if (this.isDev() && !adversaryId) {
-            adversaryId = null; // Le tour passera à null, ce qui désactivera le tour du joueur 1
-        }
+        // En mode dev, adversaryId peut être null (adversaire simulé sans compte) — autorisé explicitement.
+        // Hors dev, un adversaryId null indique une room corrompue (guard ci-dessous).
 
         if (adversaryPokemonId === null) throw new Error("L'adversaire n'a pas encore choisi de Pokémon");
 

@@ -260,6 +260,10 @@ export class GameComponent implements OnInit, OnDestroy {
 			});
 		};
 
+		if (this.confettiInterval !== null) {
+			clearInterval(this.confettiInterval);
+			this.confettiInterval = null;
+		}
 		this.confettiInterval = setInterval(() => {
 			if (Date.now() > end) {
 				clearInterval(this.confettiInterval!);
@@ -282,10 +286,9 @@ export class GameComponent implements OnInit, OnDestroy {
 			const result = await this.gameService.guess(this.roomId(), pokemonId);
 			if (result === 'incorrect') {
 				this.guessedPokemonIds.update(ids => [...ids, pokemonId]);
-				this.pokemonService.getById(pokemonId).subscribe(p => {
-					this.lastGuessedPokemon = p ?? null;
-					this.showIncorrectModal.set(true);
-				});
+				const p = await firstValueFrom(this.pokemonService.getById(pokemonId));
+				this.lastGuessedPokemon = p ?? null;
+				this.showIncorrectModal.set(true);
 			}
 			// 'correct' → room signal switches to 'finished' → effect handles modal
 		} catch {

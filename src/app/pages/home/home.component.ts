@@ -283,6 +283,9 @@ export class HomeComponent implements OnInit {
           localStorage.setItem(`gmp_avatar_${user.id}`, base64);
         }
       };
+      reader.onerror = () => {
+        alert('Impossible de lire le fichier image.');
+      };
       reader.readAsDataURL(file);
     } catch {
       alert('Impossible de mettre à jour la photo.');

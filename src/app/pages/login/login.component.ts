@@ -83,7 +83,7 @@ export class LoginComponent {
     try {
       await this.supabaseService.signIn(email, password);
       const rawRedirect = this.route.snapshot.queryParams['redirect'];
-      const redirect = rawRedirect?.startsWith('/') ? rawRedirect : '/home';
+      const redirect = (rawRedirect?.startsWith('/') && !rawRedirect.startsWith('//')) ? rawRedirect : '/home';
       this.router.navigateByUrl(redirect);
     } catch (err: unknown) {
       this.errorMessage = err instanceof Error ? err.message : 'Une erreur est survenue.';
@@ -102,7 +102,7 @@ export class LoginComponent {
     try {
       await this.supabaseService.signUp(email, password, username);
       const rawRedirect = this.route.snapshot.queryParams['redirect'];
-      const redirect = rawRedirect?.startsWith('/') ? rawRedirect : '/home';
+      const redirect = (rawRedirect?.startsWith('/') && !rawRedirect.startsWith('//')) ? rawRedirect : '/home';
       this.router.navigateByUrl(redirect);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Une erreur est survenue.';

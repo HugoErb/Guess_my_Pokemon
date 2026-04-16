@@ -480,7 +480,7 @@ export class PokedexComponent implements OnInit {
             if (types.length > 0 && !p.types.some(t => types.includes(t))) return false;
 
             if (cats.length > 0 && !cats.includes(p.category)) return false;
-            if (evos.length > 0 && !evos.includes((p as any)._stage)) return false;
+            if (evos.length > 0 && !evos.includes(p._stage ?? 1)) return false;
 
             if (minW !== null && p.weight < minW) return false;
             if (maxW !== null && p.weight > maxW) return false;
@@ -502,8 +502,8 @@ export class PokedexComponent implements OnInit {
         ).subscribe(pokemons => {
             this.allPokemons.set(pokemons.map(p => ({
                 ...p,
-                _stage: parseInt(p.evolution_stage?.split('/')[0] || '1')
-            } as any)));
+                _stage: parseInt(p.evolution_stage?.split('/')[0] || '1') || 1
+            })));
         });
     }
 

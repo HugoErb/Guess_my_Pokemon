@@ -121,20 +121,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		// 1. Attendre que l'auth soit prête
 		await firstValueFrom(this.supabaseService.authReady$);
 
-		// 2. Lancer joinAndWatch (Realtime)
-		await this.gameService.joinAndWatch(this.roomId());
-		this.isLoading = false;
-
-		// 3. Construire le lien d'invitation
-		this.inviteLink = `${globalThis.location.origin}/invite/${this.roomId()}`;
-
-		// 4. Charger tous les Pokémon
-		this.pokemonsSub = this.pokemonService.loadAll().subscribe((pokemons) => {
-			this.allPokemons = pokemons;
-			this.onSearch(); // applique les restrictions dès le chargement
-		});
-
-		// 5. Watcher Realtime : si status 'playing' → navigate /game/:roomId
+		// 2. Watcher Realtime mis en place AVANT joinAndWatch pour éviter la race condition :
+		//    si la room passe à 'playing' pendant joinAndWatch, la navigation est garantie.
 		toObservable(this.room, { injector: this.injector })
 			.pipe(
 				filter((r) => r?.status === 'playing'),
@@ -143,6 +131,19 @@ export class LobbyComponent implements OnInit, OnDestroy {
 			.subscribe(() => {
 				this.router.navigate(['/game', this.roomId()]);
 			});
+
+		// 3. Lancer joinAndWatch (Realtime)
+		await this.gameService.joinAndWatch(this.roomId());
+		this.isLoading = false;
+
+		// 4. Construire le lien d'invitation
+		this.inviteLink = `${globalThis.location.origin}/invite/${this.roomId()}`;
+
+		// 5. Charger tous les Pokémon
+		this.pokemonsSub = this.pokemonService.loadAll().subscribe((pokemons) => {
+			this.allPokemons = pokemons;
+			this.onSearch(); // applique les restrictions dès le chargement
+		});
 	}
 
 	/** Lifecycle Angular — arrête le watch de la room et les abonnements. */

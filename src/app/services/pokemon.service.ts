@@ -82,7 +82,7 @@ export class PokemonService {
 
           // Filtre par stade d'évolution
           if (options.evoStages && options.evoStages.length > 0) {
-            const stage = parseInt(p.evolution_stage?.split('/')[0] || '1');
+            const stage = parseInt(p.evolution_stage?.split('/')[0] || '1') || 1;
             if (!options.evoStages.includes(stage)) return false;
           }
 
