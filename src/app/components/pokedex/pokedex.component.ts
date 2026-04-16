@@ -9,61 +9,61 @@ import { ICONS } from '../../constants/icons';
 import { modalAnimation } from '../../constants/animations';
 
 const ALL_TYPES = [
-  'Normal', 'Feu', 'Eau', 'Électrik', 'Plante', 'Glace',
-  'Combat', 'Vol', 'Insecte', 'Poison', 'Psy', 'Sol',
-  'Roche', 'Spectre', 'Dragon', 'Ténèbres', 'Acier', 'Fée',
+    'Normal', 'Feu', 'Eau', 'Électrik', 'Plante', 'Glace',
+    'Combat', 'Vol', 'Insecte', 'Poison', 'Psy', 'Sol',
+    'Roche', 'Spectre', 'Dragon', 'Ténèbres', 'Acier', 'Fée',
 ];
 
 const TYPE_ICONS: Record<string, string> = {
-  'Normal':   'mdi:circle-outline',
-  'Feu':      'mdi:fire',
-  'Eau':      'mdi:water',
-  'Électrik': 'mdi:lightning-bolt',
-  'Plante':   'mdi:leaf',
-  'Glace':    'mdi:snowflake',
-  'Combat':   'mdi:boxing-glove',
-  'Poison':   'mdi:skull-crossbones',
-  'Sol':      'mdi:terrain',
-  'Vol':      'mdi:feather',
-  'Psy':      'mdi:eye',
-  'Insecte':  'mdi:bug',
-  'Roche':    'mdi:hexagon',
-  'Spectre':  'mdi:ghost',
-  'Dragon':   'mdi:snake',
-  'Ténèbres': 'mdi:weather-night',
-  'Acier':    'mdi:shield',
-  'Fée':      'mdi:star-four-points',
+    'Normal': 'mdi:circle-outline',
+    'Feu': 'mdi:fire',
+    'Eau': 'mdi:water',
+    'Électrik': 'mdi:lightning-bolt',
+    'Plante': 'mdi:leaf',
+    'Glace': 'mdi:snowflake',
+    'Combat': 'fa6-solid:hand-fist',
+    'Poison': 'mdi:skull-crossbones',
+    'Sol': 'mdi:terrain',
+    'Vol': 'game-icons:liberty-wing',
+    'Psy': 'mdi:eye',
+    'Insecte': 'mdi:bug',
+    'Roche': 'mdi:hexagon',
+    'Spectre': 'mdi:ghost',
+    'Dragon': 'game-icons:sea-dragon',
+    'Ténèbres': 'ic:round-dark-mode',
+    'Acier': 'mdi:shield',
+    'Fée': 'mdi:star-four-points',
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  'Normal': 'bg-gray-400',
-  'Feu': 'bg-orange-500',
-  'Eau': 'bg-blue-500',
-  'Électrik': 'bg-yellow-400',
-  'Plante': 'bg-green-500',
-  'Glace': 'bg-cyan-300',
-  'Combat': 'bg-red-700',
-  'Poison': 'bg-purple-500',
-  'Sol': 'bg-yellow-600',
-  'Vol': 'bg-indigo-400',
-  'Psy': 'bg-pink-500',
-  'Insecte': 'bg-lime-500',
-  'Roche': 'bg-yellow-700',
-  'Spectre': 'bg-purple-700',
-  'Dragon': 'bg-indigo-600',
-  'Ténèbres': 'bg-gray-700',
-  'Acier': 'bg-gray-400',
-  'Fée': 'bg-pink-300',
+    'Normal': 'bg-gray-400',
+    'Feu': 'bg-orange-500',
+    'Eau': 'bg-blue-500',
+    'Électrik': 'bg-yellow-400',
+    'Plante': 'bg-green-500',
+    'Glace': 'bg-cyan-300',
+    'Combat': 'bg-red-700',
+    'Poison': 'bg-purple-500',
+    'Sol': 'bg-yellow-600',
+    'Vol': 'bg-indigo-400',
+    'Psy': 'bg-pink-500',
+    'Insecte': 'bg-lime-500',
+    'Roche': 'bg-yellow-700',
+    'Spectre': 'bg-purple-700',
+    'Dragon': 'bg-indigo-600',
+    'Ténèbres': 'bg-gray-700',
+    'Acier': 'bg-gray-400',
+    'Fée': 'bg-pink-300',
 };
 
 const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 @Component({
-  selector: 'app-pokedex',
-  imports: [FormsModule, PokemonCardComponent],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  animations: [modalAnimation],
-  template: `
+    selector: 'app-pokedex',
+    imports: [FormsModule, PokemonCardComponent],
+    schemas: [CUSTOM_ELEMENTS_SCHEMA],
+    animations: [modalAnimation],
+    template: `
     <div class="flex flex-col gap-5 h-full">
 
       <!-- Barre de recherche + Reset -->
@@ -399,264 +399,264 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
   `,
 })
 export class PokedexComponent implements OnInit {
-  protected readonly ICONS = ICONS;
-  private readonly pokemonService = inject(PokemonService);
-  private readonly destroyRef = inject(DestroyRef);
+    protected readonly ICONS = ICONS;
+    private readonly pokemonService = inject(PokemonService);
+    private readonly destroyRef = inject(DestroyRef);
 
-  showGuessButton = input<boolean>(false);
-  restrictedGenerations = input<number[]>([]);
-  noPokedex = input<boolean>(false);
-  noSearch = input<boolean>(false);
-  guessedPokemonIds = input<number[]>([]);
-  showFilters = input<boolean>(false);
-  filtersOnly = input<boolean>(false);
-  guess = output<number>();
+    showGuessButton = input<boolean>(false);
+    restrictedGenerations = input<number[]>([]);
+    noPokedex = input<boolean>(false);
+    noSearch = input<boolean>(false);
+    guessedPokemonIds = input<number[]>([]);
+    showFilters = input<boolean>(false);
+    filtersOnly = input<boolean>(false);
+    guess = output<number>();
 
-  allPokemons = signal<Pokemon[]>([]);
-  
-  // États des filtres (Signals)
-  searchQuery = signal('');
-  selectedGenerations = signal<number[]>([...GENERATIONS]);
-  selectedTypes = signal<string[]>([...ALL_TYPES]);
-  selectedCategories = signal<string[]>([]);
-  selectedEvoStages = signal<number[]>([]);
-  minWeight = signal<number | null>(0);
-  maxWeight = signal<number | null>(null);
-  minHeight = signal<number | null>(0);
-  maxHeight = signal<number | null>(null);
-  onlyDualType = signal(false);
-  onlyMonoType = signal(false);
+    allPokemons = signal<Pokemon[]>([]);
 
-  // Grisage manuel
-  manuallyDimmedIds = signal<number[]>([]);
+    // États des filtres (Signals)
+    searchQuery = signal('');
+    selectedGenerations = signal<number[]>([...GENERATIONS]);
+    selectedTypes = signal<string[]>([...ALL_TYPES]);
+    selectedCategories = signal<string[]>([]);
+    selectedEvoStages = signal<number[]>([]);
+    minWeight = signal<number | null>(0);
+    maxWeight = signal<number | null>(null);
+    minHeight = signal<number | null>(0);
+    maxHeight = signal<number | null>(null);
+    onlyDualType = signal(false);
+    onlyMonoType = signal(false);
 
-  // Pagination (Signal)
-  displayedCount = signal(100);
-  private readonly PAGE_SIZE = 100;
-  private isLoadingMore = false;
+    // Grisage manuel
+    manuallyDimmedIds = signal<number[]>([]);
 
-  // Sélections
-  selectedPokemon: Pokemon | null = null;
-  selectedPokemonDetails: Pokemon | null = null;
+    // Pagination (Signal)
+    displayedCount = signal(100);
+    private readonly PAGE_SIZE = 100;
+    private isLoadingMore = false;
 
-  // Données constantes
-  readonly generations = GENERATIONS;
-  readonly allTypes = ALL_TYPES;
-  readonly mobileAllTypes = [
-    'Normal', 'Feu', 'Eau', 'Électrik', 'Fée', 'Plante', 'Glace',
-    'Combat', 'Vol', 'Insecte', 'Poison', 'Psy', 'Sol',
-    'Roche', 'Spectre', 'Dragon', 'Ténèbres', 'Acier',
-  ];
-  readonly categories = [
-    { id: 'normal', label: 'Normal' },
-    { id: 'starter', label: 'Starter' },
-    { id: 'légendaire', label: 'Légendaire' },
-    { id: 'fabuleux', label: 'Fabuleux' },
-  ];
-  readonly evoStages = [1, 2, 3];
+    // Sélections
+    selectedPokemon: Pokemon | null = null;
+    selectedPokemonDetails: Pokemon | null = null;
 
-  // Logic de filtrage réactive (Computed)
-  filteredPokemons = computed(() => {
-    const list = this.allPokemons();
-    const q = this.searchQuery().trim().toLowerCase();
-    const restricted = this.restrictedGenerations();
-    const gens = this.selectedGenerations();
-    const types = this.selectedTypes();
-    const cats = this.selectedCategories();
-    const evos = this.selectedEvoStages();
-    const isDualOnly = this.onlyDualType();
-    const isMonoOnly = this.onlyMonoType();
+    // Données constantes
+    readonly generations = GENERATIONS;
+    readonly allTypes = ALL_TYPES;
+    readonly mobileAllTypes = [
+        'Normal', 'Feu', 'Eau', 'Électrik', 'Fée', 'Plante', 'Glace',
+        'Combat', 'Vol', 'Insecte', 'Poison', 'Psy', 'Sol',
+        'Roche', 'Spectre', 'Dragon', 'Ténèbres', 'Acier',
+    ];
+    readonly categories = [
+        { id: 'normal', label: 'Normal' },
+        { id: 'starter', label: 'Starter' },
+        { id: 'légendaire', label: 'Légendaire' },
+        { id: 'fabuleux', label: 'Fabuleux' },
+    ];
+    readonly evoStages = [1, 2, 3];
 
-    const minW = this.minWeight();
-    const maxW = this.maxWeight();
-    const minH = this.minHeight();
-    const maxH = this.maxHeight();
+    // Logic de filtrage réactive (Computed)
+    filteredPokemons = computed(() => {
+        const list = this.allPokemons();
+        const q = this.searchQuery().trim().toLowerCase();
+        const restricted = this.restrictedGenerations();
+        const gens = this.selectedGenerations();
+        const types = this.selectedTypes();
+        const cats = this.selectedCategories();
+        const evos = this.selectedEvoStages();
+        const isDualOnly = this.onlyDualType();
+        const isMonoOnly = this.onlyMonoType();
 
-    return list.filter(p => {
-      if (restricted.length > 0 && !restricted.includes(p.generation)) return false;
-      if (q && !p.name.toLowerCase().includes(q)) return false;
-      if (gens.length > 0 && !gens.includes(p.generation)) return false;
+        const minW = this.minWeight();
+        const maxW = this.maxWeight();
+        const minH = this.minHeight();
+        const maxH = this.maxHeight();
 
-      if (isDualOnly && p.types.length !== 2) return false;
-      if (isMonoOnly && p.types.length !== 1) return false;
+        return list.filter(p => {
+            if (restricted.length > 0 && !restricted.includes(p.generation)) return false;
+            if (q && !p.name.toLowerCase().includes(q)) return false;
+            if (gens.length > 0 && !gens.includes(p.generation)) return false;
 
-      if (types.length > 0 && !p.types.some(t => types.includes(t))) return false;
+            if (isDualOnly && p.types.length !== 2) return false;
+            if (isMonoOnly && p.types.length !== 1) return false;
 
-      if (cats.length > 0 && !cats.includes(p.category)) return false;
-      if (evos.length > 0 && !evos.includes((p as any)._stage)) return false;
+            if (types.length > 0 && !p.types.some(t => types.includes(t))) return false;
 
-      if (minW !== null && p.weight < minW) return false;
-      if (maxW !== null && p.weight > maxW) return false;
-      if (minH !== null && p.height < minH) return false;
-      if (maxH !== null && p.height > maxH) return false;
+            if (cats.length > 0 && !cats.includes(p.category)) return false;
+            if (evos.length > 0 && !evos.includes((p as any)._stage)) return false;
 
-      return true;
+            if (minW !== null && p.weight < minW) return false;
+            if (maxW !== null && p.weight > maxW) return false;
+            if (minH !== null && p.height < minH) return false;
+            if (maxH !== null && p.height > maxH) return false;
+
+            return true;
+        });
     });
-  });
 
-  visiblePokemons = computed(() => {
-    return this.filteredPokemons().slice(0, this.displayedCount());
-  });
-
-  /** Lifecycle Angular — charge la liste des Pokémon et pré-calcule leur stade d'évolution. */
-  ngOnInit(): void {
-    this.pokemonService.loadAll().pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(pokemons => {
-      this.allPokemons.set(pokemons.map(p => ({
-        ...p,
-        _stage: parseInt(p.evolution_stage?.split('/')[0] || '1')
-      } as any)));
+    visiblePokemons = computed(() => {
+        return this.filteredPokemons().slice(0, this.displayedCount());
     });
-  }
 
-  /** Charge une nouvelle page de Pokémon lors du défilement vers le bas de la grille. */
-  onGridScroll(event: Event): void {
-    if (this.isLoadingMore) return;
-    const el = event.target as HTMLElement;
-    if (el.scrollHeight - el.scrollTop - el.clientHeight < 300 && this.displayedCount() < this.filteredPokemons().length) {
-      this.isLoadingMore = true;
-      this.displayedCount.update(c => c + this.PAGE_SIZE);
-      setTimeout(() => { this.isLoadingMore = false; }, 300);
+    /** Lifecycle Angular — charge la liste des Pokémon et pré-calcule leur stade d'évolution. */
+    ngOnInit(): void {
+        this.pokemonService.loadAll().pipe(
+            takeUntilDestroyed(this.destroyRef)
+        ).subscribe(pokemons => {
+            this.allPokemons.set(pokemons.map(p => ({
+                ...p,
+                _stage: parseInt(p.evolution_stage?.split('/')[0] || '1')
+            } as any)));
+        });
     }
-  }
 
-  /** Ajoute ou retire une génération du filtre actif. */
-  toggleGeneration(gen: number): void {
-    this.selectedGenerations.update(list =>
-      list.includes(gen) ? list.filter(g => g !== gen) : [...list, gen]
-    );
-    this.displayedCount.set(this.PAGE_SIZE);
-  }
-
-  /** Retourne true si la génération donnée est actuellement sélectionnée dans le filtre. */
-  isGenSelected(gen: number): boolean {
-    return this.selectedGenerations().includes(gen);
-  }
-
-  /** Retourne true si la génération est hors des générations autorisées par les paramètres de la room. */
-  isGenRestricted(gen: number): boolean {
-    const restricted = this.restrictedGenerations();
-    return restricted.length > 0 && !restricted.includes(gen);
-  }
-
-  /** Ajoute ou retire un type du filtre actif. */
-  toggleType(type: string): void {
-    this.selectedTypes.update(list => {
-      if (list.includes(type)) return list.filter(t => t !== type);
-      return [...list, type];
-    });
-    this.displayedCount.set(this.PAGE_SIZE);
-  }
-
-  /** Active ou désactive le filtre "double type uniquement" (réinitialise les types sélectionnés). */
-  toggleOnlyDualType(): void {
-    this.onlyDualType.update(v => !v);
-    this.selectedTypes.set([...ALL_TYPES]);
-    this.displayedCount.set(this.PAGE_SIZE);
-  }
-
-  /** Active ou désactive le filtre "mono type uniquement". */
-  toggleOnlyMonoType(): void {
-    this.onlyMonoType.update(v => !v);
-    this.displayedCount.set(this.PAGE_SIZE);
-  }
-
-  /** Retourne true si le type donné est actuellement sélectionné dans le filtre. */
-  isTypeSelected(type: string): boolean {
-    return this.selectedTypes().includes(type);
-  }
-
-  /** Ajoute ou retire une catégorie du filtre actif. */
-  toggleCategory(catId: string): void {
-    this.selectedCategories.update(list =>
-      list.includes(catId) ? list.filter(c => c !== catId) : [...list, catId]
-    );
-    this.displayedCount.set(this.PAGE_SIZE);
-  }
-
-  /** Retourne true si la catégorie donnée est actuellement sélectionnée dans le filtre. */
-  isCategorySelected(catId: string): boolean {
-    return this.selectedCategories().includes(catId);
-  }
-
-  /** Ajoute ou retire un stade d'évolution du filtre actif. */
-  toggleEvoStage(stage: number): void {
-    this.selectedEvoStages.update(list =>
-      list.includes(stage) ? list.filter(s => s !== stage) : [...list, stage]
-    );
-    this.displayedCount.set(this.PAGE_SIZE);
-  }
-
-  /** Retourne true si le stade d'évolution donné est actuellement sélectionné dans le filtre. */
-  isEvoStageSelected(stage: number): boolean {
-    return this.selectedEvoStages().includes(stage);
-  }
-
-  /** Réinitialise tous les filtres à leur valeur par défaut. */
-  clearFilters(): void {
-    this.searchQuery.set('');
-    this.selectedGenerations.set([...GENERATIONS]);
-    this.selectedTypes.set([...ALL_TYPES]);
-    this.selectedCategories.set([]);
-    this.selectedEvoStages.set([]);
-    this.minWeight.set(0);
-    this.maxWeight.set(null);
-    this.minHeight.set(0);
-    this.maxHeight.set(null);
-    this.onlyDualType.set(false);
-    this.onlyMonoType.set(false);
-    this.displayedCount.set(this.PAGE_SIZE);
-  }
-
-  /** Retourne la classe CSS Tailwind de couleur de fond pour un type Pokémon donné. */
-  getTypeColor(type: string): string {
-    return TYPE_COLORS[type] ?? 'bg-gray-500';
-  }
-
-  /** Retourne l'icône Iconify correspondant à un type Pokémon donné. */
-  getTypeIcon(type: string): string {
-    return TYPE_ICONS[type] ?? 'mdi:circle-outline';
-  }
-
-  /** Sélectionne ou désélectionne un Pokémon dans la grille. */
-  selectPokemon(pokemon: Pokemon): void {
-    this.selectedPokemon = pokemon.id === this.selectedPokemon?.id ? null : pokemon;
-  }
-
-  /** Émet le guess du Pokémon actuellement sélectionné. */
-  onGuess(): void {
-    if (this.selectedPokemon) {
-      this.guess.emit(this.selectedPokemon.id);
+    /** Charge une nouvelle page de Pokémon lors du défilement vers le bas de la grille. */
+    onGridScroll(event: Event): void {
+        if (this.isLoadingMore) return;
+        const el = event.target as HTMLElement;
+        if (el.scrollHeight - el.scrollTop - el.clientHeight < 300 && this.displayedCount() < this.filteredPokemons().length) {
+            this.isLoadingMore = true;
+            this.displayedCount.update(c => c + this.PAGE_SIZE);
+            setTimeout(() => { this.isLoadingMore = false; }, 300);
+        }
     }
-  }
 
-  /** Ouvre la modal de détails d'un Pokémon. */
-  openPokemonDetails(pokemon: Pokemon): void {
-    this.selectedPokemonDetails = pokemon;
-  }
+    /** Ajoute ou retire une génération du filtre actif. */
+    toggleGeneration(gen: number): void {
+        this.selectedGenerations.update(list =>
+            list.includes(gen) ? list.filter(g => g !== gen) : [...list, gen]
+        );
+        this.displayedCount.set(this.PAGE_SIZE);
+    }
 
-  /** Ferme la modal de détails d'un Pokémon. */
-  closePokemonDetails(): void {
-    this.selectedPokemonDetails = null;
-  }
+    /** Retourne true si la génération donnée est actuellement sélectionnée dans le filtre. */
+    isGenSelected(gen: number): boolean {
+        return this.selectedGenerations().includes(gen);
+    }
 
-  /** Émet le guess depuis la modal de détails et ferme celle-ci. */
-  onGuessFromDetails(pokemon: Pokemon): void {
-    this.guess.emit(pokemon.id);
-    this.closePokemonDetails();
-  }
+    /** Retourne true si la génération est hors des générations autorisées par les paramètres de la room. */
+    isGenRestricted(gen: number): boolean {
+        const restricted = this.restrictedGenerations();
+        return restricted.length > 0 && !restricted.includes(gen);
+    }
 
-  /** Retourne true si le Pokémon a été grisé manuellement par le joueur. */
-  isManuallyDimmed(id: number): boolean {
-    return this.manuallyDimmedIds().includes(id);
-  }
+    /** Ajoute ou retire un type du filtre actif. */
+    toggleType(type: string): void {
+        this.selectedTypes.update(list => {
+            if (list.includes(type)) return list.filter(t => t !== type);
+            return [...list, type];
+        });
+        this.displayedCount.set(this.PAGE_SIZE);
+    }
 
-  /** Bascule le grisage manuel d'un Pokémon et arrête la propagation du clic. */
-  toggleManualDim(id: number, event: Event): void {
-    event.stopPropagation();
-    this.manuallyDimmedIds.update(ids =>
-      ids.includes(id) ? ids.filter(i => i !== id) : [...ids, id]
-    );
-  }
+    /** Active ou désactive le filtre "double type uniquement" (réinitialise les types sélectionnés). */
+    toggleOnlyDualType(): void {
+        this.onlyDualType.update(v => !v);
+        this.selectedTypes.set([...ALL_TYPES]);
+        this.displayedCount.set(this.PAGE_SIZE);
+    }
+
+    /** Active ou désactive le filtre "mono type uniquement". */
+    toggleOnlyMonoType(): void {
+        this.onlyMonoType.update(v => !v);
+        this.displayedCount.set(this.PAGE_SIZE);
+    }
+
+    /** Retourne true si le type donné est actuellement sélectionné dans le filtre. */
+    isTypeSelected(type: string): boolean {
+        return this.selectedTypes().includes(type);
+    }
+
+    /** Ajoute ou retire une catégorie du filtre actif. */
+    toggleCategory(catId: string): void {
+        this.selectedCategories.update(list =>
+            list.includes(catId) ? list.filter(c => c !== catId) : [...list, catId]
+        );
+        this.displayedCount.set(this.PAGE_SIZE);
+    }
+
+    /** Retourne true si la catégorie donnée est actuellement sélectionnée dans le filtre. */
+    isCategorySelected(catId: string): boolean {
+        return this.selectedCategories().includes(catId);
+    }
+
+    /** Ajoute ou retire un stade d'évolution du filtre actif. */
+    toggleEvoStage(stage: number): void {
+        this.selectedEvoStages.update(list =>
+            list.includes(stage) ? list.filter(s => s !== stage) : [...list, stage]
+        );
+        this.displayedCount.set(this.PAGE_SIZE);
+    }
+
+    /** Retourne true si le stade d'évolution donné est actuellement sélectionné dans le filtre. */
+    isEvoStageSelected(stage: number): boolean {
+        return this.selectedEvoStages().includes(stage);
+    }
+
+    /** Réinitialise tous les filtres à leur valeur par défaut. */
+    clearFilters(): void {
+        this.searchQuery.set('');
+        this.selectedGenerations.set([...GENERATIONS]);
+        this.selectedTypes.set([...ALL_TYPES]);
+        this.selectedCategories.set([]);
+        this.selectedEvoStages.set([]);
+        this.minWeight.set(0);
+        this.maxWeight.set(null);
+        this.minHeight.set(0);
+        this.maxHeight.set(null);
+        this.onlyDualType.set(false);
+        this.onlyMonoType.set(false);
+        this.displayedCount.set(this.PAGE_SIZE);
+    }
+
+    /** Retourne la classe CSS Tailwind de couleur de fond pour un type Pokémon donné. */
+    getTypeColor(type: string): string {
+        return TYPE_COLORS[type] ?? 'bg-gray-500';
+    }
+
+    /** Retourne l'icône Iconify correspondant à un type Pokémon donné. */
+    getTypeIcon(type: string): string {
+        return TYPE_ICONS[type] ?? 'mdi:circle-outline';
+    }
+
+    /** Sélectionne ou désélectionne un Pokémon dans la grille. */
+    selectPokemon(pokemon: Pokemon): void {
+        this.selectedPokemon = pokemon.id === this.selectedPokemon?.id ? null : pokemon;
+    }
+
+    /** Émet le guess du Pokémon actuellement sélectionné. */
+    onGuess(): void {
+        if (this.selectedPokemon) {
+            this.guess.emit(this.selectedPokemon.id);
+        }
+    }
+
+    /** Ouvre la modal de détails d'un Pokémon. */
+    openPokemonDetails(pokemon: Pokemon): void {
+        this.selectedPokemonDetails = pokemon;
+    }
+
+    /** Ferme la modal de détails d'un Pokémon. */
+    closePokemonDetails(): void {
+        this.selectedPokemonDetails = null;
+    }
+
+    /** Émet le guess depuis la modal de détails et ferme celle-ci. */
+    onGuessFromDetails(pokemon: Pokemon): void {
+        this.guess.emit(pokemon.id);
+        this.closePokemonDetails();
+    }
+
+    /** Retourne true si le Pokémon a été grisé manuellement par le joueur. */
+    isManuallyDimmed(id: number): boolean {
+        return this.manuallyDimmedIds().includes(id);
+    }
+
+    /** Bascule le grisage manuel d'un Pokémon et arrête la propagation du clic. */
+    toggleManualDim(id: number, event: Event): void {
+        event.stopPropagation();
+        this.manuallyDimmedIds.update(ids =>
+            ids.includes(id) ? ids.filter(i => i !== id) : [...ids, id]
+        );
+    }
 }

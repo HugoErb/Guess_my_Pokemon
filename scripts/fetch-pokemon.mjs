@@ -30,7 +30,7 @@ const TYPE_FR = {
   normal: 'Normal',
   fire: 'Feu',
   water: 'Eau',
-  electric: 'Électrik', // Orthographe officielle des jeux Nintendo (pas "Électrique")
+  electric: 'Électrik',
   grass: 'Plante',
   ice: 'Glace',
   fighting: 'Combat',
