@@ -415,8 +415,8 @@ export class PokedexComponent implements OnInit {
     searchQuery = signal('');
     selectedGenerations = signal<number[]>([...GENERATIONS]);
     selectedTypes = signal<string[]>([...ALL_TYPES]);
-    selectedCategories = signal<string[]>([]);
-    selectedEvoStages = signal<number[]>([]);
+    selectedCategories = signal<string[]>(['normal', 'starter', 'légendaire', 'fabuleux']);
+    selectedEvoStages = signal<number[]>([1, 2, 3]);
     minWeight = signal<number | null>(0);
     maxWeight = signal<number | null>(null);
     minHeight = signal<number | null>(0);
@@ -445,7 +445,7 @@ export class PokedexComponent implements OnInit {
         'Roche', 'Spectre', 'Dragon', 'Ténèbres', 'Acier',
     ];
     readonly categories = [
-        { id: 'normal', label: 'Normal' },
+        { id: 'normal', label: 'Standard' },
         { id: 'starter', label: 'Starter' },
         { id: 'légendaire', label: 'Légendaire' },
         { id: 'fabuleux', label: 'Fabuleux' },
@@ -472,15 +472,15 @@ export class PokedexComponent implements OnInit {
         return list.filter(p => {
             if (restricted.length > 0 && !restricted.includes(p.generation)) return false;
             if (q && !p.name.toLowerCase().includes(q)) return false;
-            if (gens.length > 0 && !gens.includes(p.generation)) return false;
+            if (!gens.includes(p.generation)) return false;
 
             if (isDualOnly && p.types.length !== 2) return false;
             if (isMonoOnly && p.types.length !== 1) return false;
 
-            if (types.length > 0 && !p.types.some(t => types.includes(t))) return false;
+            if (!p.types.some(t => types.includes(t))) return false;
 
-            if (cats.length > 0 && !cats.includes(p.category)) return false;
-            if (evos.length > 0 && !evos.includes(p._stage ?? 1)) return false;
+            if (!cats.includes(p.category)) return false;
+            if (!evos.includes(p._stage ?? 1)) return false;
 
             if (minW !== null && p.weight < minW) return false;
             if (maxW !== null && p.weight > maxW) return false;
@@ -594,8 +594,8 @@ export class PokedexComponent implements OnInit {
         this.searchQuery.set('');
         this.selectedGenerations.set([...GENERATIONS]);
         this.selectedTypes.set([...ALL_TYPES]);
-        this.selectedCategories.set([]);
-        this.selectedEvoStages.set([]);
+        this.selectedCategories.set(['normal', 'starter', 'légendaire', 'fabuleux']);
+        this.selectedEvoStages.set([1, 2, 3]);
         this.minWeight.set(0);
         this.maxWeight.set(null);
         this.minHeight.set(0);
