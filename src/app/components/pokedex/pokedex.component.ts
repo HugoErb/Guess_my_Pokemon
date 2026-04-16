@@ -549,10 +549,9 @@ export class PokedexComponent implements OnInit {
         this.displayedCount.set(this.PAGE_SIZE);
     }
 
-    /** Active ou désactive le filtre "double type uniquement" (réinitialise les types sélectionnés). */
+    /** Active ou désactive le filtre "double type uniquement". */
     toggleOnlyDualType(): void {
         this.onlyDualType.update(v => !v);
-        this.selectedTypes.set([...ALL_TYPES]);
         this.displayedCount.set(this.PAGE_SIZE);
     }
 
