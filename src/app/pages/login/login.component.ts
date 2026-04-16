@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
 import { ICONS } from '../../constants/icons';
 
+/** Validateur de formulaire : vérifie que les champs `password` et `confirmPassword` sont identiques. */
 function passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
   const password = group.get('password')?.value;
   const confirmPassword = group.get('confirmPassword')?.value;
@@ -23,13 +24,16 @@ export class LoginComponent {
   errorMessage = '';
   infoMessage = '';
   isLoading = false;
-  
+
   showLoginPassword = signal(false);
   showRegisterPassword = signal(false);
   showRegisterConfirmPassword = signal(false);
 
+  /** Bascule la visibilité du mot de passe sur le formulaire de connexion. */
   toggleLoginPassword(): void { this.showLoginPassword.update(v => !v); }
+  /** Bascule la visibilité du mot de passe sur le formulaire d'inscription. */
   toggleRegisterPassword(): void { this.showRegisterPassword.update(v => !v); }
+  /** Bascule la visibilité de la confirmation du mot de passe sur le formulaire d'inscription. */
   toggleRegisterConfirmPassword(): void { this.showRegisterConfirmPassword.update(v => !v); }
 
   loginForm: FormGroup;
@@ -62,12 +66,14 @@ export class LoginComponent {
     });
   }
 
+  /** Bascule entre les modes connexion, inscription et mot de passe oublié. */
   setMode(mode: 'login' | 'register' | 'forgot'): void {
     this.mode = mode;
     this.errorMessage = '';
     this.infoMessage = '';
   }
 
+  /** Soumet le formulaire de connexion et redirige vers l'URL d'origine ou l'accueil. */
   async onLogin(): Promise<void> {
     if (this.loginForm.invalid) return;
     this.isLoading = true;
@@ -86,6 +92,7 @@ export class LoginComponent {
     }
   }
 
+  /** Soumet le formulaire d'inscription et redirige ou affiche le message de confirmation email. */
   async onRegister(): Promise<void> {
     if (this.registerForm.invalid) return;
     this.isLoading = true;
@@ -109,6 +116,7 @@ export class LoginComponent {
     }
   }
 
+  /** Envoie un email de réinitialisation du mot de passe à l'adresse saisie. */
   async onForgotPassword(): Promise<void> {
     if (this.forgotForm.invalid) return;
     this.isLoading = true;

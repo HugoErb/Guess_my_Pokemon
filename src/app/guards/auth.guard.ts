@@ -3,6 +3,10 @@ import { CanActivateFn, Router } from '@angular/router';
 import { map, take } from 'rxjs/operators';
 import { SupabaseService } from '../services/supabase.service';
 
+/**
+ * Guard de navigation : redirige vers `/login` si l'utilisateur n'est pas connecté,
+ * en conservant l'URL de destination dans le paramètre `redirect`.
+ */
 export const authGuard: CanActivateFn = (route, state) => {
   const supabaseService = inject(SupabaseService);
   const router = inject(Router);

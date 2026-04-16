@@ -5,6 +5,7 @@ import { SupabaseService } from '../../services/supabase.service';
 import { Subscription } from 'rxjs';
 import { ICONS } from '../../constants/icons';
 
+/** Validateur de formulaire : vérifie que les champs `password` et `confirmPassword` sont identiques. */
 function passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
   const password = group.get('password')?.value;
   const confirmPassword = group.get('confirmPassword')?.value;
@@ -41,6 +42,10 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Lifecycle Angular — s'abonne aux changements d'état d'authentification
+   * et démarre un timeout de sécurité de 5 secondes pour détecter les liens invalides.
+   */
   ngOnInit(): void {
     // Supabase émet PASSWORD_RECOVERY quand le lien email est valide
     this.authSub = this.supabaseService.currentUser$.subscribe(user => {
@@ -58,11 +63,13 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     }, 5000);
   }
 
+  /** Lifecycle Angular — nettoie l'abonnement et le timeout. */
   ngOnDestroy(): void {
     this.authSub?.unsubscribe();
     if (this.timeoutId !== null) clearTimeout(this.timeoutId);
   }
 
+  /** Soumet le formulaire de réinitialisation et redirige vers la connexion en cas de succès. */
   async onSubmit(): Promise<void> {
     if (this.resetForm.invalid || !this.isReady) return;
     this.isLoading = true;

@@ -27,6 +27,7 @@ export class GameService implements OnDestroy {
         }
     });
 
+    /** Retourne true si l'application est en mode développement. */
     isDev(): boolean {
         return environment.devMode && isDevMode();
     }
@@ -38,14 +39,17 @@ export class GameService implements OnDestroy {
 
     // ─── Watch de la room ────────────────────────────────────────────────────────
 
+    /**
+     * Rejoint une room et s'abonne aux mises à jour Realtime.
+     * Charge également l'état initial de la room et démarre un polling de secours.
+     */
     async joinAndWatch(roomId: string): Promise<void> {
         this.stopWatching();
         this.roomSubscription = this.supabaseService.subscribeToRoom(roomId).subscribe({
             next: (updatedRoom) => {
                 this.currentRoom.set(updatedRoom);
             },
-            error: (err) => {
-                console.error('[GameService] Erreur Realtime:', err);
+            error: () => {
                 // Si on perd la connexion, on tente quand même de rafraîchir une fois manuellement
                 void this.refreshRoom(roomId);
             },
@@ -60,6 +64,7 @@ export class GameService implements OnDestroy {
         }, 1000);
     }
 
+    /** Arrête l'abonnement Realtime de la room courante. */
     stopWatching(): void {
         if (this.roomSubscription) {
             this.roomSubscription.unsubscribe();
@@ -67,12 +72,17 @@ export class GameService implements OnDestroy {
         }
     }
 
+    /** Annule la room, arrête le watch et réinitialise l'état local. */
     async cancelRoom(roomId: string): Promise<void> {
         this.stopWatching();
         await this.supabaseService.deleteRoom(roomId);
         this.currentRoom.set(null);
     }
 
+    /**
+     * DEV : Simule l'adversaire en choisissant un Pokémon et en passant
+     * au statut 'playing' avec le premier tour résolu.
+     */
     async simulateOpponentReady(roomId: string, pokemonId: number): Promise<void> {
         const room = this.currentRoom();
         if (!room) throw new Error('Aucune room active');
@@ -86,6 +96,7 @@ export class GameService implements OnDestroy {
         });
     }
 
+    /** DEV : Simule un adversaire sans compte réel dans la room. */
     async simulateOpponent(roomId: string): Promise<void> {
         const user = this.supabaseService.getCurrentUser();
         if (!user) throw new Error('Utilisateur non connecté');
@@ -96,22 +107,26 @@ export class GameService implements OnDestroy {
         });
     }
 
+    /** Lifecycle Angular — arrête le watch de la room. */
     ngOnDestroy(): void {
         this.stopWatching();
     }
 
     // ─── Actions de jeu ──────────────────────────────────────────────────────────
 
+    /** Passe la room en phase de sélection de Pokémon avec les paramètres fournis. */
     async launchGame(roomId: string, settings: GameSettings): Promise<void> {
         await this.updateAndRefresh(roomId, { status: 'selecting', settings });
     }
 
+    /** Met à jour les paramètres de la partie et rafraîchit le signal local. */
     async updateSettings(roomId: string, settings: GameSettings): Promise<void> {
         await this.supabaseService.updateRoom(roomId, { settings });
         const refreshed = await this.supabaseService.getRoomById(roomId);
         this.currentRoom.set(refreshed);
     }
 
+    /** Enregistre le Pokémon choisi par le joueur courant (p1 ou p2 selon son rôle). */
     async selectPokemon(roomId: string, pokemonId: number): Promise<void> {
         const user = this.supabaseService.getCurrentUser();
         if (!user) throw new Error('Utilisateur non connecté');
@@ -124,6 +139,10 @@ export class GameService implements OnDestroy {
         await this.supabaseService.updateRoom(roomId, patch);
     }
 
+    /**
+     * Marque le joueur courant comme prêt.
+     * Si les deux joueurs sont prêts, lance la partie et détermine le premier tour.
+     */
     async setReady(roomId: string): Promise<void> {
         const user = this.supabaseService.getCurrentUser();
         if (!user) throw new Error('Utilisateur non connecté');
@@ -151,6 +170,11 @@ export class GameService implements OnDestroy {
         this.currentRoom.set(refreshed);
     }
 
+    /**
+     * Soumet un guess de Pokémon par le joueur courant.
+     * Retourne `'correct'` si le Pokémon est trouvé (fin de partie),
+     * ou `'incorrect'` si le tour passe à l'adversaire.
+     */
     async guess(roomId: string, pokemonId: number): Promise<'correct' | 'incorrect'> {
         const user = this.supabaseService.getCurrentUser();
         if (!user) throw new Error('Utilisateur non connecté');
@@ -203,7 +227,6 @@ export class GameService implements OnDestroy {
 
         const isPlayer1 = this.isPlayer1();
         const targetPokemonId = isPlayer1 ? room.pokemon_p1 : room.pokemon_p2;
-        const myId = isPlayer1 ? room.player1_id : room.player2_id;
 
         if (pokemonId === targetPokemonId) {
             await this.updateAndRefresh(roomId, {
@@ -292,11 +315,15 @@ export class GameService implements OnDestroy {
         try {
             const room = await this.supabaseService.getRoomById(roomId);
             this.currentRoom.set(room);
-        } catch (err) {
-            console.error('[GameService] Impossible de rafraîchir la room:', err);
+        } catch {
+            // ignore les erreurs de rafraîchissement
         }
     }
 
+    /**
+     * Détermine l'identifiant du joueur qui commence la partie
+     * selon le paramètre `firstPlayer` des settings.
+     */
     private resolveFirstTurn(room: Room): string {
         const fp = room.settings?.firstPlayer ?? 'player1';
         // player2_id peut être null en mode dev (adversaire simulé sans compte réel) : fallback sur player1

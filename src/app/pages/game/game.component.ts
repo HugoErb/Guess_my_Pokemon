@@ -79,11 +79,13 @@ export class GameComponent implements OnInit, OnDestroy {
 	showCancelModal = signal(false);
 	showGameSettingsModal = signal(false);
 
+	/** Ferme la modal "À ton tour" et réinitialise le dernier guess de l'adversaire. */
 	onMyTurnModalClose(): void {
 		this.showMyTurnModal.set(false);
 		this.opponentLastGuessId.set(null); // Reset pour le tour suivant
 	}
 
+	/** Ferme la modal "Raté" et affiche la modal de tour si elle était en attente. */
 	onIncorrectModalClose(): void {
 		this.showIncorrectModal.set(false);
 		if (this.pendingMyTurnModal()) {
@@ -92,10 +94,14 @@ export class GameComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** Ouvre la modal des règles du jeu. */
 	openRulesModal(): void { this.showRulesModal.set(true); }
+	/** Ferme la modal des règles du jeu. */
 	closeRulesModal(): void { this.showRulesModal.set(false); }
 
+	/** Ouvre la modal des paramètres de la partie. */
 	openGameSettingsModal(): void { this.showGameSettingsModal.set(true); }
+	/** Ferme la modal des paramètres de la partie. */
 	closeGameSettingsModal(): void { this.showGameSettingsModal.set(false); }
 	isCancelling = false;
 
@@ -163,10 +169,15 @@ export class GameComponent implements OnInit, OnDestroy {
 		});
 	}
 
+	/** Lifecycle Angular — initialise la page de jeu. */
 	ngOnInit(): void {
 		void this.init();
 	}
 
+	/**
+	 * Initialise la page de jeu : attend l'authentification, rejoint la room,
+	 * charge le Pokémon du joueur et s'abonne aux broadcasts adverses.
+	 */
 	private async init(): Promise<void> {
 		await firstValueFrom(this.supabaseService.authReady$);
 		await this.gameService.joinAndWatch(this.roomId());
@@ -195,12 +206,9 @@ export class GameComponent implements OnInit, OnDestroy {
 
 		// ─── Écoute des Broadcasts (Guesses de l'adversaire) ──────────────
 		this.broadcastSub = this.gameService.broadcastEvents$.subscribe(evt => {
-			console.log('[GameComponent] Broadcast reçu:', evt);
 			if (evt.event === 'opponent_guess') {
 				const { pokemonId, senderId } = evt.payload;
 				const currentUserId = this.supabaseService.getCurrentUser()?.id;
-
-				console.log('[GameComponent] Guess adversaire:', { pokemonId, senderId, currentUserId });
 
 				// On ne traite que si c'est l'adversaire (ou le bot) qui a joué
 				if (senderId !== currentUserId) {
@@ -211,6 +219,10 @@ export class GameComponent implements OnInit, OnDestroy {
 		});
 	}
 
+	/**
+	 * Traite la fin de partie : détermine le vainqueur, charge le Pokémon adverse
+	 * pour la modal de résultat et lance les confettis si le joueur a gagné.
+	 */
 	private async handleGameFinished(r: { winner_id: string | null; pokemon_p1: number | null; pokemon_p2: number | null }): Promise<void> {
 		const currentUser = this.supabaseService.getCurrentUser();
 		this.isWinner = !!currentUser && r.winner_id === currentUser.id;
@@ -236,6 +248,7 @@ export class GameComponent implements OnInit, OnDestroy {
 		this.showEndModal = true;
 	}
 
+	/** Lance l'animation de confettis pour célébrer la victoire. */
 	private launchConfetti(): void {
 		const colors = ['#ef4444', '#facc15', '#3b82f6', '#ffffff'];
 
@@ -273,6 +286,10 @@ export class GameComponent implements OnInit, OnDestroy {
 		}, 50);
 	}
 
+	/**
+	 * Traite le guess d'un Pokémon par le joueur.
+	 * Si incorrect, ajoute le Pokémon à la liste des tentatives et affiche la modal "Raté".
+	 */
 	async onGuess(pokemonId: number): Promise<void> {
 		if (!this.isMyTurn()) return;
 
@@ -286,11 +303,12 @@ export class GameComponent implements OnInit, OnDestroy {
 				});
 			}
 			// 'correct' → room signal switches to 'finished' → effect handles modal
-		} catch (err) {
-			console.error('[GameComponent] Erreur lors du guess', err);
+		} catch {
+			// ignore les erreurs de guess
 		}
 	}
 
+	/** DEV : Simule le tour de l'adversaire fictif avec un délai et une logique de victoire progressive. */
 	private async simulateOpponentTurn(): Promise<void> {
 		if (this.isSimulatingTurn) return;
 		this.isSimulatingTurn = true;
@@ -315,46 +333,51 @@ export class GameComponent implements OnInit, OnDestroy {
 				targetPokemonId = this.myPokemon.id;
 			}
 
-			console.log('[GameComponent] Bot simulation guess:', targetPokemonId);
 			await this.gameService.simulateOpponentGuess(this.roomId(), targetPokemonId);
-		} catch (err) {
-			console.error('[GameComponent] Erreur simulation guess', err);
+		} catch {
+			// ignore les erreurs de simulation
 		} finally {
 			this.isSimulatingTurn = false;
 		}
 	}
 
+	/** Navigue vers la page d'accueil. */
 	goHome(): void {
 		this.router.navigate(['/home']);
 	}
 
+	/** Demande une revanche à l'adversaire. */
 	async requestReplay(): Promise<void> {
 		try {
 			await this.gameService.requestReplay(this.roomId());
-		} catch (err) {
-			console.error('[GameComponent] Erreur lors de la demande de revanche', err);
+		} catch {
+			// ignore les erreurs de revanche
 		}
 	}
 
 	// ─── Annulation de partie ──────────────────────────────────────────────────
 
+	/** Affiche la modal de confirmation d'annulation. */
 	promptCancel(): void {
 		this.showCancelModal.set(true);
 	}
 
+	/** Ferme la modal de confirmation d'annulation. */
 	closeCancelModal(): void {
 		this.showCancelModal.set(false);
 	}
 
+	/** Confirme l'annulation de la partie et navigue vers l'accueil. */
 	confirmCancel(): void {
 		if (this.isCancelling) return;
 		this.isCancelling = true;
-		void this.gameService.cancelRoom(this.roomId()).catch(err => {
-			console.error('[GameComponent] Erreur lors de l\'annulation', err);
+		void this.gameService.cancelRoom(this.roomId()).catch(() => {
+			// ignore les erreurs d'annulation
 		});
 		void this.router.navigate(['/home']);
 	}
 
+	/** Lifecycle Angular — nettoie les confettis et les abonnements. */
 	ngOnDestroy(): void {
 		if (this.confettiInterval !== null) {
 			clearInterval(this.confettiInterval);

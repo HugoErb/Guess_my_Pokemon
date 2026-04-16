@@ -22,10 +22,16 @@ export class InviteComponent implements OnInit {
 		private readonly router: Router,
 	) {}
 
+	/** Lifecycle Angular — charge la room à l'initialisation. */
 	ngOnInit(): void {
 		this.loadRoom();
 	}
 
+	/**
+	 * Vérifie la validité de la room et gère la logique de rejoindre :
+	 * redirige vers le lobby si déjà membre, rejoint sinon,
+	 * ou affiche une erreur si la room est pleine ou invalide.
+	 */
 	private async loadRoom(): Promise<void> {
 		try {
 			const room = await this.supabaseService.getRoomById(this.roomId());
@@ -43,7 +49,6 @@ export class InviteComponent implements OnInit {
 			}
 
 			const currentUser = await firstValueFrom(this.supabaseService.authReady$);
-            console.log('INVITE USERS', currentUser?.id, room.player1_id);
 			if (currentUser?.id === room.player1_id) {
 				this.router.navigate(['/lobby', this.roomId()]);
 				return;
@@ -51,11 +56,9 @@ export class InviteComponent implements OnInit {
 
 			try {
 				await this.supabaseService.joinRoom(this.roomId());
-				console.log('JOIN OK');
 				await this.router.navigate(['/lobby', this.roomId()]);
 				return;
-			} catch (err) {
-				console.error('JOIN FAIL', err);
+			} catch {
 				this.state = 'error';
 				this.errorMessage = 'Impossible de rejoindre la partie.';
 				return;
@@ -66,6 +69,7 @@ export class InviteComponent implements OnInit {
 		}
 	}
 
+	/** Refuse l'invitation et redirige vers l'accueil. */
 	decline(): void {
 		this.router.navigate(['/home']);
 	}

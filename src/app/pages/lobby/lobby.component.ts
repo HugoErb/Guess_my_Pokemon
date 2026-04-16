@@ -89,9 +89,11 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	showCancelModal = signal(false);
 	simulateError = '';
 
+	/** Ouvre la modal des règles du jeu. */
 	openRulesModal(): void {
 		this.showRulesModal.set(true);
 	}
+	/** Ferme la modal des règles du jeu. */
 	closeRulesModal(): void {
 		this.showRulesModal.set(false);
 	}
@@ -106,10 +108,15 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
 	private pokemonsSub?: Subscription;
 
+	/** Lifecycle Angular — initialise le lobby. */
 	ngOnInit(): void {
 		void this.init();
 	}
 
+	/**
+	 * Initialise le lobby : attend l'authentification, rejoint la room,
+	 * construit le lien d'invitation, charge les Pokémon et observe le statut de la room.
+	 */
 	private async init(): Promise<void> {
 		// 1. Attendre que l'auth soit prête
 		await firstValueFrom(this.supabaseService.authReady$);
@@ -138,6 +145,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 			});
 	}
 
+	/** Lifecycle Angular — arrête le watch de la room et les abonnements. */
 	ngOnDestroy(): void {
 		this.gameService.stopWatching();
 		this.pokemonsSub?.unsubscribe();
@@ -145,6 +153,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
 	// ─── Actions ─────────────────────────────────────────────────────────────────
 
+	/** Sélectionne un Pokémon et l'enregistre en base si le joueur n'est pas encore prêt. */
 	async selectPokemon(pokemon: Pokemon): Promise<void> {
 		if (this.isReady) return;
 		this.selectedPokemon = pokemon;
@@ -157,6 +166,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** Sélectionne un Pokémon aléatoire parmi ceux autorisés par les paramètres de génération. */
 	pickRandom(): void {
 		if (this.isReady) return;
 		const restrictedGens = this.gameService.settings().generations;
@@ -166,6 +176,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		void this.selectPokemon(random);
 	}
 
+	/** Filtre la liste de Pokémon selon la recherche textuelle et les générations autorisées. */
 	onSearch(): void {
 		const q = this.searchQuery.toLowerCase();
 		const restrictedGens = this.gameService.settings().generations;
@@ -178,6 +189,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		this.visiblePokemons = this.filteredPokemons.slice(0, this.displayedCount);
 	}
 
+	/** Charge une nouvelle page de Pokémon lors du défilement vers le bas de la grille. */
 	onGridScroll(event: Event): void {
 		const el = event.target as HTMLElement;
 		if (el.scrollHeight - el.scrollTop - el.clientHeight < 300 && this.displayedCount < this.filteredPokemons.length) {
@@ -186,6 +198,10 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/**
+	 * Marque le joueur comme prêt et navigue vers la page de jeu
+	 * si la partie démarre immédiatement.
+	 */
 	async setReady(): Promise<void> {
 		if (!this.selectedPokemon || this.isSettingReady || this.isReady) return;
 		this.isSettingReady = true;
@@ -201,15 +217,17 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** Annule la room et navigue vers l'accueil. */
 	cancelRoom(): void {
 		if (this.isCancelling) return;
 		this.isCancelling = true;
-		void this.gameService.cancelRoom(this.roomId()).catch((err) => {
-			console.error("[LobbyComponent] Erreur lors de l'annulation", err);
+		void this.gameService.cancelRoom(this.roomId()).catch(() => {
+			// ignore les erreurs d'annulation
 		});
 		void this.router.navigate(['/home']);
 	}
 
+	/** DEV : Simule un adversaire sans compte réel dans la room. */
 	async simulateOpponent(): Promise<void> {
 		if (this.isSimulating) return;
 		this.isSimulating = true;
@@ -223,6 +241,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** Lance la phase de sélection de Pokémon avec les paramètres configurés. */
 	async launchGame(): Promise<void> {
 		if (this.isLaunching) return;
 		this.isLaunching = true;
@@ -236,6 +255,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** Active ou désactive la restriction par génération (tout ou la génération 1 par défaut). */
 	toggleGenMode(): void {
 		if (this.isConfigLocked()) return;
 		const wasActive = this.gameSettings.generations.length > 0;
@@ -243,6 +263,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		void this.saveSettings();
 	}
 
+	/** Ajoute ou retire une génération de la liste des générations restreintes. */
 	toggleGeneration(gen: number): void {
 		if (this.isConfigLocked()) return;
 		const gens = this.gameSettings.generations;
@@ -252,36 +273,45 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		void this.saveSettings();
 	}
 
+	/** Active ou désactive le mode Pokédex caché (sprites masqués). */
 	toggleNoPokedex(): void {
 		if (this.isConfigLocked()) return;
 		this.gameSettings = { ...this.gameSettings, noPokedex: !this.gameSettings.noPokedex };
 		void this.saveSettings();
 	}
 
+	/** Active ou désactive la restriction de recherche dans le Pokédex. */
 	toggleNoSearch(): void {
 		if (this.isConfigLocked()) return;
 		this.gameSettings = { ...this.gameSettings, noSearch: !this.gameSettings.noSearch };
 		void this.saveSettings();
 	}
 
+	/** Définit quel joueur commence la partie. */
 	setFirstPlayer(value: FirstPlayer): void {
 		if (this.isConfigLocked()) return;
 		this.gameSettings = { ...this.gameSettings, firstPlayer: value };
 		void this.saveSettings();
 	}
 
+	/** Retourne true si la configuration ne peut plus être modifiée (partie déjà lancée). */
     isConfigLocked(): boolean {
         return this.room()?.status === 'selecting' || this.room()?.status === 'playing';
     }
 
+	/** Sauvegarde les paramètres de la partie en base de données. */
 	private async saveSettings(): Promise<void> {
 		try {
 			await this.gameService.updateSettings(this.roomId(), this.gameSettings);
-		} catch (err) {
-			console.error('saveSettings error:', JSON.stringify(err));
+		} catch {
+			// ignore les erreurs de sauvegarde des paramètres
 		}
 	}
 
+	/**
+	 * DEV : Simule l'adversaire en choisissant un Pokémon aléatoire et en passant prêt,
+	 * puis navigue directement vers la page de jeu.
+	 */
 	async simulateOpponentReady(): Promise<void> {
 		if (this.isSimulatingReady) return;
 		this.isSimulatingReady = true;
@@ -307,6 +337,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** Copie le lien d'invitation dans le presse-papiers (avec fallback pour HTTP). */
 	async copyInviteLink(): Promise<void> {
 		try {
 			await navigator.clipboard.writeText(this.inviteLink);
@@ -325,14 +356,17 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
 	// ─── Modal Pokédex ───────────────────────────────────────────────────────────
 
+	/** Ouvre la modal de détails d'un Pokémon. */
 	openPokemonDetails(pokemon: Pokemon): void {
 		this.selectedPokemonDetails = pokemon;
 	}
 
+	/** Ferme la modal de détails d'un Pokémon. */
 	closePokemonDetails(): void {
 		this.selectedPokemonDetails = null;
 	}
 
+	/** Sélectionne le Pokémon depuis la modal de détails et ferme celle-ci. */
 	selectFromDetails(pokemon: Pokemon): void {
 		void this.selectPokemon(pokemon);
 		this.closePokemonDetails();
@@ -340,14 +374,17 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
 	// ─── Modal d'annulation ──────────────────────────────────────────────────────
 
+	/** Affiche la modal de confirmation d'annulation. */
 	promptCancel(): void {
 		this.showCancelModal.set(true);
 	}
 
+	/** Ferme la modal de confirmation d'annulation. */
 	closeCancelModal(): void {
 		this.showCancelModal.set(false);
 	}
 
+	/** Confirme l'annulation et quitte le lobby. */
 	confirmCancel(): void {
 		this.closeCancelModal();
 		this.cancelRoom();

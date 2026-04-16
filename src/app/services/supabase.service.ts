@@ -49,12 +49,18 @@ export class SupabaseService implements OnDestroy {
 		this.authSubscription = subscription;
 	}
 
+	/** Désinscrit l'abonnement d'authentification. */
 	ngOnDestroy(): void {
 		this.authSubscription?.unsubscribe();
 	}
 
 	// ─── Auth ────────────────────────────────────────────────────────────────────
 
+	/**
+	 * Crée un nouveau compte utilisateur avec email, mot de passe et pseudo,
+	 * puis insère le profil correspondant. Lance une erreur si la confirmation
+	 * email est requise.
+	 */
 	async signUp(email: string, password: string, username: string): Promise<void> {
 		const { data, error } = await this.supabase.auth.signUp({
 			email,
@@ -68,11 +74,9 @@ export class SupabaseService implements OnDestroy {
 
 		// Toujours tenter d'insérer le profil dès que l'utilisateur est créé,
 		// que la confirmation email soit activée ou non.
-		const { error: profileError } = await this.supabase
+		await this.supabase
 			.from('profiles')
 			.upsert({ id: user.id, username }, { onConflict: 'id', ignoreDuplicates: true });
-
-		if (profileError) console.error("Erreur création profil à l'inscription:", profileError);
 
 		if (!data.session) {
 			// Confirmation email requise
@@ -80,25 +84,31 @@ export class SupabaseService implements OnDestroy {
 		}
 	}
 
+	/**
+	 * Crée le profil utilisateur s'il n'existe pas encore en base.
+	 * Utilisé après la confirmation email.
+	 */
 	async ensureProfile(userId: string, username?: string): Promise<void> {
 		const { data } = await this.supabase.from('profiles').select('id').eq('id', userId).maybeSingle();
 
 		if (!data && username) {
-			const { error } = await this.supabase.from('profiles').insert({ id: userId, username });
-			if (error) console.error('Erreur création profil:', error);
+			await this.supabase.from('profiles').insert({ id: userId, username });
 		}
 	}
 
+	/** Connecte l'utilisateur avec son email et son mot de passe. */
 	async signIn(email: string, password: string): Promise<void> {
 		const { error } = await this.supabase.auth.signInWithPassword({ email, password });
 		if (error) throw error;
 	}
 
+	/** Déconnecte l'utilisateur courant. */
 	async signOut(): Promise<void> {
 		const { error } = await this.supabase.auth.signOut();
 		if (error) throw error;
 	}
 
+	/** Envoie un email de réinitialisation du mot de passe à l'adresse fournie. */
 	async resetPasswordForEmail(email: string): Promise<void> {
 		const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
 			redirectTo: `${window.location.origin}/reset-password`,
@@ -106,11 +116,16 @@ export class SupabaseService implements OnDestroy {
 		if (error) throw error;
 	}
 
+	/** Met à jour le mot de passe de l'utilisateur connecté. */
 	async updatePassword(newPassword: string): Promise<void> {
 		const { error } = await this.supabase.auth.updateUser({ password: newPassword });
 		if (error) throw error;
 	}
 
+	/**
+	 * Vérifie si le mot de passe fourni est correct pour l'utilisateur courant
+	 * en tentant une reconnexion silencieuse.
+	 */
 	async verifyPassword(password: string): Promise<boolean> {
 		const user = this.userSubject.getValue();
 		if (!user?.email) return false;
@@ -126,6 +141,7 @@ export class SupabaseService implements OnDestroy {
 
 	// ─── Profil ──────────────────────────────────────────────────────────────────
 
+	/** Récupère le profil complet d'un utilisateur depuis la base de données. */
 	async getProfile(userId: string): Promise<Profile> {
 		const { data, error } = await this.supabase.from('profiles').select('*').eq('id', userId).single();
 
@@ -133,12 +149,17 @@ export class SupabaseService implements OnDestroy {
 		return data as Profile;
 	}
 
+	/** Met à jour partiellement le profil d'un utilisateur. */
 	async updateProfile(userId: string, patch: Partial<Profile>): Promise<void> {
 		const { error } = await this.supabase.from('profiles').update(patch).eq('id', userId);
 
 		if (error) throw error;
 	}
 
+	/**
+	 * Met à jour le pseudo de l'utilisateur dans Supabase Auth
+	 * et dans la table des profils publics.
+	 */
 	async updateUsername(userId: string, newUsername: string): Promise<void> {
 		// 1. Mettre à jour les métadonnées de l'utilisateur (Auth)
 		const { error: authError } = await this.supabase.auth.updateUser({
@@ -156,6 +177,7 @@ export class SupabaseService implements OnDestroy {
 
 	// ─── Rooms ───────────────────────────────────────────────────────────────────
 
+	/** Crée une nouvelle room de jeu et retourne son identifiant. */
 	async createRoom(): Promise<string> {
 		const user = this.userSubject.getValue();
 		if (!user) throw new Error('Utilisateur non connecté');
@@ -166,6 +188,7 @@ export class SupabaseService implements OnDestroy {
 		return (data as { id: string }).id;
 	}
 
+	/** Récupère une room par son identifiant. */
 	async getRoomById(roomId: string): Promise<Room> {
 		const { data, error } = await this.supabase.from('rooms').select('*').eq('id', roomId).single();
 
@@ -173,6 +196,10 @@ export class SupabaseService implements OnDestroy {
 		return data as Room;
 	}
 
+	/**
+	 * Ajoute l'utilisateur courant à une room existante en tant que joueur 2.
+	 * Lance une erreur si la room est pleine, non joignable ou appartient au joueur.
+	 */
 	async joinRoom(roomId: string): Promise<void> {
 		const user = this.userSubject.getValue();
 		if (!user) throw new Error('Utilisateur non connecté');
@@ -184,19 +211,22 @@ export class SupabaseService implements OnDestroy {
 		if (room.status !== 'waiting') throw new Error('Room non joignable');
 		if (room.player1_id === user.id) throw new Error('Le créateur ne peut pas rejoindre sa propre room');
 
-		const { data, error } = await this.supabase.from('rooms').update({ player2_id: user.id, status: 'ready' }).eq('id', roomId).select('*');
-
-		console.log('JOIN RESULT', data);
+		const { error } = await this.supabase.from('rooms').update({ player2_id: user.id, status: 'ready' }).eq('id', roomId).select('*');
 
 		if (error) throw error;
 	}
 
+	/** Lance la partie en passant la room au statut 'selecting'. */
 	async launchGame(roomId: string, settings: GameSettings): Promise<void> {
 		const { error } = await this.supabase.from('rooms').update({ status: 'selecting', settings }).eq('id', roomId);
 
 		if (error) throw error;
 	}
 
+	/**
+	 * S'abonne aux mises à jour Realtime d'une room via PostgreSQL Changes et Broadcast.
+	 * Émet les nouvelles valeurs de la room à chaque modification.
+	 */
 	subscribeToRoom(roomId: string): Observable<Room> {
 		return new Observable<Room>((observer) => {
 			const channel = this.supabase
@@ -210,17 +240,13 @@ export class SupabaseService implements OnDestroy {
 						filter: `id=eq.${roomId}`,
 					},
 					(payload) => {
-						console.log('[Realtime] rooms update', payload);
 						observer.next(payload.new as Room);
 					},
 				)
 				.on('broadcast', { event: '*' }, ({ event, payload }) => {
-					console.log(`[SupabaseService] Broadcast reçu sur canal : ${event}`, payload);
 					this.broadcastSubject.next({ event, payload });
 				})
 				.subscribe((status) => {
-					console.log('[Realtime] status:', status, roomId);
-
 					if (status === 'CHANNEL_ERROR') {
 						observer.error(new Error(`Erreur canal room-${roomId}`));
 					}
@@ -236,6 +262,10 @@ export class SupabaseService implements OnDestroy {
 		});
 	}
 
+	/**
+	 * Met à jour les données d'une room en base.
+	 * Lance une erreur si la mise à jour est refusée ou n'affecte aucune ligne.
+	 */
     async updateRoom(roomId: string, patch: RoomPatch): Promise<void> {
         const { data, error } = await this.supabase
             .from('rooms')
@@ -243,14 +273,13 @@ export class SupabaseService implements OnDestroy {
             .eq('id', roomId)
             .select('*');
 
-        console.log('UPDATE ROOM RESULT', patch, data);
-
         if (error) throw error;
         if (!data || data.length === 0) {
             throw new Error('UPDATE rooms refusé ou aucune ligne modifiée');
         }
     }
 
+	/** Supprime une room de la base de données. */
 	async deleteRoom(roomId: string): Promise<void> {
 		const { error } = await this.supabase.from('rooms').delete().eq('id', roomId);
 
@@ -259,9 +288,12 @@ export class SupabaseService implements OnDestroy {
 
 	// ─── Utilitaire interne ──────────────────────────────────────────────────────
 
+	/**
+	 * Diffuse le guess d'un joueur via le canal Broadcast de la room active.
+	 * En mode DEV, pousse également localement pour éviter la race condition.
+	 */
 	async broadcastGuess(pokemonId: number, senderId: string | null): Promise<void> {
 		if (this.activeRoomChannel) {
-			console.log(`[SupabaseService] Envoi du broadcast guess: ${pokemonId} (sender: ${senderId})`);
 			const eventData = {
 				type: 'broadcast',
 				event: 'opponent_guess',
@@ -275,11 +307,10 @@ export class SupabaseService implements OnDestroy {
 			}
 
 			await this.activeRoomChannel.send(eventData);
-		} else {
-			console.warn("[SupabaseService] Impossible d'envoyer le broadcast : canal inactif");
 		}
 	}
 
+	/** Retourne l'utilisateur courant ou null s'il n'est pas connecté. */
 	getCurrentUser(): User | null {
 		return this.userSubject.getValue();
 	}

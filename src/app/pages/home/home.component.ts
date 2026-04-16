@@ -23,28 +23,34 @@ export class HomeComponent implements OnInit {
   showPasswordModal = signal(false);
   showUsernameModal = signal(false);
 
+  /** Ouvre la modal des règles du jeu. */
   openRulesModal(): void { this.showRulesModal.set(true); }
+  /** Ferme la modal des règles du jeu. */
   closeRulesModal(): void { this.showRulesModal.set(false); }
-  
-  openPasswordModal(): void { 
-    this.showPasswordModal.set(true); 
-    this.passwordError = ''; 
+
+  /** Ouvre la modal de changement de mot de passe en réinitialisant les champs. */
+  openPasswordModal(): void {
+    this.showPasswordModal.set(true);
+    this.passwordError = '';
     this.currentPassword = '';
     this.newPassword = '';
     this.confirmPassword = '';
   }
-  closePasswordModal(): void { 
+  /** Ferme la modal de changement de mot de passe. */
+  closePasswordModal(): void {
     this.showPasswordModal.set(false);
     this.showCurrentPassword.set(false);
     this.showNewPassword.set(false);
     this.showConfirmPassword.set(false);
   }
 
-  openUsernameModal(): void { 
+  /** Ouvre la modal de changement de pseudo en pré-remplissant le champ. */
+  openUsernameModal(): void {
     this.newUsernameInput = this.username;
-    this.showUsernameModal.set(true); 
+    this.showUsernameModal.set(true);
     this.usernameError = '';
   }
+  /** Ferme la modal de changement de pseudo. */
   closeUsernameModal(): void { this.showUsernameModal.set(false); }
 
   username = '';
@@ -55,7 +61,7 @@ export class HomeComponent implements OnInit {
   isUpdatingPassword = false;
   isUpdatingUsername = false;
   isUpdatingAvatar = false;
-  
+
   passwordError = '';
   currentPassword = '';
   newPassword = '';
@@ -66,15 +72,19 @@ export class HomeComponent implements OnInit {
 
   showToast = signal(false);
   toastMessage = signal('');
-  
+
   showCurrentPassword = signal(false);
   showNewPassword = signal(false);
   showConfirmPassword = signal(false);
-  
+
+  /** Bascule la visibilité du champ mot de passe actuel. */
   toggleCurrentPassword(): void { this.showCurrentPassword.update(v => !v); }
+  /** Bascule la visibilité du champ nouveau mot de passe. */
   toggleNewPassword(): void { this.showNewPassword.update(v => !v); }
+  /** Bascule la visibilité du champ confirmation du mot de passe. */
   toggleConfirmPassword(): void { this.showConfirmPassword.update(v => !v); }
-  
+
+  /** Affiche un toast de confirmation avec le message donné pendant 3 secondes. */
   private triggerToast(message: string): void {
     this.toastMessage.set(message);
     this.showToast.set(true);
@@ -86,10 +96,15 @@ export class HomeComponent implements OnInit {
     private readonly router: Router
   ) {}
 
+  /** Lifecycle Angular — charge le profil de l'utilisateur. */
   ngOnInit(): void {
     this.loadProfile();
   }
 
+  /**
+   * Charge le profil de l'utilisateur depuis Supabase avec mise en cache locale.
+   * Utilise le cache localStorage pour un affichage instantané avant la réponse réseau.
+   */
   private async loadProfile(): Promise<void> {
     try {
       const user = this.supabaseService.getCurrentUser();
@@ -140,6 +155,7 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  /** Crée une nouvelle partie et navigue vers le lobby correspondant. */
   async createGame(): Promise<void> {
     this.isCreating = true;
     this.createError = '';
@@ -153,11 +169,16 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  /** Déconnecte l'utilisateur et navigue vers la page de connexion. */
   async logout(): Promise<void> {
     await this.supabaseService.signOut();
     this.router.navigate(['/login']);
   }
 
+  /**
+   * Valide et met à jour le mot de passe de l'utilisateur.
+   * Vérifie le mot de passe actuel avant d'effectuer le changement.
+   */
   async changePassword(): Promise<void> {
     const current = this.currentPassword.trim();
     const newPwd = this.newPassword.trim();
@@ -188,12 +209,12 @@ export class HomeComponent implements OnInit {
 
       // 2. Mettre à jour le mot de passe
       await this.supabaseService.updatePassword(newPwd);
-      
+
       // Reset des champs
       this.currentPassword = '';
       this.newPassword = '';
       this.confirmPassword = '';
-      
+
       this.closePasswordModal();
       this.triggerToast('Mot de passe mis à jour !');
     } catch (err: any) {
@@ -203,6 +224,10 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  /**
+   * Valide et met à jour le pseudo de l'utilisateur
+   * dans Supabase Auth, la table des profils et le cache local.
+   */
   async changeUsername(): Promise<void> {
     const trimmed = this.newUsernameInput.trim();
     if (!trimmed || trimmed.length < 3) {
@@ -232,6 +257,10 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  /**
+   * Gère la sélection d'une image pour l'avatar (max 2 Mo).
+   * Encode en base64 et met à jour le profil et le cache local.
+   */
   async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
@@ -255,8 +284,7 @@ export class HomeComponent implements OnInit {
         }
       };
       reader.readAsDataURL(file);
-    } catch (err) {
-      console.error('Erreur lors de la mise à jour de l\'avatar:', err);
+    } catch {
       alert('Impossible de mettre à jour la photo.');
     } finally {
       this.isUpdatingAvatar = false;

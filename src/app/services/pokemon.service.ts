@@ -12,25 +12,25 @@ export class PokemonService {
   private all$: Observable<Pokemon[]> = this.http
     .get<Pokemon[]>('/assets/pokemon.json')
     .pipe(
-      catchError(err => {
-        console.error('[PokemonService] Impossible de charger pokemon.json', err);
-        return of([]);
-      }),
+      catchError(() => of([])),
       shareReplay(1)
     );
 
   // ─── API publique ────────────────────────────────────────────────────────────
 
+  /** Retourne tous les Pokémon disponibles depuis le cache partagé. */
   loadAll(): Observable<Pokemon[]> {
     return this.all$;
   }
 
+  /** Retourne un Pokémon par son identifiant, ou `undefined` s'il n'existe pas. */
   getById(id: number): Observable<Pokemon | undefined> {
     return this.all$.pipe(
       map(pokemons => pokemons.find(p => p.id === id))
     );
   }
 
+  /** Retourne un Pokémon choisi aléatoirement parmi tous les Pokémon disponibles. */
   random(): Observable<Pokemon> {
     return this.all$.pipe(
       map(pokemons => {
@@ -40,6 +40,10 @@ export class PokemonService {
     );
   }
 
+  /**
+   * Filtre la liste des Pokémon selon les critères fournis :
+   * nom, générations, types, catégories, stades d'évolution, poids et taille.
+   */
   filter(options: {
     query?: string;
     generations?: number[];

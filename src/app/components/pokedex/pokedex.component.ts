@@ -498,6 +498,7 @@ export class PokedexComponent implements OnInit {
     return this.filteredPokemons().slice(0, this.displayedCount());
   });
 
+  /** Lifecycle Angular — charge la liste des Pokémon et pré-calcule leur stade d'évolution. */
   ngOnInit(): void {
     this.pokemonService.loadAll().pipe(
       takeUntilDestroyed(this.destroyRef)
@@ -509,6 +510,7 @@ export class PokedexComponent implements OnInit {
     });
   }
 
+  /** Charge une nouvelle page de Pokémon lors du défilement vers le bas de la grille. */
   onGridScroll(event: Event): void {
     if (this.isLoadingMore) return;
     const el = event.target as HTMLElement;
@@ -519,22 +521,26 @@ export class PokedexComponent implements OnInit {
     }
   }
 
+  /** Ajoute ou retire une génération du filtre actif. */
   toggleGeneration(gen: number): void {
-    this.selectedGenerations.update(list => 
+    this.selectedGenerations.update(list =>
       list.includes(gen) ? list.filter(g => g !== gen) : [...list, gen]
     );
     this.displayedCount.set(this.PAGE_SIZE);
   }
 
+  /** Retourne true si la génération donnée est actuellement sélectionnée dans le filtre. */
   isGenSelected(gen: number): boolean {
     return this.selectedGenerations().includes(gen);
   }
 
+  /** Retourne true si la génération est hors des générations autorisées par les paramètres de la room. */
   isGenRestricted(gen: number): boolean {
     const restricted = this.restrictedGenerations();
     return restricted.length > 0 && !restricted.includes(gen);
   }
 
+  /** Ajoute ou retire un type du filtre actif. */
   toggleType(type: string): void {
     this.selectedTypes.update(list => {
       if (list.includes(type)) return list.filter(t => t !== type);
@@ -543,43 +549,51 @@ export class PokedexComponent implements OnInit {
     this.displayedCount.set(this.PAGE_SIZE);
   }
 
+  /** Active ou désactive le filtre "double type uniquement" (réinitialise les types sélectionnés). */
   toggleOnlyDualType(): void {
     this.onlyDualType.update(v => !v);
     this.selectedTypes.set([...ALL_TYPES]);
     this.displayedCount.set(this.PAGE_SIZE);
   }
 
+  /** Active ou désactive le filtre "mono type uniquement". */
   toggleOnlyMonoType(): void {
     this.onlyMonoType.update(v => !v);
     this.displayedCount.set(this.PAGE_SIZE);
   }
 
+  /** Retourne true si le type donné est actuellement sélectionné dans le filtre. */
   isTypeSelected(type: string): boolean {
     return this.selectedTypes().includes(type);
   }
 
+  /** Ajoute ou retire une catégorie du filtre actif. */
   toggleCategory(catId: string): void {
-    this.selectedCategories.update(list => 
+    this.selectedCategories.update(list =>
       list.includes(catId) ? list.filter(c => c !== catId) : [...list, catId]
     );
     this.displayedCount.set(this.PAGE_SIZE);
   }
 
+  /** Retourne true si la catégorie donnée est actuellement sélectionnée dans le filtre. */
   isCategorySelected(catId: string): boolean {
     return this.selectedCategories().includes(catId);
   }
 
+  /** Ajoute ou retire un stade d'évolution du filtre actif. */
   toggleEvoStage(stage: number): void {
-    this.selectedEvoStages.update(list => 
+    this.selectedEvoStages.update(list =>
       list.includes(stage) ? list.filter(s => s !== stage) : [...list, stage]
     );
     this.displayedCount.set(this.PAGE_SIZE);
   }
 
+  /** Retourne true si le stade d'évolution donné est actuellement sélectionné dans le filtre. */
   isEvoStageSelected(stage: number): boolean {
     return this.selectedEvoStages().includes(stage);
   }
 
+  /** Réinitialise tous les filtres à leur valeur par défaut. */
   clearFilters(): void {
     this.searchQuery.set('');
     this.selectedGenerations.set([...GENERATIONS]);
@@ -595,41 +609,50 @@ export class PokedexComponent implements OnInit {
     this.displayedCount.set(this.PAGE_SIZE);
   }
 
+  /** Retourne la classe CSS Tailwind de couleur de fond pour un type Pokémon donné. */
   getTypeColor(type: string): string {
     return TYPE_COLORS[type] ?? 'bg-gray-500';
   }
 
+  /** Retourne l'icône Iconify correspondant à un type Pokémon donné. */
   getTypeIcon(type: string): string {
     return TYPE_ICONS[type] ?? 'mdi:circle-outline';
   }
 
+  /** Sélectionne ou désélectionne un Pokémon dans la grille. */
   selectPokemon(pokemon: Pokemon): void {
     this.selectedPokemon = pokemon.id === this.selectedPokemon?.id ? null : pokemon;
   }
 
+  /** Émet le guess du Pokémon actuellement sélectionné. */
   onGuess(): void {
     if (this.selectedPokemon) {
       this.guess.emit(this.selectedPokemon.id);
     }
   }
 
+  /** Ouvre la modal de détails d'un Pokémon. */
   openPokemonDetails(pokemon: Pokemon): void {
     this.selectedPokemonDetails = pokemon;
   }
 
+  /** Ferme la modal de détails d'un Pokémon. */
   closePokemonDetails(): void {
     this.selectedPokemonDetails = null;
   }
 
+  /** Émet le guess depuis la modal de détails et ferme celle-ci. */
   onGuessFromDetails(pokemon: Pokemon): void {
     this.guess.emit(pokemon.id);
     this.closePokemonDetails();
   }
 
+  /** Retourne true si le Pokémon a été grisé manuellement par le joueur. */
   isManuallyDimmed(id: number): boolean {
     return this.manuallyDimmedIds().includes(id);
   }
 
+  /** Bascule le grisage manuel d'un Pokémon et arrête la propagation du clic. */
   toggleManualDim(id: number, event: Event): void {
     event.stopPropagation();
     this.manuallyDimmedIds.update(ids =>
