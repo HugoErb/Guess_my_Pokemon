@@ -44,12 +44,12 @@ export class LobbyComponent implements OnInit, OnDestroy {
 				if (this.allPokemons.length > 0) this.onSearch();
 			});
 		});
+
 	}
 
 	// États
 	room = computed(() => this.gameService.currentRoom());
 	isPlayer1 = computed(() => this.gameService.isPlayer1());
-
 	opponentReady = computed(() => {
 		const r = this.room();
 		if (!r) return false;
