@@ -259,7 +259,69 @@
 			<!-- Contenu principal en deux colonnes (une colonne sur mobile) -->
 			<div class="flex-1 flex flex-col md:flex-row overflow-hidden">
 				<!-- Colonne gauche : ton Pokémon + statut adversaire -->
-				<div class="w-full md:w-56 md:shrink-0 flex flex-col p-3 md:p-4 gap-3 md:gap-4 border-b md:border-b-0 md:border-r border-slate-700/50">
+
+				<!-- Mobile : bandeaux compacts -->
+				<div class="md:hidden flex flex-col shrink-0 border-b border-slate-700/50">
+					<!-- Bandeau Mon Pokémon -->
+					<div class="flex items-center gap-3 px-3 py-2 border-b border-slate-700/30">
+						<div class="flex items-center gap-2 flex-1 min-w-0">
+							@if (selectedPokemon) {
+								<img [src]="selectedPokemon.sprite" [alt]="selectedPokemon.name" class="w-10 h-10 object-contain shrink-0" />
+							} @else {
+								<div class="w-10 h-10 flex items-center justify-center text-2xl text-slate-500 shrink-0">?</div>
+							}
+							<div class="flex flex-col min-w-0">
+								<span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 leading-tight">Mon Pokémon</span>
+								<span class="text-sm font-medium capitalize truncate leading-tight">
+									{{ selectedPokemon ? selectedPokemon.name : 'Aucun sélectionné' }}
+								</span>
+							</div>
+						</div>
+						<!-- Bouton prêt -->
+						<button
+							(click)="setReady()"
+							[disabled]="!selectedPokemon || isSettingReady || isReady"
+							class="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg font-bold text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+							[class.bg-green-600]="!isReady"
+							[class.bg-slate-600]="isReady"
+						>
+							@if (isSettingReady) {
+								<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+							} @else if (isReady) {
+								<iconify-icon [icon]="ICONS.checkCircle"></iconify-icon>
+								Prêt !
+							} @else {
+								<iconify-icon [icon]="ICONS.checkCircle"></iconify-icon>
+								Je suis prêt !
+							}
+						</button>
+					</div>
+					<!-- Bandeau Adversaire -->
+					<div class="flex items-center gap-3 px-3 py-2">
+						<div class="flex items-center gap-2 flex-1 min-w-0">
+							@if (opponentReady()) {
+								<div class="w-10 h-10 flex items-center justify-center shrink-0">
+									<iconify-icon [icon]="ICONS.checkCircle" class="text-2xl text-green-400"></iconify-icon>
+								</div>
+								<div class="flex flex-col min-w-0">
+									<span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 leading-tight">Adversaire</span>
+									<span class="text-sm font-medium text-green-400 leading-tight">Prêt !</span>
+								</div>
+							} @else {
+								<div class="w-10 h-10 flex items-center justify-center shrink-0">
+									<iconify-icon [icon]="ICONS.loading" class="text-2xl text-slate-400 animate-spin"></iconify-icon>
+								</div>
+								<div class="flex flex-col min-w-0">
+									<span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 leading-tight">Adversaire</span>
+									<span class="text-sm font-medium text-slate-400 leading-tight">En attente…</span>
+								</div>
+							}
+						</div>
+					</div>
+				</div>
+
+				<!-- Desktop : colonne latérale -->
+				<div class="hidden md:flex w-56 shrink-0 flex-col p-4 gap-4 border-r border-slate-700/50">
 					<div>
 						<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Ton Pokémon</h3>
 						@if (selectedPokemon) {

@@ -48,7 +48,6 @@ export class HomeComponent implements OnInit {
   closeUsernameModal(): void { this.showUsernameModal.set(false); }
 
   username = '';
-  email = '';
   avatarUrl = signal<string | null>(null);
   isCreating = false;
   createError = '';
@@ -104,14 +103,18 @@ export class HomeComponent implements OnInit {
       if (cachedAvatar) {
         this.avatarUrl.set(cachedAvatar);
       }
+      const cachedUsername = localStorage.getItem(`gmp_username_${user.id}`);
+      if (cachedUsername) {
+        this.username = cachedUsername;
+      }
 
       try {
         const profile = await this.supabaseService.getProfile(user.id);
         this.username = profile.username;
-        this.email = user.email ?? '';
         this.avatarUrl.set(profile.avatar_url ?? null);
-        
+
         // Mettre à jour le cache
+        localStorage.setItem(`gmp_username_${user.id}`, profile.username);
         if (profile.avatar_url) {
           localStorage.setItem(`gmp_avatar_${user.id}`, profile.avatar_url);
         } else {
@@ -125,13 +128,12 @@ export class HomeComponent implements OnInit {
           try {
             const profile = await this.supabaseService.getProfile(user.id);
             this.username = profile.username;
-            this.email = user.email ?? '';
             this.avatarUrl.set(profile.avatar_url ?? null);
+            localStorage.setItem(`gmp_username_${user.id}`, profile.username);
             return;
           } catch { /* profil toujours inaccessible */ }
         }
         this.username = metaUsername ?? user.email?.split('@')[0] ?? 'Joueur';
-        this.email = user.email ?? '';
       }
     } finally {
       this.isLoadingProfile = false;
@@ -220,6 +222,7 @@ export class HomeComponent implements OnInit {
 
       await this.supabaseService.updateUsername(user.id, trimmed);
       this.username = trimmed;
+      localStorage.setItem(`gmp_username_${user.id}`, trimmed);
       this.closeUsernameModal();
       this.triggerToast('Pseudo mis à jour !');
     } catch (err: any) {

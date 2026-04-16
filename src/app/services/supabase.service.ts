@@ -268,12 +268,13 @@ export class SupabaseService implements OnDestroy {
 				payload: { pokemonId, senderId },
 			};
 
-			await this.activeRoomChannel.send(eventData);
-
-			// En mode DEV, si on est seul, on double l'envoi localement pour être sûr
+			// En mode DEV, pousser localement en premier pour garantir que opponentLastGuess
+			// est défini avant que l'effect DB ne déclenche la modale (channel.send est async)
 			if (environment.devMode) {
 				this.broadcastSubject.next({ event: eventData.event, payload: eventData.payload });
 			}
+
+			await this.activeRoomChannel.send(eventData);
 		} else {
 			console.warn("[SupabaseService] Impossible d'envoyer le broadcast : canal inactif");
 		}

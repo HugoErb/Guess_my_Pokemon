@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, computed, effect, inject, input, isDevMode, signal, untracked, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { firstValueFrom, Subscription } from 'rxjs';
 
@@ -48,11 +49,18 @@ export class GameComponent implements OnInit, OnDestroy {
 		return this.isPlayer1() ? r.p2_ready : r.p1_ready;
 	});
 
+	private readonly allPokemon = toSignal(this.pokemonService.loadAll(), { initialValue: [] as Pokemon[] });
+	private readonly opponentLastGuessId = signal<number | null>(null);
+	opponentLastGuess = computed(() => {
+		const id = this.opponentLastGuessId();
+		if (id === null) return null;
+		return this.allPokemon().find(p => p.id === id) ?? null;
+	});
+
 	myPokemon: Pokemon | null = null;
 	opponentPokemon: Pokemon | null = null;
 	devOpponentPokemon: Pokemon | null = null;
 	lastGuessedPokemon: Pokemon | null = null;
-	opponentLastGuess = signal<Pokemon | null>(null);
 	activeTab = signal<'pokemon' | 'pokedex' | 'filtres'>('pokedex');
 
 	showEndModal = false;
@@ -73,7 +81,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
 	onMyTurnModalClose(): void {
 		this.showMyTurnModal.set(false);
-		this.opponentLastGuess.set(null); // Reset pour le tour suivant
+		this.opponentLastGuessId.set(null); // Reset pour le tour suivant
 	}
 
 	onIncorrectModalClose(): void {
@@ -196,10 +204,8 @@ export class GameComponent implements OnInit, OnDestroy {
 
 				// On ne traite que si c'est l'adversaire (ou le bot) qui a joué
 				if (senderId !== currentUserId) {
-					this.pokemonService.getById(pokemonId).subscribe(p => {
-						// Stocker le pokémon deviné — la modale sera déclenchée par l'effect via current_turn
-						this.opponentLastGuess.set(p ?? null);
-					});
+					// Stocker l'ID directement — opponentLastGuess est un computed synchrone
+					this.opponentLastGuessId.set(pokemonId);
 				}
 			}
 		});
