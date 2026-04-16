@@ -50,9 +50,8 @@ export class GameComponent implements OnInit, OnDestroy {
 	});
 
 	private readonly allPokemon = toSignal(this.pokemonService.loadAll(), { initialValue: [] as Pokemon[] });
-	private readonly opponentLastGuessId = signal<number | null>(null);
 	opponentLastGuess = computed(() => {
-		const id = this.opponentLastGuessId();
+		const id = this.room()?.last_guess ?? null;
 		if (id === null) return null;
 		return this.allPokemon().find(p => p.id === id) ?? null;
 	});
@@ -82,7 +81,6 @@ export class GameComponent implements OnInit, OnDestroy {
 	/** Ferme la modal "À ton tour" et réinitialise le dernier guess de l'adversaire. */
 	onMyTurnModalClose(): void {
 		this.showMyTurnModal.set(false);
-		this.opponentLastGuessId.set(null); // Reset pour le tour suivant
 	}
 
 	/** Ferme la modal "Raté" et affiche la modal de tour si elle était en attente. */
@@ -108,7 +106,6 @@ export class GameComponent implements OnInit, OnDestroy {
 	private pokemonSub?: Subscription;
 	private opponentSub?: Subscription;
 	private devOpponentSub?: Subscription;
-	private broadcastSub?: Subscription;
 
 	turnCounter = signal(0);
 	private lastTurnId: string | null = null;
@@ -204,19 +201,7 @@ export class GameComponent implements OnInit, OnDestroy {
 			}
 		}
 
-		// ─── Écoute des Broadcasts (Guesses de l'adversaire) ──────────────
-		this.broadcastSub = this.gameService.broadcastEvents$.subscribe(evt => {
-			if (evt.event === 'opponent_guess') {
-				const { pokemonId, senderId } = evt.payload;
-				const currentUserId = this.supabaseService.getCurrentUser()?.id;
-
-				// On ne traite que si c'est l'adversaire (ou le bot) qui a joué
-				if (senderId !== currentUserId) {
-					// Stocker l'ID directement — opponentLastGuess est un computed synchrone
-					this.opponentLastGuessId.set(pokemonId);
-				}
-			}
-		});
+		// Le dernier guess adverse est lu depuis room().last_guess (DB-synced via Realtime/polling)
 	}
 
 	/**
@@ -387,6 +372,5 @@ export class GameComponent implements OnInit, OnDestroy {
 		this.pokemonSub?.unsubscribe();
 		this.opponentSub?.unsubscribe();
 		this.devOpponentSub?.unsubscribe();
-		this.broadcastSub?.unsubscribe();
 	}
 }

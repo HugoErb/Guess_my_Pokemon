@@ -202,6 +202,7 @@ export class GameService implements OnDestroy {
                 status: 'finished',
                 p1_ready: false,
                 p2_ready: false,
+                last_guess: null,
             });
             return 'correct';
         } else {
@@ -213,6 +214,7 @@ export class GameService implements OnDestroy {
 
             await this.updateAndRefresh(roomId, {
                 current_turn: adversaryId,
+                last_guess: pokemonId,
             });
             return 'incorrect';
         }
@@ -234,12 +236,14 @@ export class GameService implements OnDestroy {
                 status: 'finished',
                 p1_ready: false,
                 p2_ready: false,
+                last_guess: null,
             });
             return 'correct';
         } else {
             void this.supabaseService.broadcastGuess(pokemonId, null);
             await this.updateAndRefresh(roomId, {
                 current_turn: room.player1_id,
+                last_guess: pokemonId,
             });
             return 'incorrect';
         }
@@ -272,6 +276,7 @@ export class GameService implements OnDestroy {
                 p2_ready: false,
                 winner_id: null,
                 current_turn: null,
+                last_guess: null,
             });
 
             const finalRoom = await this.supabaseService.getRoomById(roomId);

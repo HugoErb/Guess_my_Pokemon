@@ -29,6 +29,7 @@ export interface Room {
   winner_id: string | null;
   created_at: string;
   settings: GameSettings | null;
+  last_guess: number | null;
 }
 
 export type RoomPatch = Partial<Omit<Room, 'id' | 'created_at' | 'player1_id'>>;
