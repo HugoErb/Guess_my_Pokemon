@@ -296,12 +296,9 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
                 @if (!guessedPokemonIds().includes(pokemon.id)) {
                   <button
                     (click)="toggleManualDim(pokemon.id, $event)"
-                    class="absolute top-1 right-1 z-10 w-5 h-5 flex items-center justify-center rounded-full transition-all"
-                    [class]="isManuallyDimmed(pokemon.id)
-                      ? 'opacity-100 bg-slate-600/90 text-slate-300 hover:bg-red-600/80 hover:text-white'
-                      : 'opacity-100 bg-slate-800/70 text-slate-400 hover:text-white'"
+                    class="absolute top-1 right-1 z-10 w-6 h-6 flex items-center justify-center rounded-full transition-colors border border-slate-600 shadow-sm bg-slate-800/90 text-slate-300 hover:bg-red-600 hover:text-white"
                   >
-                    <iconify-icon [icon]="isManuallyDimmed(pokemon.id) ? ICONS.eye : ICONS.eyeOff" class="text-[10px]"></iconify-icon>
+                    <iconify-icon [icon]="isManuallyDimmed(pokemon.id) ? ICONS.eye : ICONS.eyeOff" class="text-xs"></iconify-icon>
                   </button>
                 }
 
