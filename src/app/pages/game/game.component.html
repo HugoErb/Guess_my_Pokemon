@@ -76,14 +76,14 @@
 							(click)="openHelpModal()"
 							class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all"
 						>
-							<iconify-icon [icon]="ICONS.rules" class="text-sm"></iconify-icon>
+							<iconify-icon [icon]="ICONS.help" class="text-sm"></iconify-icon>
 							<span class="hidden sm:inline">Aide</span>
 						</button>
 						<button
 							(click)="openGameSettingsModal()"
 							class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all"
 						>
-							<iconify-icon [icon]="ICONS.help" class="text-sm"></iconify-icon>
+							<iconify-icon [icon]="ICONS.rules" class="text-sm"></iconify-icon>
 							<span class="hidden sm:inline">Configuration</span>
 						</button>
 						<button
@@ -143,6 +143,15 @@
 		</button>
 	</nav>
 </div>
+
+<!-- Animation de duel au lancement -->
+@if (showDuelIntro() && duelPlayer1() && duelPlayer2()) {
+	<app-duel-intro
+		[player1]="duelPlayer1()!"
+		[player2]="duelPlayer2()!"
+		(closed)="showDuelIntro.set(false)"
+	/>
+}
 
 <!-- Modale de Fin de Partie -->
 @if (showEndModal) {

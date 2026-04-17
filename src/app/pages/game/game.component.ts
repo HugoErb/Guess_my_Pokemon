@@ -15,13 +15,14 @@ import { GameSettingsModalComponent } from '../../components/game-settings-modal
 import { HelpModalComponent } from '../../components/help-modal/help-modal.component';
 import { IncorrectGuessModalComponent } from '../../components/incorrect-guess-modal/incorrect-guess-modal.component';
 import { MyTurnModalComponent } from '../../components/my-turn-modal/my-turn-modal.component';
+import { DuelIntroComponent } from '../../components/duel-intro/duel-intro.component';
 import { ICONS } from '../../constants/icons';
 import { environment } from '../../../environments/environment';
 import confetti from 'canvas-confetti';
 
 @Component({
 	selector: 'app-game',
-	imports: [PokemonCardComponent, PokedexComponent, CancelModalComponent, EndGameModalComponent, GameSettingsModalComponent, HelpModalComponent, IncorrectGuessModalComponent, MyTurnModalComponent],
+	imports: [PokemonCardComponent, PokedexComponent, CancelModalComponent, EndGameModalComponent, GameSettingsModalComponent, HelpModalComponent, IncorrectGuessModalComponent, MyTurnModalComponent, DuelIntroComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
 	templateUrl: './game.component.html',
 })
@@ -79,6 +80,11 @@ export class GameComponent implements OnInit, OnDestroy {
 	showCancelModal = signal(false);
 	showGameSettingsModal = signal(false);
 	showHelpModal = signal(false);
+
+	showDuelIntro = signal(false);
+	duelPlayer1 = signal<{ username: string; avatar_url?: string } | null>(null);
+	duelPlayer2 = signal<{ username: string; avatar_url?: string } | null>(null);
+	private duelShown = false;
 
 	/** Ferme la modal "À ton tour" et réinitialise le dernier guess de l'adversaire. */
 	onMyTurnModalClose(): void {
@@ -138,6 +144,11 @@ export class GameComponent implements OnInit, OnDestroy {
 				}
 			}
 
+			// Animation de duel au démarrage de la partie
+			if (r?.status === 'playing' && !this.duelShown) {
+				untracked(() => { this.triggerDuelIntro(r.player1_id, r.player2_id ?? null); });
+			}
+
 			// Simulation DEV de l'adversaire
 			if (this.isDev && r?.status === 'playing' && !this.isMyTurn()) {
 				untracked(() => {
@@ -168,6 +179,35 @@ export class GameComponent implements OnInit, OnDestroy {
 	/** Lifecycle Angular — initialise la page de jeu. */
 	ngOnInit(): void {
 		void this.init();
+	}
+
+	/** Charge les profils des deux joueurs et affiche l'animation de duel. */
+	private async triggerDuelIntro(player1Id: string, player2Id: string | null): Promise<void> {
+		this.duelShown = true;
+		try {
+			const fetchProfile = (id: string | null) =>
+				id
+					? this.supabaseService.getProfile(id).catch(() => ({ username: 'Bot', avatar_url: undefined }))
+					: Promise.resolve({ username: 'Bot', avatar_url: undefined });
+
+			const [p1, p2] = await Promise.all([fetchProfile(player1Id), fetchProfile(player2Id)]);
+			const p1Data = { username: p1.username, avatar_url: p1.avatar_url };
+			const p2Data = { username: p2.username, avatar_url: p2.avatar_url };
+			await Promise.all(
+				[p1Data, p2Data]
+					.filter(p => p.avatar_url)
+					.map(p => new Promise<void>(resolve => {
+						const img = new Image();
+						img.onload = img.onerror = () => resolve();
+						img.src = p.avatar_url!;
+					}))
+			);
+			this.duelPlayer1.set(p1Data);
+			this.duelPlayer2.set(p2Data);
+			this.showDuelIntro.set(true);
+		} catch {
+			// skip l'animation si les profils sont indisponibles
+		}
 	}
 
 	/**
