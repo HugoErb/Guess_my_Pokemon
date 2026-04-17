@@ -279,16 +279,11 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
       <div>
         <div class="flex items-center gap-2 mb-2">
           <p class="text-xs text-slate-400 uppercase tracking-wider">Type</p>
-          <div class="flex gap-1">
-            <button
-              (click)="selectAllTypes()"
-              class="px-2 py-0.5 rounded text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600 transition-colors"
-            >Tout cocher</button>
-            <button
-              (click)="deselectAllTypes()"
-              class="px-2 py-0.5 rounded text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600 transition-colors"
-            >Tout décocher</button>
-          </div>
+          <span class="text-xs text-slate-500">
+            <button (click)="selectAllTypes()" class="hover:text-slate-300 transition-colors">Tout</button>
+            -
+            <button (click)="deselectAllTypes()" class="hover:text-slate-300 transition-colors">Aucun</button>
+          </span>
         </div>
         <div class="flex flex-col md:flex-row md:items-stretch gap-2 md:gap-1">
           <!-- Types : version mobile (un seul flex-wrap, wrapping naturel) -->
