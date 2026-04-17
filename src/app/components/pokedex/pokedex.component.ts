@@ -282,15 +282,15 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         </p>
         <div class="flex flex-col md:flex-row md:items-stretch gap-2 md:gap-1">
           <!-- Types : version mobile (un seul flex-wrap, wrapping naturel) -->
-          <div class="flex flex-wrap gap-1 flex-1 md:hidden">
+          <div class="grid grid-cols-3 gap-1 md:hidden">
             @for (type of mobileAllTypes; track type) {
               <button
                 (click)="toggleType(type)"
                 [class]="isTypeSelected(type)
-                  ? 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline ring-1 ring-white/50 transition-all flex items-center gap-1 ' + getTypeColor(type)
-                  : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 hover:opacity-70 transition-all flex items-center gap-1 ' + getTypeColor(type)"
+                  ? 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline ring-1 ring-white/50 transition-all flex items-center justify-center gap-1 ' + getTypeColor(type)
+                  : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 hover:opacity-70 transition-all flex items-center justify-center gap-1 ' + getTypeColor(type)"
               >
-                <iconify-icon [icon]="getTypeIcon(type)" class="text-sm"></iconify-icon>
+                <iconify-icon [icon]="getTypeIcon(type)" class="text-sm type-icon-outline"></iconify-icon>
                 {{ type }}
               </button>
             }
@@ -306,7 +306,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
                     ? 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline ring-1 ring-white/50 transition-all flex items-center gap-1 ' + getTypeColor(type)
                     : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 hover:opacity-70 transition-all flex items-center gap-1 ' + getTypeColor(type)"
                 >
-                  <iconify-icon [icon]="getTypeIcon(type)" class="text-sm"></iconify-icon>
+                  <iconify-icon [icon]="getTypeIcon(type)" class="text-sm type-icon-outline"></iconify-icon>
                   {{ type }}
                 </button>
               }
@@ -319,7 +319,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
                     ? 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline ring-1 ring-white/50 transition-all flex items-center gap-1 ' + getTypeColor(type)
                     : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 hover:opacity-70 transition-all flex items-center gap-1 ' + getTypeColor(type)"
                 >
-                  <iconify-icon [icon]="getTypeIcon(type)" class="text-sm"></iconify-icon>
+                  <iconify-icon [icon]="getTypeIcon(type)" class="text-sm type-icon-outline"></iconify-icon>
                   {{ type }}
                 </button>
               }
