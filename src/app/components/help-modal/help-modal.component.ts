@@ -14,9 +14,13 @@ import { modalAnimation } from '../../constants/animations';
 			[@modalAnimation]
 		>
 			<div
-				class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-lg w-full shadow-2xl flex flex-col gap-5 modal-content max-h-[90vh] overflow-y-auto"
+				class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-lg w-full shadow-2xl flex flex-col gap-5 modal-content max-h-[90vh] overflow-y-auto relative"
 				(click)="$event.stopPropagation()"
 			>
+				<button (click)="close.emit()" class="absolute top-4 right-4 z-10 bg-slate-900/60 hover:bg-red-600 rounded-full w-8 h-8 flex items-center justify-center text-slate-300 hover:text-white transition-colors">
+					<iconify-icon [icon]="ICONS.close" class="text-lg"></iconify-icon>
+				</button>
+
 				<!-- En-tête -->
 				<div class="flex items-center gap-3">
 					<div class="w-10 h-10 rounded-xl bg-cyan-600/20 flex items-center justify-center border border-cyan-500/30 shrink-0">

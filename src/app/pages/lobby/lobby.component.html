@@ -388,15 +388,23 @@
 						<div class="flex-1 relative">
 							<iconify-icon
 								[icon]="ICONS.search"
-								class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"
+								class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base leading-none flex"
 							></iconify-icon>
 							<input
 								type="text"
 								placeholder="Chercher..."
 								[(ngModel)]="searchQuery"
 								(ngModelChange)="onSearch()"
-								class="w-full bg-slate-700 border border-slate-600 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
+								class="w-full bg-slate-700 border border-slate-600 rounded-lg pl-9 pr-8 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
 							/>
+							@if (searchQuery) {
+								<button
+									(click)="searchQuery = ''; onSearch()"
+									class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+								>
+									<iconify-icon [icon]="ICONS.close" class="text-base leading-none flex"></iconify-icon>
+								</button>
+							}
 						</div>
 						<button
 							(click)="pickRandom()"

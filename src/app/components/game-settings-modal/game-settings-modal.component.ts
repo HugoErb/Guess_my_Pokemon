@@ -15,9 +15,13 @@ import { GameSettings } from '../../models/room.model';
 			[@modalAnimation]
 		>
 			<div
-				class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-5 modal-content"
+				class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-5 modal-content relative"
 				(click)="$event.stopPropagation()"
 			>
+				<button (click)="close.emit()" class="absolute top-4 right-4 z-10 bg-slate-900/60 hover:bg-red-600 rounded-full w-8 h-8 flex items-center justify-center text-slate-300 hover:text-white transition-colors">
+					<iconify-icon [icon]="ICONS.close" class="text-lg"></iconify-icon>
+				</button>
+
 				<div class="flex items-center gap-3">
 					<div class="w-10 h-10 rounded-xl bg-blue-600/20 flex items-center justify-center border border-blue-500/30">
 						<iconify-icon [icon]="ICONS.rules" class="text-2xl text-blue-400"></iconify-icon>

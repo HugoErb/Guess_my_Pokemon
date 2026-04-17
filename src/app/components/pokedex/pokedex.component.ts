@@ -69,14 +69,22 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
       <!-- Barre de recherche + Reset -->
       <div [class.mobile-hidden]="filtersOnly()" class="flex items-center gap-2">
         <div class="relative flex-1">
-          <iconify-icon [icon]="ICONS.search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></iconify-icon>
+          <iconify-icon [icon]="ICONS.search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base leading-none flex"></iconify-icon>
           <input
             type="text"
             placeholder="Rechercher un Pokémon..."
             [ngModel]="searchQuery()"
             (ngModelChange)="searchQuery.set($event)"
-            class="w-full bg-slate-700 border border-slate-600 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
+            class="w-full bg-slate-700 border border-slate-600 rounded-lg pl-9 pr-8 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
           />
+          @if (searchQuery()) {
+            <button
+              (click)="searchQuery.set('')"
+              class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+            >
+              <iconify-icon [icon]="ICONS.close" class="text-base leading-none flex"></iconify-icon>
+            </button>
+          }
         </div>
         @if (!noSearch()) {
           <!-- Bouton réinitialiser (desktop uniquement) -->
@@ -93,6 +101,16 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
       <!-- Filtres (masqués sur mobile sauf si ouverts via le bouton) -->
       @if (!noSearch()) {
       <div [class.mobile-hidden]="!showFilters()" class="flex flex-col gap-5" [class.flex-1]="filtersOnly()" [class.overflow-y-auto]="filtersOnly()">
+
+      <!-- Bouton réinitialiser (mobile uniquement, en haut des filtres) -->
+      <button
+        (click)="clearFilters()"
+        class="md:hidden w-full flex items-center justify-center gap-1.5 px-2.5 py-1 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all duration-200"
+      >
+        <iconify-icon [icon]="ICONS.refresh" class="text-sm"></iconify-icon>
+        Réinitialiser les filtres
+      </button>
+
       <div class="flex flex-wrap gap-x-8 gap-y-6">
         <!-- Génération -->
         <div class="shrink-0">
@@ -271,16 +289,8 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         </div>
       </div>
 
-      <!-- Bouton réinitialiser (mobile uniquement, dans le panneau filtres) -->
-      <button
-        (click)="clearFilters()"
-        class="md:hidden self-start flex items-center gap-1.5 px-2.5 py-1 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all duration-200"
-      >
-        <iconify-icon [icon]="ICONS.refresh" class="text-sm"></iconify-icon>
-        Réinitialiser les filtres
-      </button>
 
-      </div><!-- fin wrapper mobile-hidden -->
+</div><!-- fin wrapper mobile-hidden -->
       }
 
       <!-- Résultats -->
