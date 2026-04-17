@@ -10,17 +10,19 @@ import { Pokemon } from '../../models/pokemon.model';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { PokedexComponent } from '../../components/pokedex/pokedex.component';
 import { CancelModalComponent } from '../../components/cancel-modal/cancel-modal.component';
-import { RulesModalComponent } from '../../components/rules-modal/rules-modal.component';
+import { EndGameModalComponent } from '../../components/end-game-modal/end-game-modal.component';
+import { GameSettingsModalComponent } from '../../components/game-settings-modal/game-settings-modal.component';
+import { HelpModalComponent } from '../../components/help-modal/help-modal.component';
+import { IncorrectGuessModalComponent } from '../../components/incorrect-guess-modal/incorrect-guess-modal.component';
+import { MyTurnModalComponent } from '../../components/my-turn-modal/my-turn-modal.component';
 import { ICONS } from '../../constants/icons';
-import { modalAnimation } from '../../constants/animations';
 import { environment } from '../../../environments/environment';
 import confetti from 'canvas-confetti';
 
 @Component({
 	selector: 'app-game',
-	imports: [PokemonCardComponent, PokedexComponent, CancelModalComponent, RulesModalComponent],
+	imports: [PokemonCardComponent, PokedexComponent, CancelModalComponent, EndGameModalComponent, GameSettingsModalComponent, HelpModalComponent, IncorrectGuessModalComponent, MyTurnModalComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
-	animations: [modalAnimation],
 	templateUrl: './game.component.html',
 })
 export class GameComponent implements OnInit, OnDestroy {
@@ -74,7 +76,6 @@ export class GameComponent implements OnInit, OnDestroy {
 
 	guessedPokemonIds = signal<number[]>([]);
 
-	showRulesModal = signal(false);
 	showCancelModal = signal(false);
 	showGameSettingsModal = signal(false);
 	showHelpModal = signal(false);
@@ -92,11 +93,6 @@ export class GameComponent implements OnInit, OnDestroy {
 			this.showMyTurnModal.set(true);
 		}
 	}
-
-	/** Ouvre la modal des règles du jeu. */
-	openRulesModal(): void { this.showRulesModal.set(true); }
-	/** Ferme la modal des règles du jeu. */
-	closeRulesModal(): void { this.showRulesModal.set(false); }
 
 	/** Ouvre la modal des paramètres de la partie. */
 	openGameSettingsModal(): void { this.showGameSettingsModal.set(true); }

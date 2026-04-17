@@ -241,31 +241,31 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
           <!-- Séparateur (desktop uniquement) -->
           <div class="hidden md:block w-px bg-slate-600 mx-1 self-stretch"></div>
 
-          <!-- Boutons Mono/Double : en ligne sur mobile, empilés sur desktop -->
-          <div class="flex md:flex-col gap-1 md:justify-around mt-1 md:mt-0">
-            <button
-              (click)="toggleOnlyMonoType()"
-              [class]="onlyMonoType()
-                ? 'flex-1 md:flex-none px-3 py-1 rounded-lg text-xs font-bold bg-teal-600 text-white border border-teal-500 shadow-lg shadow-teal-500/20 transition-all'
-                : 'flex-1 md:flex-none px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
-            >
-              Mono type seulement
-            </button>
+          <!-- Boutons Mono/Double : grille 2 colonnes (Double+Mono / Strict) -->
+          <div class="grid grid-cols-2 gap-1 mt-1 md:mt-0">
             <button
               (click)="toggleOnlyDualType()"
               [class]="onlyDualType()
-                ? 'flex-1 md:flex-none px-3 py-1 rounded-lg text-xs font-bold bg-indigo-600 text-white border border-indigo-500 shadow-lg shadow-indigo-500/20 transition-all'
-                : 'flex-1 md:flex-none px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
+                ? 'w-full whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-indigo-600 text-white border border-indigo-500 shadow-lg shadow-indigo-500/20 transition-all'
+                : 'w-full whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
             >
-              Double type
+              Double type seul.
+            </button>
+            <button
+              (click)="toggleOnlyMonoType()"
+              [class]="onlyMonoType()
+                ? 'w-full whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-teal-600 text-white border border-teal-500 shadow-lg shadow-teal-500/20 transition-all'
+                : 'w-full whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
+            >
+              Mono type seul.
             </button>
             <button
               (click)="toggleOnlyDualTypeStrict()"
               [class]="onlyDualTypeStrict()
-                ? 'flex-1 md:flex-none px-3 py-1 rounded-lg text-xs font-bold bg-violet-600 text-white border border-violet-500 shadow-lg shadow-violet-500/20 transition-all'
-                : 'flex-1 md:flex-none px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
+                ? 'w-full whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-violet-600 text-white border border-violet-500 shadow-lg shadow-violet-500/20 transition-all'
+                : 'w-full whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
             >
-              Double type strict
+              Double type strict seul.
             </button>
           </div>
         </div>

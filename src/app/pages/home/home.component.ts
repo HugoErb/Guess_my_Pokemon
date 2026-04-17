@@ -19,14 +19,8 @@ import { modalAnimation } from '../../constants/animations';
 })
 export class HomeComponent implements OnInit {
   protected readonly ICONS = ICONS;
-  showRulesModal = signal(false);
   showPasswordModal = signal(false);
   showUsernameModal = signal(false);
-
-  /** Ouvre la modal des règles du jeu. */
-  openRulesModal(): void { this.showRulesModal.set(true); }
-  /** Ferme la modal des règles du jeu. */
-  closeRulesModal(): void { this.showRulesModal.set(false); }
 
   /** Ouvre la modal de changement de mot de passe en réinitialisant les champs. */
   openPasswordModal(): void {
