@@ -277,9 +277,19 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
       <!-- Filtres type -->
       <div>
-        <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">
-          Type
-        </p>
+        <div class="flex items-center gap-2 mb-2">
+          <p class="text-xs text-slate-400 uppercase tracking-wider">Type</p>
+          <div class="flex gap-1">
+            <button
+              (click)="selectAllTypes()"
+              class="px-2 py-0.5 rounded text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600 transition-colors"
+            >Tout cocher</button>
+            <button
+              (click)="deselectAllTypes()"
+              class="px-2 py-0.5 rounded text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-600 transition-colors"
+            >Tout décocher</button>
+          </div>
+        </div>
         <div class="flex flex-col md:flex-row md:items-stretch gap-2 md:gap-1">
           <!-- Types : version mobile (un seul flex-wrap, wrapping naturel) -->
           <div class="grid grid-cols-3 gap-1 md:hidden">
@@ -720,6 +730,16 @@ export class PokedexComponent implements OnInit {
     /** Retourne true si le type donné est actuellement sélectionné dans le filtre. */
     isTypeSelected(type: string): boolean {
         return this.selectedTypes().includes(type);
+    }
+
+    selectAllTypes(): void {
+        this.selectedTypes.set([...ALL_TYPES]);
+        this.displayedCount.set(this.PAGE_SIZE);
+    }
+
+    deselectAllTypes(): void {
+        this.selectedTypes.set([]);
+        this.displayedCount.set(this.PAGE_SIZE);
     }
 
     /** Ajoute ou retire une catégorie du filtre actif. */
