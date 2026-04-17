@@ -114,6 +114,9 @@ const TYPE_COLORS: Record<string, string> = {
           </div>
           <span class="w-7 text-xs text-slate-300 text-left shrink-0">{{ pokemon().stats.vitesse }}</span>
         </div>
+        <div class="flex justify-center mt-0.5">
+          <span class="text-xs text-slate-400">TOTAL : <span class="text-white font-bold">{{ getTotalStats(pokemon().stats) }}</span></span>
+        </div>
       </div>
 
       <!-- Taille & Poids -->
@@ -168,5 +171,9 @@ export class PokemonCardComponent {
   /** Calcule la largeur de la barre de statistique en pourcentage (max = 200 → 100%). */
   getStatWidth(value: number): string {
     return `${Math.min(100, Math.round((value / 200) * 100))}%`;
+  }
+
+  getTotalStats(stats: Pokemon['stats']): number {
+    return stats.pv + stats.attaque + stats.defense + stats.atq_spe + stats.def_spe + stats.vitesse;
   }
 }

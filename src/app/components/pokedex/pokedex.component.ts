@@ -203,6 +203,53 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
             </div>
           </div>
         </div>
+
+        <!-- Stats -->
+        <div class="shrink-0 relative">
+          <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">Stats</p>
+          <button
+            (click)="showStatsPanel.set(!showStatsPanel())"
+            [class]="hasStatFilter()
+              ? 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white border border-blue-500 transition-colors'
+              : 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 border border-slate-600 hover:bg-slate-600 transition-colors'"
+          >
+            <iconify-icon icon="mdi:chart-bar" class="text-sm"></iconify-icon>
+            Filtrer les stats
+            @if (hasStatFilter()) {
+              <span class="bg-white/30 rounded-full w-2 h-2 inline-block"></span>
+            }
+            <iconify-icon [icon]="showStatsPanel() ? 'mdi:chevron-up' : 'mdi:chevron-down'" class="text-sm"></iconify-icon>
+          </button>
+
+          @if (showStatsPanel()) {
+            <div class="fixed inset-0 z-10" (click)="showStatsPanel.set(false)"></div>
+            <div class="fixed bottom-0 left-0 right-0 rounded-t-2xl sm:rounded-xl sm:absolute sm:bottom-auto sm:top-full sm:left-0 sm:right-auto sm:w-72 mt-1 z-20 bg-slate-800 border border-slate-600 p-5 pb-8 sm:p-4 sm:pb-4 shadow-xl">
+              <div class="flex sm:hidden justify-center mb-3">
+                <div class="w-10 h-1 bg-slate-600 rounded-full"></div>
+              </div>
+              <div class="flex flex-col gap-3">
+                @for (stat of statFilters; track stat.key) {
+                  <div class="flex items-center gap-2">
+                    <span class="w-12 text-xs text-slate-400 text-right shrink-0">{{ stat.label }}</span>
+                    <input type="number" min="0" [ngModel]="stat.min()" (ngModelChange)="stat.min.set($event ?? null)"
+                      placeholder="Min"
+                      class="w-16 sm:w-16 flex-1 sm:flex-none bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 sm:py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+                    <span class="text-slate-600 text-xs shrink-0">—</span>
+                    <input type="number" min="0" [ngModel]="stat.max()" (ngModelChange)="stat.max.set($event ?? null)"
+                      placeholder="Max"
+                      class="w-16 sm:w-16 flex-1 sm:flex-none bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 sm:py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+                  </div>
+                }
+                @if (hasStatFilter()) {
+                  <button (click)="clearStatFilters()"
+                    class="mt-1 text-xs text-slate-400 hover:text-white underline text-center transition-colors">
+                    Réinitialiser les stats
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
       </div>
 
       <!-- Filtres type -->
@@ -439,6 +486,21 @@ export class PokedexComponent implements OnInit {
     maxWeight = signal<number | null>(null);
     minHeight = signal<number | null>(0);
     maxHeight = signal<number | null>(null);
+    showStatsPanel = signal(false);
+    minStatPv      = signal<number | null>(null);
+    maxStatPv      = signal<number | null>(null);
+    minStatAtq     = signal<number | null>(null);
+    maxStatAtq     = signal<number | null>(null);
+    minStatDef     = signal<number | null>(null);
+    maxStatDef     = signal<number | null>(null);
+    minStatAtqSpe  = signal<number | null>(null);
+    maxStatAtqSpe  = signal<number | null>(null);
+    minStatDefSpe  = signal<number | null>(null);
+    maxStatDefSpe  = signal<number | null>(null);
+    minStatVit     = signal<number | null>(null);
+    maxStatVit     = signal<number | null>(null);
+    minStatTotal   = signal<number | null>(null);
+    maxStatTotal   = signal<number | null>(null);
     onlyDualType = signal(false);
     onlyDualTypeStrict = signal(false);
     onlyMonoType = signal(false);
@@ -471,6 +533,23 @@ export class PokedexComponent implements OnInit {
     ];
     readonly evoStages = [1, 2, 3];
 
+    readonly statFilters = [
+        { key: 'pv',     label: 'PV',    min: this.minStatPv,     max: this.maxStatPv },
+        { key: 'atq',    label: 'ATQ',   min: this.minStatAtq,    max: this.maxStatAtq },
+        { key: 'def',    label: 'DEF',   min: this.minStatDef,    max: this.maxStatDef },
+        { key: 'atqSpe', label: 'ATQ S', min: this.minStatAtqSpe, max: this.maxStatAtqSpe },
+        { key: 'defSpe', label: 'DEF S', min: this.minStatDefSpe, max: this.maxStatDefSpe },
+        { key: 'vit',    label: 'VIT',   min: this.minStatVit,    max: this.maxStatVit },
+        { key: 'total',  label: 'TOTAL', min: this.minStatTotal,  max: this.maxStatTotal },
+    ];
+
+    hasStatFilter = computed(() =>
+        [this.minStatPv(), this.maxStatPv(), this.minStatAtq(), this.maxStatAtq(),
+         this.minStatDef(), this.maxStatDef(), this.minStatAtqSpe(), this.maxStatAtqSpe(),
+         this.minStatDefSpe(), this.maxStatDefSpe(), this.minStatVit(), this.maxStatVit(),
+         this.minStatTotal(), this.maxStatTotal()].some(v => v !== null)
+    );
+
     // Logic de filtrage réactive (Computed)
     filteredPokemons = computed(() => {
         const list = this.allPokemons();
@@ -489,6 +568,14 @@ export class PokedexComponent implements OnInit {
         const minH = this.minHeight();
         const maxH = this.maxHeight();
 
+        const minPv      = this.minStatPv();      const maxPv      = this.maxStatPv();
+        const minAtq     = this.minStatAtq();     const maxAtq     = this.maxStatAtq();
+        const minDef     = this.minStatDef();     const maxDef     = this.maxStatDef();
+        const minAtqSpe  = this.minStatAtqSpe();  const maxAtqSpe  = this.maxStatAtqSpe();
+        const minDefSpe  = this.minStatDefSpe();  const maxDefSpe  = this.maxStatDefSpe();
+        const minVit     = this.minStatVit();     const maxVit     = this.maxStatVit();
+        const minTotal   = this.minStatTotal();   const maxTotal   = this.maxStatTotal();
+
         return list.filter(p => {
             if (restricted.length > 0 && !restricted.includes(p.generation)) return false;
             if (q && !p.name.toLowerCase().includes(q)) return false;
@@ -506,6 +593,23 @@ export class PokedexComponent implements OnInit {
             if (maxW !== null && p.weight > maxW) return false;
             if (minH !== null && p.height < minH) return false;
             if (maxH !== null && p.height > maxH) return false;
+
+            const s = p.stats;
+            const total = s.pv + s.attaque + s.defense + s.atq_spe + s.def_spe + s.vitesse;
+            if (minPv     !== null && s.pv       < minPv)     return false;
+            if (maxPv     !== null && s.pv       > maxPv)     return false;
+            if (minAtq    !== null && s.attaque   < minAtq)    return false;
+            if (maxAtq    !== null && s.attaque   > maxAtq)    return false;
+            if (minDef    !== null && s.defense   < minDef)    return false;
+            if (maxDef    !== null && s.defense   > maxDef)    return false;
+            if (minAtqSpe !== null && s.atq_spe  < minAtqSpe) return false;
+            if (maxAtqSpe !== null && s.atq_spe  > maxAtqSpe) return false;
+            if (minDefSpe !== null && s.def_spe  < minDefSpe) return false;
+            if (maxDefSpe !== null && s.def_spe  > maxDefSpe) return false;
+            if (minVit    !== null && s.vitesse   < minVit)    return false;
+            if (maxVit    !== null && s.vitesse   > maxVit)    return false;
+            if (minTotal  !== null && total       < minTotal)  return false;
+            if (maxTotal  !== null && total       > maxTotal)  return false;
 
             return true;
         });
@@ -621,6 +725,15 @@ export class PokedexComponent implements OnInit {
         return this.selectedEvoStages().includes(stage);
     }
 
+    /** Réinitialise les filtres de stats à null. */
+    clearStatFilters(): void {
+        [this.minStatPv, this.maxStatPv, this.minStatAtq, this.maxStatAtq,
+         this.minStatDef, this.maxStatDef, this.minStatAtqSpe, this.maxStatAtqSpe,
+         this.minStatDefSpe, this.maxStatDefSpe, this.minStatVit, this.maxStatVit,
+         this.minStatTotal, this.maxStatTotal].forEach(s => s.set(null));
+        this.displayedCount.set(this.PAGE_SIZE);
+    }
+
     /** Réinitialise tous les filtres à leur valeur par défaut. */
     clearFilters(): void {
         this.searchQuery.set('');
@@ -635,6 +748,7 @@ export class PokedexComponent implements OnInit {
         this.onlyDualType.set(false);
         this.onlyDualTypeStrict.set(false);
         this.onlyMonoType.set(false);
+        this.clearStatFilters();
         this.displayedCount.set(this.PAGE_SIZE);
     }
 

@@ -149,6 +149,21 @@ import { modalAnimation } from '../../constants/animations';
 							</div>
 						</div>
 
+						<!-- Stats -->
+						<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 space-y-2">
+							<div class="flex items-center gap-2">
+								<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 border border-slate-600">Filtrer les stats</span>
+							</div>
+							<p class="text-sm text-slate-300">
+								Filtre les Pokémon selon leurs statistiques de base. Cliquer sur le bouton ouvre un panneau avec un min et un max pour chaque stat.
+								Laisser un champ vide signifie pas de limite de ce côté.
+							</p>
+							<div class="bg-slate-800 rounded-lg px-3 py-2 text-xs space-y-0.5">
+								<div class="text-slate-400 font-bold mb-2">Exemple :</div>
+								<div class="text-slate-300">TOTAL Min = 600 → seuls les Pokémon ayant une somme de stats ≥ 600 sont affichés.</div>
+							</div>
+						</div>
+
 						<!-- Séparateur -->
 						<div class="flex items-center gap-3">
 							<div class="flex-1 h-px bg-slate-700"></div>
