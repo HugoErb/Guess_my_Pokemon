@@ -10,44 +10,44 @@ import { Component, input, output, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angul
 			<!-- Joueur 1 (gauche) -->
 			<div class="player-left flex flex-col items-center gap-3 min-w-0">
 				@if (player1().avatar_url) {
-					<img [src]="player1().avatar_url" alt="" class="w-16 h-16 rounded-full object-cover border-2 border-red-500 shadow-lg shadow-red-500/30" />
+					<img [src]="player1().avatar_url" alt="" class="w-16 h-16 md:w-24 md:h-24 rounded-full object-cover border-2 border-red-500 shadow-lg shadow-red-500/30" />
 				} @else {
-					<div class="w-16 h-16 rounded-full bg-red-700 border-2 border-red-500 flex items-center justify-center text-2xl font-black text-white shadow-lg shadow-red-500/30">
+					<div class="w-16 h-16 md:w-24 md:h-24 rounded-full bg-red-700 border-2 border-red-500 flex items-center justify-center text-2xl md:text-4xl font-black text-white shadow-lg shadow-red-500/30">
 						{{ player1().username.charAt(0).toUpperCase() }}
 					</div>
 				}
-				<span class="text-sm font-bold text-white text-center max-w-[90px] truncate">{{ player1().username }}</span>
+				<span class="text-sm md:text-base font-bold text-white text-center max-w-[90px] md:max-w-[130px] truncate">{{ player1().username }}</span>
 			</div>
 
 			<!-- Zone centrale : épées + VS -->
-			<div class="flex flex-col items-center gap-3 mx-6 md:mx-12 shrink-0">
-				<div class="relative w-32 h-20 flex items-center justify-center">
+			<div class="flex flex-col items-center gap-3 mx-6 md:mx-16 shrink-0">
+				<div class="relative w-32 h-20 md:w-44 md:h-28 flex items-center justify-center">
 					<!-- Épée gauche -->
 					<div class="sword-left absolute inset-0 flex items-center justify-center">
-						<iconify-icon icon="mdi:sword" style="font-size:2.8rem; color:#f87171; display:block;"></iconify-icon>
+						<iconify-icon icon="mdi:sword" style="font-size:3.4rem; color:#f87171; display:block;"></iconify-icon>
 					</div>
 					<!-- Flash d'impact au centre -->
 					<div class="flash-burst absolute inset-0 flex items-center justify-center pointer-events-none">
-						<div class="w-12 h-12 rounded-full bg-yellow-200" style="box-shadow: 0 0 32px 18px rgba(253,224,71,0.85);"></div>
+						<div class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-yellow-200" style="box-shadow: 0 0 32px 18px rgba(253,224,71,0.85);"></div>
 					</div>
-					<!-- Épée droite -->
+					<!-- Épée droite (miroir horizontal de la gauche) -->
 					<div class="sword-right absolute inset-0 flex items-center justify-center">
-						<iconify-icon icon="mdi:sword" style="font-size:2.8rem; color:#f87171; display:block;"></iconify-icon>
+						<iconify-icon icon="mdi:sword" style="font-size:3.4rem; color:#f87171; display:block; transform: scaleX(-1);"></iconify-icon>
 					</div>
 				</div>
-				<p class="vs-text text-2xl font-black text-yellow-400 tracking-widest uppercase italic">VS</p>
+				<p class="vs-text text-2xl md:text-3xl font-black text-yellow-400 tracking-widest uppercase italic">VS</p>
 			</div>
 
 			<!-- Joueur 2 (droite) -->
 			<div class="player-right flex flex-col items-center gap-3 min-w-0">
 				@if (player2().avatar_url) {
-					<img [src]="player2().avatar_url" alt="" class="w-16 h-16 rounded-full object-cover border-2 border-blue-500 shadow-lg shadow-blue-500/30" />
+					<img [src]="player2().avatar_url" alt="" class="w-16 h-16 md:w-24 md:h-24 rounded-full object-cover border-2 border-blue-500 shadow-lg shadow-blue-500/30" />
 				} @else {
-					<div class="w-16 h-16 rounded-full bg-blue-700 border-2 border-blue-500 flex items-center justify-center text-2xl font-black text-white shadow-lg shadow-blue-500/30">
+					<div class="w-16 h-16 md:w-24 md:h-24 rounded-full bg-blue-700 border-2 border-blue-500 flex items-center justify-center text-2xl md:text-4xl font-black text-white shadow-lg shadow-blue-500/30">
 						{{ player2().username.charAt(0).toUpperCase() }}
 					</div>
 				}
-				<span class="text-sm font-bold text-white text-center max-w-[90px] truncate">{{ player2().username }}</span>
+				<span class="text-sm md:text-base font-bold text-white text-center max-w-[90px] md:max-w-[130px] truncate">{{ player2().username }}</span>
 			</div>
 		</div>
 	`,
@@ -56,7 +56,7 @@ import { Component, input, output, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angul
 		.duel-overlay {
 			animation:
 				duelIn  200ms ease-out          forwards,
-				duelOut 300ms ease-in    1700ms  forwards;
+				duelOut 300ms ease-in    2700ms  forwards;
 		}
 
 		/* Joueurs : glissent depuis les côtés */
@@ -89,16 +89,16 @@ import { Component, input, output, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angul
 			from { transform: translateX(120px); opacity: 0; }
 			to   { transform: translateX(0);     opacity: 1; }
 		}
-		/* Épées : glissent ET tournent simultanément jusqu'à la diagonale */
+		/* Épées : animation miroir parfaite — la droite est scaleX(-1) de la gauche */
 		@keyframes swordLeft {
-			from { transform: translateX(-140px) rotate(0deg);  opacity: 0; }
-			88%  { transform: translateX(8px)    rotate(48deg); opacity: 1; }
-			to   { transform: translateX(0)      rotate(45deg); opacity: 1; }
+			from { transform: translateX(-140px) rotate(-45deg); opacity: 0; }
+			88%  { transform: translateX(16px)   rotate(4deg);   opacity: 1; }
+			to   { transform: translateX(5px)   rotate(0deg);   opacity: 1; }
 		}
 		@keyframes swordRight {
-			from { transform: translateX(140px)  rotate(0deg);   opacity: 0; }
-			88%  { transform: translateX(-8px)   rotate(-48deg); opacity: 1; }
-			to   { transform: translateX(0)      rotate(-45deg); opacity: 1; }
+			from { transform: translateX(140px)  rotate(45deg);  opacity: 0; }
+			88%  { transform: translateX(-16px)  rotate(-4deg);  opacity: 1; }
+			to   { transform: translateX(-5px)  rotate(0deg);   opacity: 1; }
 		}
 		@keyframes flashBurst {
 			0%   { transform: scale(0);   opacity: 0; }
@@ -113,6 +113,6 @@ export class DuelIntroComponent implements OnInit {
 	closed = output<void>();
 
 	ngOnInit(): void {
-		setTimeout(() => this.closed.emit(), 2000);
+		setTimeout(() => this.closed.emit(), 3000);
 	}
 }
