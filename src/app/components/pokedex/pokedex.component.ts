@@ -350,8 +350,8 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
             <button
               (click)="toggleOnlyDualTypeStrict()"
               [class]="onlyDualTypeStrict()
-                ? 'w-full whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-violet-600 text-white border border-violet-500 shadow-lg shadow-violet-500/20 transition-all'
-                : 'w-full whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
+                ? 'col-span-2 md:col-span-1 w-full whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-violet-600 text-white border border-violet-500 shadow-lg shadow-violet-500/20 transition-all'
+                : 'col-span-2 md:col-span-1 w-full whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all'"
             >
               Double type strict seul.
             </button>
