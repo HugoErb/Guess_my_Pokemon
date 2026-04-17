@@ -204,51 +204,74 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
           </div>
         </div>
 
-        <!-- Stats -->
-        <div class="shrink-0 relative">
+        <!-- Stats — inline sur mobile, dropdown sur desktop -->
+        <div class="w-full sm:w-auto sm:relative shrink-0">
           <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">Stats</p>
-          <button
-            (click)="showStatsPanel.set(!showStatsPanel())"
-            [class]="hasStatFilter()
-              ? 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white border border-blue-500 transition-colors'
-              : 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 border border-slate-600 hover:bg-slate-600 transition-colors'"
-          >
-            <iconify-icon icon="mdi:chart-bar" class="text-sm"></iconify-icon>
-            Filtrer les stats
-            @if (hasStatFilter()) {
-              <span class="bg-white/30 rounded-full w-2 h-2 inline-block"></span>
-            }
-            <iconify-icon [icon]="showStatsPanel() ? 'mdi:chevron-up' : 'mdi:chevron-down'" class="text-sm"></iconify-icon>
-          </button>
 
-          @if (showStatsPanel()) {
-            <div class="fixed inset-0 z-10" (click)="showStatsPanel.set(false)"></div>
-            <div class="fixed bottom-0 left-0 right-0 rounded-t-2xl sm:rounded-xl sm:absolute sm:bottom-auto sm:top-full sm:left-0 sm:right-auto sm:w-72 mt-1 z-20 bg-slate-800 border border-slate-600 p-5 pb-8 sm:p-4 sm:pb-4 shadow-xl">
-              <div class="flex sm:hidden justify-center mb-3">
-                <div class="w-10 h-1 bg-slate-600 rounded-full"></div>
+          <!-- Mobile : toujours affiché en ligne -->
+          <div class="sm:hidden flex flex-col gap-1.5 items-center">
+            @for (stat of statFilters; track stat.key) {
+              <div class="relative flex items-center gap-1.5">
+                <span class="absolute right-full pr-2 text-xs text-slate-400 whitespace-nowrap">{{ stat.label }}</span>
+                <input type="number" min="0" [ngModel]="stat.min()" (ngModelChange)="stat.min.set($event ?? null)"
+                  placeholder="Min"
+                  class="w-16 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+                <span class="text-slate-600 text-xs">—</span>
+                <input type="number" min="0" [ngModel]="stat.max()" (ngModelChange)="stat.max.set($event ?? null)"
+                  placeholder="Max"
+                  class="w-16 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
               </div>
-              <div class="flex flex-col gap-3">
-                @for (stat of statFilters; track stat.key) {
-                  <div class="flex items-center gap-2">
-                    <span class="w-12 text-xs text-slate-400 text-right shrink-0">{{ stat.label }}</span>
-                    <input type="number" min="0" [ngModel]="stat.min()" (ngModelChange)="stat.min.set($event ?? null)"
-                      placeholder="Min"
-                      class="w-16 sm:w-16 flex-1 sm:flex-none bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 sm:py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
-                    <span class="text-slate-600 text-xs shrink-0">—</span>
-                    <input type="number" min="0" [ngModel]="stat.max()" (ngModelChange)="stat.max.set($event ?? null)"
-                      placeholder="Max"
-                      class="w-16 sm:w-16 flex-1 sm:flex-none bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 sm:py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
-                  </div>
-                }
-                @if (hasStatFilter()) {
-                  <button (click)="clearStatFilters()"
-                    class="mt-1 text-xs text-slate-400 hover:text-white underline text-center transition-colors">
-                    Réinitialiser les stats
-                  </button>
-                }
+            }
+            @if (hasStatFilter()) {
+              <button (click)="clearStatFilters()"
+                class="mt-1 text-xs text-slate-400 hover:text-white underline text-center transition-colors">
+                Réinitialiser les stats
+              </button>
+            }
+          </div>
+
+          <!-- Desktop : bouton + dropdown flottant -->
+          <div class="hidden sm:block">
+            <button
+              (click)="showStatsPanel.set(!showStatsPanel())"
+              [class]="hasStatFilter()
+                ? 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white border border-blue-500 transition-colors'
+                : 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 border border-slate-600 hover:bg-slate-600 transition-colors'"
+            >
+              <iconify-icon icon="mdi:chart-bar" class="text-sm"></iconify-icon>
+              Filtrer les stats
+              @if (hasStatFilter()) {
+                <span class="bg-white/30 rounded-full w-2 h-2 inline-block"></span>
+              }
+              <iconify-icon [icon]="showStatsPanel() ? 'mdi:chevron-up' : 'mdi:chevron-down'" class="text-sm"></iconify-icon>
+            </button>
+
+            @if (showStatsPanel()) {
+              <div class="fixed inset-0 z-10" (click)="showStatsPanel.set(false)"></div>
+              <div class="absolute top-full left-0 mt-1 z-20 bg-slate-800 border border-slate-600 rounded-xl p-4 shadow-xl w-72">
+                <div class="flex flex-col gap-3">
+                  @for (stat of statFilters; track stat.key) {
+                    <div class="flex items-center gap-2">
+                      <span class="w-12 text-xs text-slate-400 text-right shrink-0">{{ stat.label }}</span>
+                      <input type="number" min="0" [ngModel]="stat.min()" (ngModelChange)="stat.min.set($event ?? null)"
+                        placeholder="Min"
+                        class="w-16 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+                      <span class="text-slate-600 text-xs shrink-0">—</span>
+                      <input type="number" min="0" [ngModel]="stat.max()" (ngModelChange)="stat.max.set($event ?? null)"
+                        placeholder="Max"
+                        class="w-16 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+                    </div>
+                  }
+                  @if (hasStatFilter()) {
+                    <button (click)="clearStatFilters()"
+                      class="mt-1 text-xs text-slate-400 hover:text-white underline text-center transition-colors">
+                      Réinitialiser les stats
+                    </button>
+                  }
+                </div>
               </div>
-            </div>
-          }
+            }
+          </div>
         </div>
       </div>
 
