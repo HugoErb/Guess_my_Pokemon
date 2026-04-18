@@ -383,7 +383,7 @@ export class SupabaseService implements OnDestroy {
 		const { data: profile, error: profileError } = await this.supabase
 			.from('profiles')
 			.select('id')
-			.eq('username', username)
+			.ilike('username', username)
 			.maybeSingle();
 
 		if (profileError || !profile) throw new Error('Utilisateur introuvable');
