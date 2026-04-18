@@ -1,12 +1,15 @@
 import { computed, inject, Injectable, isDevMode, OnDestroy, signal } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { DEFAULT_SETTINGS, GameSettings, Room, RoomPatch } from '../models/room.model';
 import { SupabaseService } from './supabase.service';
+import { PokemonService } from './pokemon.service';
+import { Pokemon } from '../models/pokemon.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class GameService implements OnDestroy {
     private readonly supabaseService = inject(SupabaseService);
+    private readonly pokemonService = inject(PokemonService);
     private pollInterval: any;
 
     /** Signal Angular : room en cours de jeu, null si aucune. */
@@ -116,9 +119,28 @@ export class GameService implements OnDestroy {
 
     // ─── Actions de jeu ──────────────────────────────────────────────────────────
 
-    /** Passe la room en phase de sélection de Pokémon avec les paramètres fournis. */
+    /** Passe la room en phase de sélection, ou assigne directement des Pokémon aléatoires si le mode est activé. */
     async launchGame(roomId: string, settings: GameSettings): Promise<void> {
-        await this.updateAndRefresh(roomId, { status: 'selecting', settings });
+        if (settings.randomPokemon) {
+            let pokemons = await firstValueFrom(this.pokemonService.loadAll());
+            if (settings.generations.length > 0) {
+                pokemons = pokemons.filter((p) => settings.generations.includes(p.generation));
+            }
+            if (pokemons.length < 2) throw new Error('Pas assez de Pokémon disponibles pour cette génération');
+            const [p1, p2] = this.pickTwoDifferent(pokemons);
+            const room = await this.supabaseService.getRoomById(roomId);
+            await this.updateAndRefresh(roomId, {
+                settings,
+                pokemon_p1: p1.id,
+                pokemon_p2: p2.id,
+                p1_ready: true,
+                p2_ready: true,
+                status: 'playing',
+                current_turn: this.resolveFirstTurn({ ...room, settings }),
+            });
+        } else {
+            await this.updateAndRefresh(roomId, { status: 'selecting', settings });
+        }
     }
 
     /** Met à jour les paramètres de la partie et rafraîchit le signal local. */
@@ -268,16 +290,35 @@ export class GameService implements OnDestroy {
         const refreshed = await this.supabaseService.getRoomById(roomId);
 
         if (refreshed.p1_ready && refreshed.p2_ready && refreshed.status === 'finished') {
-            await this.supabaseService.updateRoom(roomId, {
-                status: 'selecting',
-                pokemon_p1: null,
-                pokemon_p2: null,
-                p1_ready: false,
-                p2_ready: false,
-                winner_id: null,
-                current_turn: null,
-                last_guess: null,
-            });
+            const settings = refreshed.settings ?? DEFAULT_SETTINGS;
+            if (settings.randomPokemon) {
+                let pokemons = await firstValueFrom(this.pokemonService.loadAll());
+                if (settings.generations.length > 0) {
+                    pokemons = pokemons.filter((p) => settings.generations.includes(p.generation));
+                }
+                const [p1, p2] = this.pickTwoDifferent(pokemons);
+                await this.supabaseService.updateRoom(roomId, {
+                    status: 'playing',
+                    pokemon_p1: p1.id,
+                    pokemon_p2: p2.id,
+                    p1_ready: false,
+                    p2_ready: false,
+                    winner_id: null,
+                    current_turn: this.resolveFirstTurn({ ...refreshed, settings }),
+                    last_guess: null,
+                });
+            } else {
+                await this.supabaseService.updateRoom(roomId, {
+                    status: 'selecting',
+                    pokemon_p1: null,
+                    pokemon_p2: null,
+                    p1_ready: false,
+                    p2_ready: false,
+                    winner_id: null,
+                    current_turn: null,
+                    last_guess: null,
+                });
+            }
 
             const finalRoom = await this.supabaseService.getRoomById(roomId);
             this.currentRoom.set(finalRoom);
@@ -338,6 +379,14 @@ export class GameService implements OnDestroy {
     }
 
     // ─── Helpers internes ─────────────────────────────────────────────────────────
+
+    /** Tire deux Pokémon distincts au hasard dans la liste fournie. */
+    private pickTwoDifferent(pokemons: Pokemon[]): [Pokemon, Pokemon] {
+        const idx1 = Math.floor(Math.random() * pokemons.length);
+        let idx2 = Math.floor(Math.random() * (pokemons.length - 1));
+        if (idx2 >= idx1) idx2++;
+        return [pokemons[idx1], pokemons[idx2]];
+    }
 
     /**
      * Met à jour la room en base ET rafraîchit immédiatement le signal local.

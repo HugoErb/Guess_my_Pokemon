@@ -277,6 +277,13 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		void this.saveSettings();
 	}
 
+	/** Active ou désactive le mode Pokémon aléatoire. */
+	toggleRandomPokemon(): void {
+		if (this.isConfigLocked()) return;
+		this.gameSettings = { ...this.gameSettings, randomPokemon: !this.gameSettings.randomPokemon };
+		void this.saveSettings();
+	}
+
 	/** Définit quel joueur commence la partie. */
 	setFirstPlayer(value: FirstPlayer): void {
 		if (this.isConfigLocked()) return;

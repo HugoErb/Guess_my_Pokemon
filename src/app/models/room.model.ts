@@ -7,6 +7,7 @@ export interface GameSettings {
   noPokedex: boolean;     // cache tout sauf le nom
   noSearch: boolean;      // désactive les filtres avancés (garde la recherche par nom)
   firstPlayer: FirstPlayer; // qui joue en premier
+  randomPokemon: boolean; // assigne un Pokémon aléatoire à chaque joueur
 }
 
 export const DEFAULT_SETTINGS: GameSettings = {
@@ -14,6 +15,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   noPokedex: false,
   noSearch: false,
   firstPlayer: 'random',
+  randomPokemon: false,
 };
 
 export interface Room {
