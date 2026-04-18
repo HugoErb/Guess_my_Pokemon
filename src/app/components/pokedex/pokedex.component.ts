@@ -157,27 +157,45 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         </div>
 
         <!-- Catégorie -->
-        <div class="shrink-0">
-          <div class="flex items-center gap-2 mb-2">
-            <p class="text-xs text-slate-400 uppercase tracking-wider">Catégorie</p>
-            <span class="text-xs text-slate-500">
-              <button (click)="selectAllCategories()" class="hover:text-slate-300 transition-colors">Tout</button>
-              -
-              <button (click)="deselectAllCategories()" class="hover:text-slate-300 transition-colors">Aucun</button>
-            </span>
-          </div>
-          <div class="flex flex-wrap gap-1">
-            @for (cat of categories; track cat.id) {
-              <button
-                (click)="toggleCategory(cat.id)"
-                [class]="isCategorySelected(cat.id)
-                  ? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 text-white border border-amber-500 transition-colors'
-                  : 'px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 border border-slate-600 hover:bg-slate-600 transition-colors'"
-              >
-                {{ cat.label }}
-              </button>
+        <div class="w-full sm:w-auto sm:relative shrink-0">
+          <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">Catégorie</p>
+
+          <button
+            (click)="showCategoryPanel.set(!showCategoryPanel())"
+            [class]="hasCategoryFilter()
+              ? 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-600 text-white border border-amber-500 transition-colors'
+              : 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 border border-slate-600 hover:bg-slate-600 transition-colors'"
+          >
+            <iconify-icon icon="mdi:tag-multiple" class="text-sm"></iconify-icon>
+            Catégorie
+            @if (hasCategoryFilter()) {
+              <span class="bg-white/30 rounded-full w-2 h-2 inline-block"></span>
             }
-          </div>
+            <iconify-icon [icon]="showCategoryPanel() ? 'mdi:chevron-up' : 'mdi:chevron-down'" class="text-sm"></iconify-icon>
+          </button>
+
+          @if (showCategoryPanel()) {
+            <div class="fixed inset-0 z-10" (click)="showCategoryPanel.set(false)"></div>
+            <div class="absolute top-full left-0 mt-1 z-20 bg-slate-800 border border-slate-600 rounded-xl p-3 shadow-xl w-48">
+              <div class="flex flex-col gap-1.5">
+                @for (cat of categories; track cat.id) {
+                  <button
+                    (click)="toggleCategory(cat.id)"
+                    [class]="isCategorySelected(cat.id)
+                      ? 'w-full text-left px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 text-white border border-amber-500 transition-colors'
+                      : 'w-full text-left px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 border border-slate-600 hover:bg-slate-600 transition-colors'"
+                  >
+                    {{ cat.label }}
+                  </button>
+                }
+                <div class="border-t border-slate-700 mt-1 pt-1 flex gap-2">
+                  <button (click)="selectAllCategories()" class="text-xs text-slate-400 hover:text-white transition-colors">Tout</button>
+                  <span class="text-slate-600">-</span>
+                  <button (click)="deselectAllCategories()" class="text-xs text-slate-400 hover:text-white transition-colors">Aucun</button>
+                </div>
+              </div>
+            </div>
+          }
         </div>
 
         <!-- Poids + Taille : côte à côte sur mobile, items séparés sur desktop -->
@@ -533,6 +551,7 @@ export class PokedexComponent implements OnInit {
     minHeight = signal<number | null>(0);
     maxHeight = signal<number | null>(null);
     showStatsPanel = signal(false);
+    showCategoryPanel = signal(false);
     minStatPv      = signal<number | null>(null);
     maxStatPv      = signal<number | null>(null);
     minStatAtq     = signal<number | null>(null);
@@ -600,6 +619,8 @@ export class PokedexComponent implements OnInit {
          this.minStatDefSpe(), this.maxStatDefSpe(), this.minStatVit(), this.maxStatVit(),
          this.minStatTotal(), this.maxStatTotal()].some(v => v !== null)
     );
+
+    hasCategoryFilter = computed(() => this.selectedCategories().length !== this.categories.length);
 
     // Logic de filtrage réactive (Computed)
     filteredPokemons = computed(() => {
