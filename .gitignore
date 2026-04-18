@@ -48,5 +48,6 @@ src/environments/environment.prod.ts
 src/assets/pokemon.json
 
 docs/
+.superpowers
 package-lock.json
 .gitignore
