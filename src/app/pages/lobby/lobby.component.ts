@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, computed, effect, inject, input, signal, untracked, CUSTOM_ELEMENTS_SCHEMA, Injector } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom, filter, take, Subscription } from 'rxjs';
 import { toObservable } from '@angular/core/rxjs-interop';
 
@@ -31,6 +31,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	private readonly pokemonService = inject(PokemonService);
 	private readonly supabaseService = inject(SupabaseService);
 	private readonly router = inject(Router);
+	private readonly route = inject(ActivatedRoute);
 	private readonly injector = inject(Injector);
 
 	constructor() {
@@ -128,6 +129,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	};
 
 	private pokemonsSub?: Subscription;
+	private inviteResponseSub?: Subscription;
 
 	/** Lifecycle Angular — initialise le lobby. */
 	ngOnInit(): void {
@@ -160,6 +162,20 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		// 4. Construire le lien d'invitation
 		this.inviteLink = `${globalThis.location.origin}/invite/${this.roomId()}`;
 
+		// 5. Marquer l'utilisateur comme "en jeu" dans le système de présence
+		this.supabaseService.trackPresence('in_game');
+
+		// 6. Écouter le refus si on a invité un ami directement
+		const inviteId = this.route.snapshot.queryParamMap.get('inviteId');
+		const friendName = this.route.snapshot.queryParamMap.get('friendName') ?? 'Ton ami';
+		if (inviteId) {
+			this.inviteResponseSub = this.supabaseService.subscribeToGameInviteResponse(inviteId).subscribe((invite) => {
+				if (invite.status === 'declined') {
+					void this.router.navigate(['/home'], { queryParams: { declined: friendName } });
+				}
+			});
+		}
+
 		// 5. Charger tous les Pokémon
 		this.pokemonsSub = this.pokemonService.loadAll().subscribe((pokemons) => {
 			this.allPokemons = pokemons;
@@ -169,8 +185,10 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
 	/** Lifecycle Angular — arrête le watch de la room et les abonnements. */
 	ngOnDestroy(): void {
+		this.supabaseService.untrackPresence();
 		this.gameService.stopWatching();
 		this.pokemonsSub?.unsubscribe();
+		this.inviteResponseSub?.unsubscribe();
 	}
 
 	// ─── Actions ─────────────────────────────────────────────────────────────────

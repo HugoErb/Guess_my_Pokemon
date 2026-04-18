@@ -1,0 +1,169 @@
+<div class="w-full h-full bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-xl flex flex-col">
+	<!-- Header gradient -->
+	<div class="h-24 flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)">
+		<iconify-icon [icon]="ICONS.friends" class="text-5xl text-white/80"></iconify-icon>
+	</div>
+
+	<div class="px-8 pb-8 pt-6 flex flex-col flex-1 gap-4">
+		<h3 class="text-xl font-black text-white">Amis</h3>
+
+		<!-- Onglets -->
+		<div class="flex bg-slate-900 rounded-xl p-1 gap-1">
+			<button
+				(click)="setTab('friends')"
+				class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all"
+				[class.bg-slate-700]="activeTab() === 'friends'"
+				[class.text-white]="activeTab() === 'friends'"
+				[class.text-slate-500]="activeTab() !== 'friends'"
+			>
+				Amis
+			</button>
+			<button
+				(click)="setTab('requests')"
+				class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all relative"
+				[class.bg-slate-700]="activeTab() === 'requests'"
+				[class.text-white]="activeTab() === 'requests'"
+				[class.text-slate-500]="activeTab() !== 'requests'"
+			>
+				Demandes
+				@if (hasPendingRequests()) {
+					<span class="absolute top-0.5 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-slate-900"></span>
+				}
+			</button>
+			<button
+				(click)="setTab('add')"
+				class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all"
+				[class.bg-slate-700]="activeTab() === 'add'"
+				[class.text-white]="activeTab() === 'add'"
+				[class.text-slate-500]="activeTab() !== 'add'"
+			>
+				Ajouter
+			</button>
+		</div>
+
+		<!-- Onglet : Amis -->
+		@if (activeTab() === 'friends') {
+			@if (isLoadingFriends()) {
+				<div class="flex-1 flex items-center justify-center">
+					<iconify-icon [icon]="ICONS.loading" class="text-2xl text-slate-500 animate-spin"></iconify-icon>
+				</div>
+			} @else if (friends().length === 0) {
+				<div class="flex-1 flex flex-col items-center justify-center gap-2 text-slate-500 text-sm py-6">
+					<iconify-icon [icon]="ICONS.friends" class="text-3xl"></iconify-icon>
+					<p>Aucun ami pour l'instant</p>
+				</div>
+			} @else {
+				<div class="flex flex-col gap-2 overflow-y-auto max-h-72">
+					@for (friend of friends(); track friend.id) {
+						<div class="flex items-center gap-3 bg-slate-700/50 rounded-xl px-3 py-2">
+							<!-- Avatar -->
+							<div class="relative flex-shrink-0">
+								<div class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-sm font-bold text-white overflow-hidden">
+									@if (friend.avatarUrl) {
+										<img [src]="friend.avatarUrl" alt="" class="w-full h-full object-cover" />
+									} @else {
+										{{ friend.username.charAt(0).toUpperCase() }}
+									}
+								</div>
+								<div
+									class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-slate-700"
+									[class]="statusDotClass(friend.status)"
+								></div>
+							</div>
+							<!-- Pseudo + statut -->
+							<div class="flex-1 min-w-0">
+								<p class="text-sm font-bold text-white truncate">{{ friend.username }}</p>
+								<p class="text-xs" [class]="statusTextClass(friend.status)">{{ statusLabel(friend.status) }}</p>
+							</div>
+							<!-- Bouton Inviter -->
+							@if (friend.status === 'online') {
+								<button
+									(click)="inviteFriend(friend)"
+									class="flex-shrink-0 px-3 py-1.5 bg-red-600 hover:bg-red-500 rounded-lg text-xs font-bold text-white transition-colors flex items-center gap-1.5"
+								>
+									<iconify-icon [icon]="ICONS.sword" class="text-sm"></iconify-icon>
+									Inviter
+								</button>
+							}
+						</div>
+					}
+				</div>
+			}
+		}
+
+		<!-- Onglet : Demandes -->
+		@if (activeTab() === 'requests') {
+			@if (pendingRequests().length === 0) {
+				<div class="flex-1 flex flex-col items-center justify-center gap-2 text-slate-500 text-sm py-6">
+					<iconify-icon [icon]="ICONS.checkCircle" class="text-3xl"></iconify-icon>
+					<p>Aucune demande en attente</p>
+				</div>
+			} @else {
+				<div class="flex flex-col gap-2 overflow-y-auto max-h-72">
+					@for (req of pendingRequests(); track req.id) {
+						<div class="flex items-center gap-3 bg-slate-700/50 rounded-xl px-3 py-2">
+							<div class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-sm font-bold text-white flex-shrink-0 overflow-hidden">
+								@if (req.avatarUrl) {
+									<img [src]="req.avatarUrl" alt="" class="w-full h-full object-cover" />
+								} @else {
+									{{ req.username.charAt(0).toUpperCase() }}
+								}
+							</div>
+							<p class="text-sm font-bold text-white flex-1 truncate">{{ req.username }}</p>
+							<div class="flex gap-2 flex-shrink-0">
+								<button
+									(click)="declineRequest(req.id)"
+									class="px-2 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-bold text-slate-300 transition-colors"
+								>
+									Refuser
+								</button>
+								<button
+									(click)="acceptRequest(req.id)"
+									class="px-2 py-1.5 bg-green-600 hover:bg-green-500 rounded-lg text-xs font-bold text-white transition-colors"
+								>
+									Accepter
+								</button>
+							</div>
+						</div>
+					}
+				</div>
+			}
+		}
+
+		<!-- Onglet : Ajouter -->
+		@if (activeTab() === 'add') {
+			<div class="flex flex-col gap-4">
+				<p class="text-sm text-slate-400">Saisis le pseudo exact de la personne à ajouter.</p>
+				<div class="flex gap-2">
+					<div class="relative flex-1">
+						<iconify-icon [icon]="ICONS.user" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></iconify-icon>
+						<input
+							type="text"
+							[(ngModel)]="addFriendInput"
+							(keyup.enter)="sendFriendRequest()"
+							placeholder="Pseudo..."
+							class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
+						/>
+					</div>
+					<button
+						(click)="sendFriendRequest()"
+						[disabled]="isAddingFriend"
+						class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-xl text-sm font-bold text-white transition-colors flex-shrink-0"
+					>
+						@if (isAddingFriend) {
+							<iconify-icon [icon]="ICONS.loading" class="animate-spin"></iconify-icon>
+						} @else {
+							Envoyer
+						}
+					</button>
+				</div>
+				@if (addFriendError) {
+					<div class="p-3 bg-red-900/40 border border-red-500/50 rounded-lg text-xs text-red-300 text-center">{{ addFriendError }}</div>
+				}
+				@if (addFriendSuccess) {
+					<div class="p-3 bg-green-900/40 border border-green-500/50 rounded-lg text-xs text-green-300 text-center">{{ addFriendSuccess }}</div>
+				}
+			</div>
+		}
+	</div>
+</div>

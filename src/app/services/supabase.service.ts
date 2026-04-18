@@ -1,9 +1,9 @@
 import { Injectable, OnDestroy, signal } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { filter, skipUntil } from 'rxjs/operators';
+import { filter, map, skipUntil } from 'rxjs/operators';
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
-import { GameSettings, Profile, Room, RoomPatch } from '../models/room.model';
+import { FriendRequest, FriendStatus, FriendWithStatus, Friendship, GameInvite, GameSettings, Profile, Room, RoomPatch } from '../models/room.model';
 
 @Injectable({ providedIn: 'root' })
 export class SupabaseService implements OnDestroy {
@@ -313,5 +313,242 @@ export class SupabaseService implements OnDestroy {
 	/** Retourne l'utilisateur courant ou null s'il n'est pas connecté. */
 	getCurrentUser(): User | null {
 		return this.userSubject.getValue();
+	}
+
+	// ─── Présence ────────────────────────────────────────────────────────────────
+
+	private presenceChannel: any = null;
+	private readonly presenceStateSubject = new BehaviorSubject<Record<string, any[]>>({});
+
+	/** Rejoint le canal de présence global et diffuse le statut de l'utilisateur. */
+	trackPresence(status: 'online' | 'in_game'): void {
+		const user = this.getCurrentUser();
+		if (!user) return;
+
+		if (this.presenceChannel) {
+			this.supabase.removeChannel(this.presenceChannel);
+			this.presenceChannel = null;
+		}
+
+		const channel = this.supabase.channel('presence-home', {
+			config: { presence: { key: user.id } },
+		});
+
+		channel
+			.on('presence', { event: 'sync' }, () => {
+				this.presenceStateSubject.next(channel.presenceState());
+			})
+			.subscribe(async (s: string) => {
+				if (s === 'SUBSCRIBED') {
+					await channel.track({ user_id: user.id, status });
+				}
+			});
+
+		this.presenceChannel = channel;
+	}
+
+	/** Quitte le canal de présence et remet l'état à vide. */
+	untrackPresence(): void {
+		if (this.presenceChannel) {
+			this.supabase.removeChannel(this.presenceChannel);
+			this.presenceChannel = null;
+		}
+		this.presenceStateSubject.next({});
+	}
+
+	/** Retourne un Observable du statut de présence de chaque ami. */
+	subscribeToFriendsPresence(friendIds: string[]): Observable<Map<string, FriendStatus>> {
+		return this.presenceStateSubject.pipe(
+			map((state) => {
+				const result = new Map<string, FriendStatus>();
+				for (const id of friendIds) result.set(id, 'offline');
+				for (const [key, presences] of Object.entries(state)) {
+					if (friendIds.includes(key) && presences.length > 0) {
+						const p = presences[0] as { status: 'online' | 'in_game' };
+						result.set(key, p.status ?? 'offline');
+					}
+				}
+				return result;
+			}),
+		);
+	}
+
+	// ─── Amis ────────────────────────────────────────────────────────────────────
+
+	/** Envoie une demande d'ami à l'utilisateur portant le pseudo donné. */
+	async sendFriendRequest(username: string): Promise<void> {
+		const me = this.getCurrentUser();
+		if (!me) throw new Error('Non connecté');
+
+		const { data: profile, error: profileError } = await this.supabase
+			.from('profiles')
+			.select('id')
+			.eq('username', username)
+			.maybeSingle();
+
+		if (profileError || !profile) throw new Error('Utilisateur introuvable');
+		if (profile.id === me.id) throw new Error('Tu ne peux pas t\'ajouter toi-même');
+
+		const { data: existing } = await this.supabase
+			.from('friendships')
+			.select('id')
+			.or(`and(requester_id.eq.${me.id},recipient_id.eq.${profile.id}),and(requester_id.eq.${profile.id},recipient_id.eq.${me.id})`)
+			.maybeSingle();
+
+		if (existing) throw new Error('Déjà ami ou demande déjà envoyée');
+
+		const { error } = await this.supabase
+			.from('friendships')
+			.insert({ requester_id: me.id, recipient_id: profile.id });
+
+		if (error) throw error;
+	}
+
+	/** Récupère la liste des amis acceptés avec leurs profils. */
+	async getFriendsWithStatus(): Promise<FriendWithStatus[]> {
+		const me = this.getCurrentUser();
+		if (!me) return [];
+
+		const { data: friendships } = await this.supabase
+			.from('friendships')
+			.select('*')
+			.eq('status', 'accepted')
+			.or(`requester_id.eq.${me.id},recipient_id.eq.${me.id}`);
+
+		if (!friendships?.length) return [];
+
+		const friendIds = friendships.map((f: Friendship) => (f.requester_id === me.id ? f.recipient_id : f.requester_id));
+		const { data: profiles } = await this.supabase.from('profiles').select('id, username, avatar_url').in('id', friendIds);
+		const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+
+		return friendships.map((f: Friendship) => {
+			const friendId = f.requester_id === me.id ? f.recipient_id : f.requester_id;
+			const profile = profileMap.get(friendId);
+			return { id: f.id, friendId, username: profile?.username ?? 'Inconnu', avatarUrl: profile?.avatar_url, status: 'offline' as FriendStatus };
+		});
+	}
+
+	/** Récupère les demandes d'amitié en attente adressées à l'utilisateur courant. */
+	async getPendingRequests(): Promise<FriendRequest[]> {
+		const me = this.getCurrentUser();
+		if (!me) return [];
+
+		const { data: friendships } = await this.supabase
+			.from('friendships')
+			.select('*')
+			.eq('status', 'pending')
+			.eq('recipient_id', me.id);
+
+		if (!friendships?.length) return [];
+
+		const requesterIds = friendships.map((f: Friendship) => f.requester_id);
+		const { data: profiles } = await this.supabase.from('profiles').select('id, username, avatar_url').in('id', requesterIds);
+		const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+
+		return friendships.map((f: Friendship) => {
+			const profile = profileMap.get(f.requester_id);
+			return { id: f.id, requesterId: f.requester_id, username: profile?.username ?? 'Inconnu', avatarUrl: profile?.avatar_url };
+		});
+	}
+
+	/** Accepte une demande d'amitié. */
+	async acceptFriendRequest(friendshipId: string): Promise<void> {
+		const { error } = await this.supabase.from('friendships').update({ status: 'accepted' }).eq('id', friendshipId);
+		if (error) throw error;
+	}
+
+	/** Refuse (supprime) une demande d'amitié. */
+	async declineFriendRequest(friendshipId: string): Promise<void> {
+		const { error } = await this.supabase.from('friendships').delete().eq('id', friendshipId);
+		if (error) throw error;
+	}
+
+	/** S'abonne aux changements de la table friendships pour l'utilisateur courant. */
+	subscribeToFriendships(): Observable<void> {
+		return new Observable((observer) => {
+			const userId = this.getCurrentUser()?.id;
+			if (!userId) return;
+
+			const channel = this.supabase
+				.channel(`friendships-${userId}`)
+				.on('postgres_changes', { event: '*', schema: 'public', table: 'friendships' }, () => {
+					observer.next();
+				})
+				.subscribe();
+
+			return () => { this.supabase.removeChannel(channel); };
+		});
+	}
+
+	// ─── Invitations de jeu ──────────────────────────────────────────────────────
+
+	/** Crée une room et une invitation de jeu pour un ami. */
+	async sendGameInvite(recipientId: string): Promise<{ roomId: string; inviteId: string }> {
+		const me = this.getCurrentUser();
+		if (!me) throw new Error('Non connecté');
+
+		const roomId = await this.createRoom();
+
+		const { data, error } = await this.supabase
+			.from('game_invites')
+			.insert({ sender_id: me.id, recipient_id: recipientId, room_id: roomId })
+			.select('id')
+			.single();
+
+		if (error) throw error;
+		return { roomId, inviteId: (data as { id: string }).id };
+	}
+
+	/** Accepte une invitation de jeu et rejoint la room. */
+	async acceptGameInvite(inviteId: string, roomId: string): Promise<void> {
+		await Promise.all([
+			this.supabase.from('game_invites').update({ status: 'accepted' }).eq('id', inviteId),
+			this.joinRoom(roomId),
+		]);
+	}
+
+	/** Refuse une invitation de jeu. */
+	async declineGameInvite(inviteId: string): Promise<void> {
+		const { error } = await this.supabase.from('game_invites').update({ status: 'declined' }).eq('id', inviteId);
+		if (error) throw error;
+	}
+
+	/** S'abonne aux nouvelles invitations de jeu reçues par l'utilisateur courant. */
+	subscribeToIncomingGameInvites(): Observable<GameInvite> {
+		return new Observable((observer) => {
+			const userId = this.getCurrentUser()?.id;
+			if (!userId) return;
+
+			const channel = this.supabase
+				.channel(`incoming-invites-${userId}`)
+				.on(
+					'postgres_changes',
+					{ event: 'INSERT', schema: 'public', table: 'game_invites', filter: `recipient_id=eq.${userId}` },
+					async (payload: any) => {
+						const invite = payload.new as GameInvite;
+						const { data: profile } = await this.supabase.from('profiles').select('username').eq('id', invite.sender_id).single();
+						observer.next({ ...invite, sender_profile: profile ? { username: (profile as any).username } : undefined });
+					},
+				)
+				.subscribe();
+
+			return () => { this.supabase.removeChannel(channel); };
+		});
+	}
+
+	/** S'abonne aux mises à jour d'une invitation de jeu spécifique (accept/decline). */
+	subscribeToGameInviteResponse(inviteId: string): Observable<GameInvite> {
+		return new Observable((observer) => {
+			const channel = this.supabase
+				.channel(`invite-response-${inviteId}`)
+				.on(
+					'postgres_changes',
+					{ event: 'UPDATE', schema: 'public', table: 'game_invites', filter: `id=eq.${inviteId}` },
+					(payload: any) => { observer.next(payload.new as GameInvite); },
+				)
+				.subscribe();
+
+			return () => { this.supabase.removeChannel(channel); };
+		});
 	}
 }

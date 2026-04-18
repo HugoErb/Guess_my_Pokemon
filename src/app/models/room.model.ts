@@ -44,3 +44,38 @@ export interface Profile {
   avatar_url?: string;
   created_at: string;
 }
+
+export interface Friendship {
+  id: string;
+  requester_id: string;
+  recipient_id: string;
+  status: 'pending' | 'accepted';
+  created_at: string;
+}
+
+export interface GameInvite {
+  id: string;
+  sender_id: string;
+  recipient_id: string;
+  room_id: string;
+  status: 'pending' | 'accepted' | 'declined';
+  created_at: string;
+  sender_profile?: { username: string };
+}
+
+export type FriendStatus = 'online' | 'in_game' | 'offline';
+
+export interface FriendWithStatus {
+  id: string;
+  friendId: string;
+  username: string;
+  avatarUrl?: string;
+  status: FriendStatus;
+}
+
+export interface FriendRequest {
+  id: string;
+  requesterId: string;
+  username: string;
+  avatarUrl?: string;
+}

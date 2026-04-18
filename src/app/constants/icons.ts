@@ -39,6 +39,10 @@ export const ICONS = {
   rules: 'mdi:help-circle-outline',
   help: 'mdi:information-outline',
 
+  // Amis
+  friends: 'mdi:account-group',
+  addFriend: 'mdi:account-plus',
+
   // Filtres
   weight: 'mdi:weight-kilogram',
   height: 'mdi:ruler',
