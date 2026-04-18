@@ -470,7 +470,7 @@
 			[@modalAnimation]
 		>
 			<div
-				class="bg-slate-800 border border-slate-600 rounded-2xl p-3 max-w-md w-full shadow-2xl relative flex flex-col gap-3 max-h-[95vh] modal-content"
+				class="bg-slate-800 border border-slate-600 rounded-2xl p-3 max-w-md w-full shadow-2xl relative flex flex-col gap-3 max-h-[90dvh] modal-content overflow-hidden"
 				(click)="$event.stopPropagation()"
 			>
 				<!-- Bouton Fermer Absolu -->
@@ -482,7 +482,7 @@
 				</button>
 
 				<!-- Contenu scrollable si nécessaire -->
-				<div class="overflow-y-auto flex-1">
+				<div class="overflow-y-auto flex-1 min-h-0">
 					<app-pokemon-card [pokemon]="selectedPokemonDetails" />
 				</div>
 
@@ -490,7 +490,7 @@
 				@if (!isReady) {
 					<button
 						(click)="selectFromDetails(selectedPokemonDetails)"
-						class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-xl font-bold text-white transition-colors mt-2 shadow-lg flex items-center justify-center gap-2"
+						class="w-full bg-red-600 hover:bg-red-500 py-3 rounded-xl font-bold text-white transition-colors mt-2 shadow-lg flex items-center justify-center gap-2"
 					>
 						<iconify-icon [icon]="ICONS.checkCircle" class="text-xl"></iconify-icon>
 						Sélectionner ce Pokémon
