@@ -92,7 +92,7 @@ export class SupabaseService implements OnDestroy {
 		const { data } = await this.supabase.from('profiles').select('id').eq('id', userId).maybeSingle();
 
 		if (!data && username) {
-			await this.supabase.from('profiles').insert({ id: userId, username });
+			await this.supabase.from('profiles').insert({ id: userId, username: username.trim() });
 		}
 	}
 
@@ -161,17 +161,18 @@ export class SupabaseService implements OnDestroy {
 	 * et dans la table des profils publics.
 	 */
 	async updateUsername(userId: string, newUsername: string): Promise<void> {
+		const trimmed = newUsername.trim();
 		// 1. Mettre à jour les métadonnées de l'utilisateur (Auth)
 		const { error: authError } = await this.supabase.auth.updateUser({
 			data: {
-				username: newUsername,
-				display_name: newUsername,
+				username: trimmed,
+				display_name: trimmed,
 			},
 		});
 		if (authError) throw authError;
 
 		// 2. Mettre à jour la table des profils (Public)
-		const { error: profileError } = await this.supabase.from('profiles').update({ username: newUsername }).eq('id', userId);
+		const { error: profileError } = await this.supabase.from('profiles').update({ username: trimmed }).eq('id', userId);
 		if (profileError) throw profileError;
 	}
 
@@ -383,7 +384,7 @@ export class SupabaseService implements OnDestroy {
 		const { data: profile, error: profileError } = await this.supabase
 			.from('profiles')
 			.select('id')
-			.ilike('username', username)
+			.ilike('username', username.trim())
 			.maybeSingle();
 
 		if (profileError || !profile) throw new Error('Utilisateur introuvable');
