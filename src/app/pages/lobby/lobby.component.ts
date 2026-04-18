@@ -82,6 +82,21 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	isLaunching = false;
 	launchError = '';
 
+	// UI état
+	showSettings = signal(false);
+
+	get activeSettingsCount(): number {
+		const s = this.gameSettings;
+		let count = 0;
+		if (s.generations.length > 0) count++;
+		if (s.categories.length > 0) count++;
+		if (s.noPokedex) count++;
+		if (s.noSearch) count++;
+		if (s.randomPokemon) count++;
+		if (s.firstPlayer !== 'random') count++;
+		return count;
+	}
+
 	// Annulation / mode dev
 	isCancelling = false;
 	showCancelModal = signal(false);

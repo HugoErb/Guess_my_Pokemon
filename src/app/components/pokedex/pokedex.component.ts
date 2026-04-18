@@ -157,42 +157,41 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         </div>
 
         <!-- Catégorie -->
-        <div class="w-full sm:w-auto sm:relative shrink-0">
+        <div class="w-full sm:w-auto relative shrink-0">
           <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">Catégorie</p>
 
           <button
             (click)="showCategoryPanel.set(!showCategoryPanel())"
             [class]="hasCategoryFilter()
-              ? 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-600 text-white border border-amber-500 transition-colors'
+              ? 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-800 text-white border border-amber-700 transition-colors'
               : 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 border border-slate-600 hover:bg-slate-600 transition-colors'"
           >
-            <iconify-icon icon="mdi:tag-multiple" class="text-sm"></iconify-icon>
             Catégorie
             @if (hasCategoryFilter()) {
-              <span class="bg-white/30 rounded-full w-2 h-2 inline-block"></span>
+              <span class="text-amber-200 font-normal">{{ selectedCategories().length }}/{{ categories.length }}</span>
             }
             <iconify-icon [icon]="showCategoryPanel() ? 'mdi:chevron-up' : 'mdi:chevron-down'" class="text-sm"></iconify-icon>
           </button>
 
           @if (showCategoryPanel()) {
             <div class="fixed inset-0 z-10" (click)="showCategoryPanel.set(false)"></div>
-            <div class="absolute top-full left-0 mt-1 z-20 bg-slate-800 border border-slate-600 rounded-xl p-3 shadow-xl w-48">
+            <div class="absolute top-full left-0 mt-1 z-20 bg-slate-800 border border-slate-600 rounded-xl px-3 pt-2 pb-3 shadow-xl w-48">
               <div class="flex flex-col gap-1.5">
+                <div class="border-b border-slate-700 pb-1 mb-1 flex gap-2">
+                  <button (click)="selectAllCategories()" class="text-xs text-slate-400 hover:text-white transition-colors">Tout</button>
+                  <span class="text-slate-600">-</span>
+                  <button (click)="deselectAllCategories()" class="text-xs text-slate-400 hover:text-white transition-colors">Aucun</button>
+                </div>
                 @for (cat of categories; track cat.id) {
                   <button
                     (click)="toggleCategory(cat.id)"
                     [class]="isCategorySelected(cat.id)
-                      ? 'w-full text-left px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 text-white border border-amber-500 transition-colors'
+                      ? 'w-full text-left px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-800 text-white border border-amber-700 transition-colors'
                       : 'w-full text-left px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 border border-slate-600 hover:bg-slate-600 transition-colors'"
                   >
                     {{ cat.label }}
                   </button>
                 }
-                <div class="border-t border-slate-700 mt-1 pt-1 flex gap-2">
-                  <button (click)="selectAllCategories()" class="text-xs text-slate-400 hover:text-white transition-colors">Tout</button>
-                  <span class="text-slate-600">-</span>
-                  <button (click)="deselectAllCategories()" class="text-xs text-slate-400 hover:text-white transition-colors">Aucun</button>
-                </div>
               </div>
             </div>
           }
@@ -593,13 +592,13 @@ export class PokedexComponent implements OnInit {
     readonly categories = [
         { id: 'classique', label: 'Classique' },
         { id: 'starter', label: 'Starter' },
-        { id: 'légendaire', label: 'Légendaire' },
-        { id: 'fabuleux', label: 'Fabuleux' },
+        { id: 'bébé', label: 'Bébé' },
         { id: 'fossile', label: 'Fossile' },
+        { id: 'paradoxe', label: 'Paradoxe' },
         { id: 'ultra-chimère', label: 'Ultra-Chimère' },
         { id: 'pseudo-légendaire', label: 'Pseudo-Légendaire' },
-        { id: 'bébé', label: 'Bébé' },
-        { id: 'paradoxe', label: 'Paradoxe' },
+        { id: 'légendaire', label: 'Légendaire' },
+        { id: 'fabuleux', label: 'Fabuleux' },
     ];
     readonly evoStages = [1, 2, 3];
 
