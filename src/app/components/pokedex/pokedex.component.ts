@@ -1,4 +1,4 @@
-import { Component, OnInit, DestroyRef, inject, input, output, CUSTOM_ELEMENTS_SCHEMA, signal, computed } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, input, output, CUSTOM_ELEMENTS_SCHEMA, signal, computed, effect } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 
@@ -500,7 +500,11 @@ export class PokedexComponent implements OnInit {
     guessedPokemonIds = input<number[]>([]);
     showFilters = input<boolean>(false);
     filtersOnly = input<boolean>(false);
+    roomId = input<string | null>(null);
     guess = output<number>();
+
+    private static readonly FILTERS_KEY = 'gmp:filters';
+    private static dimmedKey(id: string) { return `gmp:dimmed:${id}`; }
 
     allPokemons = signal<Pokemon[]>([]);
 
@@ -647,8 +651,79 @@ export class PokedexComponent implements OnInit {
         return this.filteredPokemons().slice(0, this.displayedCount());
     });
 
+    constructor() {
+        effect(() => {
+            localStorage.setItem(PokedexComponent.FILTERS_KEY, JSON.stringify({
+                selectedTypes: this.selectedTypes(),
+                selectedGenerations: this.selectedGenerations(),
+                selectedCategories: this.selectedCategories(),
+                selectedEvoStages: this.selectedEvoStages(),
+                minWeight: this.minWeight(),
+                maxWeight: this.maxWeight(),
+                minHeight: this.minHeight(),
+                maxHeight: this.maxHeight(),
+                onlyDualType: this.onlyDualType(),
+                onlyDualTypeStrict: this.onlyDualTypeStrict(),
+                onlyMonoType: this.onlyMonoType(),
+                minStatPv: this.minStatPv(), maxStatPv: this.maxStatPv(),
+                minStatAtq: this.minStatAtq(), maxStatAtq: this.maxStatAtq(),
+                minStatDef: this.minStatDef(), maxStatDef: this.maxStatDef(),
+                minStatAtqSpe: this.minStatAtqSpe(), maxStatAtqSpe: this.maxStatAtqSpe(),
+                minStatDefSpe: this.minStatDefSpe(), maxStatDefSpe: this.maxStatDefSpe(),
+                minStatVit: this.minStatVit(), maxStatVit: this.maxStatVit(),
+                minStatTotal: this.minStatTotal(), maxStatTotal: this.maxStatTotal(),
+            }));
+        });
+
+        effect(() => {
+            const id = this.roomId();
+            const dimmed = this.manuallyDimmedIds();
+            if (id) localStorage.setItem(PokedexComponent.dimmedKey(id), JSON.stringify(dimmed));
+        });
+    }
+
     /** Lifecycle Angular — charge la liste des Pokémon et pré-calcule leur stade d'évolution. */
     ngOnInit(): void {
+        try {
+            const saved = localStorage.getItem(PokedexComponent.FILTERS_KEY);
+            if (saved) {
+                const s = JSON.parse(saved);
+                if (Array.isArray(s.selectedTypes))      this.selectedTypes.set(s.selectedTypes);
+                if (Array.isArray(s.selectedGenerations)) this.selectedGenerations.set(s.selectedGenerations);
+                if (Array.isArray(s.selectedCategories)) this.selectedCategories.set(s.selectedCategories);
+                if (Array.isArray(s.selectedEvoStages))  this.selectedEvoStages.set(s.selectedEvoStages);
+                if (s.minWeight      !== undefined) this.minWeight.set(s.minWeight);
+                if (s.maxWeight      !== undefined) this.maxWeight.set(s.maxWeight);
+                if (s.minHeight      !== undefined) this.minHeight.set(s.minHeight);
+                if (s.maxHeight      !== undefined) this.maxHeight.set(s.maxHeight);
+                if (s.onlyDualType   !== undefined) this.onlyDualType.set(s.onlyDualType);
+                if (s.onlyDualTypeStrict !== undefined) this.onlyDualTypeStrict.set(s.onlyDualTypeStrict);
+                if (s.onlyMonoType   !== undefined) this.onlyMonoType.set(s.onlyMonoType);
+                if (s.minStatPv      !== undefined) this.minStatPv.set(s.minStatPv);
+                if (s.maxStatPv      !== undefined) this.maxStatPv.set(s.maxStatPv);
+                if (s.minStatAtq     !== undefined) this.minStatAtq.set(s.minStatAtq);
+                if (s.maxStatAtq     !== undefined) this.maxStatAtq.set(s.maxStatAtq);
+                if (s.minStatDef     !== undefined) this.minStatDef.set(s.minStatDef);
+                if (s.maxStatDef     !== undefined) this.maxStatDef.set(s.maxStatDef);
+                if (s.minStatAtqSpe  !== undefined) this.minStatAtqSpe.set(s.minStatAtqSpe);
+                if (s.maxStatAtqSpe  !== undefined) this.maxStatAtqSpe.set(s.maxStatAtqSpe);
+                if (s.minStatDefSpe  !== undefined) this.minStatDefSpe.set(s.minStatDefSpe);
+                if (s.maxStatDefSpe  !== undefined) this.maxStatDefSpe.set(s.maxStatDefSpe);
+                if (s.minStatVit     !== undefined) this.minStatVit.set(s.minStatVit);
+                if (s.maxStatVit     !== undefined) this.maxStatVit.set(s.maxStatVit);
+                if (s.minStatTotal   !== undefined) this.minStatTotal.set(s.minStatTotal);
+                if (s.maxStatTotal   !== undefined) this.maxStatTotal.set(s.maxStatTotal);
+            }
+        } catch { /* localStorage corrompu, on ignore */ }
+
+        const id = this.roomId();
+        if (id) {
+            try {
+                const saved = localStorage.getItem(PokedexComponent.dimmedKey(id));
+                if (saved) this.manuallyDimmedIds.set(JSON.parse(saved));
+            } catch { /* ignore */ }
+        }
+
         this.pokemonService.loadAll().pipe(
             takeUntilDestroyed(this.destroyRef)
         ).subscribe(pokemons => {
