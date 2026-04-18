@@ -293,7 +293,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
                 (click)="toggleType(type)"
                 [class]="isTypeSelected(type)
                   ? 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline ring-1 ring-white/50 transition-all flex items-center justify-center gap-1 ' + getTypeColor(type)
-                  : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 hover:opacity-70 transition-all flex items-center justify-center gap-1 ' + getTypeColor(type)"
+                  : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 [@media(hover:hover)]:hover:opacity-70 transition-all flex items-center justify-center gap-1 ' + getTypeColor(type)"
               >
                 <iconify-icon [icon]="getTypeIcon(type)" class="text-sm type-icon-outline"></iconify-icon>
                 {{ type }}
@@ -309,7 +309,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
                   (click)="toggleType(type)"
                   [class]="isTypeSelected(type)
                     ? 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline ring-1 ring-white/50 transition-all flex items-center gap-1 ' + getTypeColor(type)
-                    : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 hover:opacity-70 transition-all flex items-center gap-1 ' + getTypeColor(type)"
+                    : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 [@media(hover:hover)]:hover:opacity-70 transition-all flex items-center gap-1 ' + getTypeColor(type)"
                 >
                   <iconify-icon [icon]="getTypeIcon(type)" class="text-sm type-icon-outline"></iconify-icon>
                   {{ type }}
@@ -322,7 +322,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
                   (click)="toggleType(type)"
                   [class]="isTypeSelected(type)
                     ? 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline ring-1 ring-white/50 transition-all flex items-center gap-1 ' + getTypeColor(type)
-                    : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 hover:opacity-70 transition-all flex items-center gap-1 ' + getTypeColor(type)"
+                    : 'px-2.5 py-1 rounded-full text-xs font-semibold text-white type-text-outline opacity-40 [@media(hover:hover)]:hover:opacity-70 transition-all flex items-center gap-1 ' + getTypeColor(type)"
                 >
                   <iconify-icon [icon]="getTypeIcon(type)" class="text-sm type-icon-outline"></iconify-icon>
                   {{ type }}
