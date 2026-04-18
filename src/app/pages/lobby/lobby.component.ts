@@ -95,6 +95,23 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		{ value: 'player2', label: 'Adversaire' },
 	];
 
+	readonly ALL_GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+	readonly ALL_CATEGORIES: string[] = [
+		'classique', 'starter', 'légendaire', 'fabuleux', 'fossile',
+		'ultra-chimère', 'pseudo-légendaire', 'bébé', 'paradoxe',
+	];
+	readonly CATEGORY_LABELS: Record<string, string> = {
+		'classique': 'Classique',
+		'starter': 'Starter',
+		'légendaire': 'Légendaire',
+		'fabuleux': 'Fabuleux',
+		'fossile': 'Fossile',
+		'ultra-chimère': 'Ultra-Chimère',
+		'pseudo-légendaire': 'Pseudo-Lég.',
+		'bébé': 'Bébé',
+		'paradoxe': 'Paradoxe',
+	};
+
 	private pokemonsSub?: Subscription;
 
 	/** Lifecycle Angular — initialise le lobby. */
@@ -156,23 +173,26 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		}
 	}
 
-	/** Sélectionne un Pokémon aléatoire parmi ceux autorisés par les paramètres de génération. */
+	/** Sélectionne un Pokémon aléatoire parmi ceux autorisés par les paramètres de génération et de catégorie. */
 	pickRandom(): void {
 		if (this.isReady) return;
-		const restrictedGens = this.gameService.settings().generations;
-		const pool = restrictedGens.length > 0 ? this.allPokemons.filter((p) => restrictedGens.includes(p.generation)) : this.allPokemons;
+		const settings = this.gameService.settings();
+		let pool = this.allPokemons;
+		if (settings.generations.length > 0) pool = pool.filter((p) => settings.generations.includes(p.generation));
+		if (settings.categories.length > 0) pool = pool.filter((p) => settings.categories.includes(p.category));
 		if (pool.length === 0) return;
 		const random = pool[Math.floor(Math.random() * pool.length)];
 		void this.selectPokemon(random);
 	}
 
-	/** Filtre la liste de Pokémon selon la recherche textuelle et les générations autorisées. */
+	/** Filtre la liste de Pokémon selon la recherche textuelle, les générations et catégories autorisées. */
 	onSearch(): void {
 		const q = this.searchQuery.toLowerCase();
-		const restrictedGens = this.gameService.settings().generations;
+		const settings = this.gameService.settings();
 		this.filteredPokemons = this.allPokemons.filter((p) => {
 			if (q && !p.name.toLowerCase().includes(q)) return false;
-			if (restrictedGens.length > 0 && !restrictedGens.includes(p.generation)) return false;
+			if (settings.generations.length > 0 && !settings.generations.includes(p.generation)) return false;
+			if (settings.categories.length > 0 && !settings.categories.includes(p.category)) return false;
 			return true;
 		});
 		this.displayedCount = this.PAGE_SIZE;
@@ -260,6 +280,52 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		const filtered = gens.filter((g) => g !== gen);
 		const newGens = gens.includes(gen) ? (filtered.length === 0 ? [gen] : filtered) : [...gens, gen];
 		this.gameSettings = { ...this.gameSettings, generations: newGens };
+		void this.saveSettings();
+	}
+
+	/** Sélectionne toutes les générations. */
+	selectAllGenerations(): void {
+		if (this.isConfigLocked()) return;
+		this.gameSettings = { ...this.gameSettings, generations: [...this.ALL_GENERATIONS] };
+		void this.saveSettings();
+	}
+
+	/** Désélectionne toutes les générations (une seule reste sélectionnée). */
+	clearAllGenerations(): void {
+		if (this.isConfigLocked()) return;
+		this.gameSettings = { ...this.gameSettings, generations: [1] };
+		void this.saveSettings();
+	}
+
+	/** Active ou désactive la restriction par catégorie. */
+	toggleCategoryMode(): void {
+		if (this.isConfigLocked()) return;
+		const wasActive = this.gameSettings.categories.length > 0;
+		this.gameSettings = { ...this.gameSettings, categories: wasActive ? [] : ['classique'] };
+		void this.saveSettings();
+	}
+
+	/** Ajoute ou retire une catégorie de la liste des catégories restreintes. */
+	toggleCategory(cat: string): void {
+		if (this.isConfigLocked()) return;
+		const cats = this.gameSettings.categories;
+		const filtered = cats.filter((c) => c !== cat);
+		const newCats = cats.includes(cat) ? (filtered.length === 0 ? [cat] : filtered) : [...cats, cat];
+		this.gameSettings = { ...this.gameSettings, categories: newCats };
+		void this.saveSettings();
+	}
+
+	/** Sélectionne toutes les catégories. */
+	selectAllCategories(): void {
+		if (this.isConfigLocked()) return;
+		this.gameSettings = { ...this.gameSettings, categories: [...this.ALL_CATEGORIES] };
+		void this.saveSettings();
+	}
+
+	/** Désélectionne toutes les catégories (une seule reste sélectionnée). */
+	clearAllCategories(): void {
+		if (this.isConfigLocked()) return;
+		this.gameSettings = { ...this.gameSettings, categories: ['classique'] };
 		void this.saveSettings();
 	}
 

@@ -4,6 +4,7 @@ export type FirstPlayer = 'player1' | 'player2' | 'random';
 
 export interface GameSettings {
   generations: number[];  // [] = toutes les générations
+  categories: string[];   // [] = toutes les catégories
   noPokedex: boolean;     // cache tout sauf le nom
   noSearch: boolean;      // désactive les filtres avancés (garde la recherche par nom)
   firstPlayer: FirstPlayer; // qui joue en premier
@@ -12,6 +13,7 @@ export interface GameSettings {
 
 export const DEFAULT_SETTINGS: GameSettings = {
   generations: [],
+  categories: [],
   noPokedex: false,
   noSearch: false,
   firstPlayer: 'random',

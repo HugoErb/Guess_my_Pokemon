@@ -114,7 +114,14 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
       <div class="flex flex-wrap gap-x-8 gap-y-6">
         <!-- Génération -->
         <div class="shrink-0">
-          <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">Génération</p>
+          <div class="flex items-center gap-2 mb-2">
+            <p class="text-xs text-slate-400 uppercase tracking-wider">Génération</p>
+            <span class="text-xs text-slate-500">
+              <button (click)="selectAllGenerations()" class="hover:text-slate-300 transition-colors">Tout</button>
+              -
+              <button (click)="deselectAllGenerations()" class="hover:text-slate-300 transition-colors">Aucun</button>
+            </span>
+          </div>
           <div class="flex flex-nowrap gap-1">
             @for (gen of generations; track gen) {
               <button
@@ -151,7 +158,14 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
         <!-- Catégorie -->
         <div class="shrink-0">
-          <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">Catégorie</p>
+          <div class="flex items-center gap-2 mb-2">
+            <p class="text-xs text-slate-400 uppercase tracking-wider">Catégorie</p>
+            <span class="text-xs text-slate-500">
+              <button (click)="selectAllCategories()" class="hover:text-slate-300 transition-colors">Tout</button>
+              -
+              <button (click)="deselectAllCategories()" class="hover:text-slate-300 transition-colors">Aucun</button>
+            </span>
+          </div>
           <div class="flex flex-wrap gap-1">
             @for (cat of categories; track cat.id) {
               <button
@@ -814,6 +828,26 @@ export class PokedexComponent implements OnInit {
 
     deselectAllTypes(): void {
         this.selectedTypes.set([]);
+        this.displayedCount.set(this.PAGE_SIZE);
+    }
+
+    selectAllGenerations(): void {
+        this.selectedGenerations.set([...GENERATIONS]);
+        this.displayedCount.set(this.PAGE_SIZE);
+    }
+
+    deselectAllGenerations(): void {
+        this.selectedGenerations.set([]);
+        this.displayedCount.set(this.PAGE_SIZE);
+    }
+
+    selectAllCategories(): void {
+        this.selectedCategories.set(this.categories.map(c => c.id));
+        this.displayedCount.set(this.PAGE_SIZE);
+    }
+
+    deselectAllCategories(): void {
+        this.selectedCategories.set([]);
         this.displayedCount.set(this.PAGE_SIZE);
     }
 

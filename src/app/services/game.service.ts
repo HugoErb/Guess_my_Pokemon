@@ -126,7 +126,10 @@ export class GameService implements OnDestroy {
             if (settings.generations.length > 0) {
                 pokemons = pokemons.filter((p) => settings.generations.includes(p.generation));
             }
-            if (pokemons.length < 2) throw new Error('Pas assez de Pokémon disponibles pour cette génération');
+            if (settings.categories.length > 0) {
+                pokemons = pokemons.filter((p) => settings.categories.includes(p.category));
+            }
+            if (pokemons.length < 2) throw new Error('Pas assez de Pokémon disponibles pour ces filtres');
             const [p1, p2] = this.pickTwoDifferent(pokemons);
             const room = await this.supabaseService.getRoomById(roomId);
             await this.updateAndRefresh(roomId, {
@@ -295,6 +298,9 @@ export class GameService implements OnDestroy {
                 let pokemons = await firstValueFrom(this.pokemonService.loadAll());
                 if (settings.generations.length > 0) {
                     pokemons = pokemons.filter((p) => settings.generations.includes(p.generation));
+                }
+                if (settings.categories.length > 0) {
+                    pokemons = pokemons.filter((p) => settings.categories.includes(p.category));
                 }
                 const [p1, p2] = this.pickTwoDifferent(pokemons);
                 await this.supabaseService.updateRoom(roomId, {
