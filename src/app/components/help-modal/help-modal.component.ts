@@ -120,7 +120,7 @@ import { modalAnimation } from '../../constants/animations';
 							<div class="bg-slate-800 rounded-lg px-3 py-2 text-xs space-y-1">
 								<div class="text-slate-400 font-bold mb-2">Catégories :</div>
 								<div class="flex gap-2 flex-col">
-									<div class="text-slate-300"><span class="text-white font-semibold">Standard</span> — Pokémon classiques</div>
+									<div class="text-slate-300"><span class="text-white font-semibold">Classique</span> — Pokémon sans caractéristique spéciale</div>
 									<div class="text-slate-300"><span class="text-white font-semibold">Starter</span> — Pokémon de départ (ex. Bulbizarre, Salamèche, Carapuce)</div>
 									<div class="text-slate-300"><span class="text-white font-semibold">Légendaire</span> — ex. Mewtwo, Lugia</div>
 									<div class="text-slate-300"><span class="text-white font-semibold">Fabuleux</span> — ex. Mew, Celebi</div>
