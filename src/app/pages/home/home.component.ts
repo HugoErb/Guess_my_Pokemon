@@ -153,6 +153,7 @@ export class HomeComponent implements OnInit {
   async createGame(): Promise<void> {
     this.isCreating = true;
     this.createError = '';
+    localStorage.removeItem('gmp:filters');
     try {
       const roomId = await this.supabaseService.createRoom();
       this.router.navigate(['/lobby', roomId]);

@@ -4015,7 +4015,7 @@
       "Vol"
     ],
     "generation": 1,
-    "category": "classique",
+    "category": "pseudo-légendaire",
     "evolution_stage": "3/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/149.png",
     "stats": {
@@ -4631,7 +4631,7 @@
       "Électrik"
     ],
     "generation": 2,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/172.png",
     "stats": {
@@ -4657,7 +4657,7 @@
       "Fée"
     ],
     "generation": 2,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/173.png",
     "stats": {
@@ -4685,7 +4685,7 @@
       "Fée"
     ],
     "generation": 2,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/174.png",
     "stats": {
@@ -4712,7 +4712,7 @@
       "Fée"
     ],
     "generation": 2,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/175.png",
     "stats": {
@@ -6376,7 +6376,7 @@
       "Combat"
     ],
     "generation": 2,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/236.png",
     "stats": {
@@ -6431,7 +6431,7 @@
       "Psy"
     ],
     "generation": 2,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/238.png",
     "stats": {
@@ -6458,7 +6458,7 @@
       "Électrik"
     ],
     "generation": 2,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/239.png",
     "stats": {
@@ -6484,7 +6484,7 @@
       "Feu"
     ],
     "generation": 2,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/240.png",
     "stats": {
@@ -6696,7 +6696,7 @@
       "Ténèbres"
     ],
     "generation": 2,
-    "category": "classique",
+    "category": "pseudo-légendaire",
     "evolution_stage": "3/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/248.png",
     "stats": {
@@ -8036,7 +8036,7 @@
       "Fée"
     ],
     "generation": 3,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/298.png",
     "stats": {
@@ -9704,7 +9704,7 @@
       "Psy"
     ],
     "generation": 3,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/360.png",
     "stats": {
@@ -10134,7 +10134,7 @@
       "Psy"
     ],
     "generation": 3,
-    "category": "classique",
+    "category": "pseudo-légendaire",
     "evolution_stage": "3/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/376.png",
     "stats": {
@@ -10925,7 +10925,7 @@
       "Poison"
     ],
     "generation": 4,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/406.png",
     "stats": {
@@ -11648,7 +11648,7 @@
       "Psy"
     ],
     "generation": 4,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/433.png",
     "stats": {
@@ -11785,7 +11785,7 @@
       "Roche"
     ],
     "generation": 4,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/438.png",
     "stats": {
@@ -11813,7 +11813,7 @@
       "Fée"
     ],
     "generation": 4,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/439.png",
     "stats": {
@@ -11840,7 +11840,7 @@
       "Normal"
     ],
     "generation": 4,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/440.png",
     "stats": {
@@ -11977,7 +11977,7 @@
       "Sol"
     ],
     "generation": 4,
-    "category": "classique",
+    "category": "pseudo-légendaire",
     "evolution_stage": "3/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/445.png",
     "stats": {
@@ -12003,7 +12003,7 @@
       "Normal"
     ],
     "generation": 4,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/446.png",
     "stats": {
@@ -12030,7 +12030,7 @@
       "Combat"
     ],
     "generation": 4,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/447.png",
     "stats": {
@@ -12329,7 +12329,7 @@
       "Vol"
     ],
     "generation": 4,
-    "category": "classique",
+    "category": "bébé",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/458.png",
     "stats": {
@@ -17102,7 +17102,7 @@
       "Dragon"
     ],
     "generation": 5,
-    "category": "classique",
+    "category": "pseudo-légendaire",
     "evolution_stage": "3/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/635.png",
     "stats": {
@@ -18996,7 +18996,7 @@
       "Dragon"
     ],
     "generation": 6,
-    "category": "classique",
+    "category": "pseudo-légendaire",
     "evolution_stage": "3/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/706.png",
     "stats": {
@@ -21092,7 +21092,7 @@
       "Combat"
     ],
     "generation": 7,
-    "category": "classique",
+    "category": "pseudo-légendaire",
     "evolution_stage": "3/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/784.png",
     "stats": {
@@ -23838,7 +23838,7 @@
       "Spectre"
     ],
     "generation": 8,
-    "category": "classique",
+    "category": "pseudo-légendaire",
     "evolution_stage": "3/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/887.png",
     "stats": {
@@ -26441,7 +26441,7 @@
       "Combat"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/984.png",
     "stats": {
@@ -26467,7 +26467,7 @@
       "Psy"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/985.png",
     "stats": {
@@ -26493,7 +26493,7 @@
       "Ténèbres"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/986.png",
     "stats": {
@@ -26519,7 +26519,7 @@
       "Fée"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/987.png",
     "stats": {
@@ -26545,7 +26545,7 @@
       "Combat"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/988.png",
     "stats": {
@@ -26571,7 +26571,7 @@
       "Sol"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/989.png",
     "stats": {
@@ -26597,7 +26597,7 @@
       "Acier"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/990.png",
     "stats": {
@@ -26623,7 +26623,7 @@
       "Eau"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/991.png",
     "stats": {
@@ -26649,7 +26649,7 @@
       "Électrik"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/992.png",
     "stats": {
@@ -26675,7 +26675,7 @@
       "Vol"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/993.png",
     "stats": {
@@ -26701,7 +26701,7 @@
       "Poison"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/994.png",
     "stats": {
@@ -26727,7 +26727,7 @@
       "Électrik"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/995.png",
     "stats": {
@@ -26807,7 +26807,7 @@
       "Glace"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "pseudo-légendaire",
     "evolution_stage": "3/3",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/998.png",
     "stats": {
@@ -27015,7 +27015,7 @@
       "Combat"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1006.png",
     "stats": {
@@ -27093,7 +27093,7 @@
       "Dragon"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1009.png",
     "stats": {
@@ -27119,7 +27119,7 @@
       "Psy"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1010.png",
     "stats": {
@@ -27389,7 +27389,7 @@
       "Dragon"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1020.png",
     "stats": {
@@ -27415,7 +27415,7 @@
       "Dragon"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1021.png",
     "stats": {
@@ -27441,7 +27441,7 @@
       "Psy"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1022.png",
     "stats": {
@@ -27467,7 +27467,7 @@
       "Psy"
     ],
     "generation": 9,
-    "category": "classique",
+    "category": "paradoxe",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1023.png",
     "stats": {

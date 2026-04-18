@@ -3,7 +3,7 @@ export interface Pokemon {
   name: string;
   types: string[];
   generation: number;
-  category: 'classique' | 'starter' | 'légendaire' | 'fabuleux' | 'fossile' | 'ultra-chimère';
+  category: 'classique' | 'starter' | 'légendaire' | 'fabuleux' | 'fossile' | 'ultra-chimère' | 'pseudo-légendaire' | 'bébé' | 'paradoxe';
   evolution_stage: string;
   _stage?: number;
   sprite: string;
