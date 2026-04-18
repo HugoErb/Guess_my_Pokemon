@@ -512,7 +512,7 @@ export class PokedexComponent implements OnInit {
     searchQuery = signal('');
     selectedGenerations = signal<number[]>([...GENERATIONS]);
     selectedTypes = signal<string[]>([...ALL_TYPES]);
-    selectedCategories = signal<string[]>(['classique', 'starter', 'légendaire', 'fabuleux']);
+    selectedCategories = signal<string[]>(['classique', 'starter', 'légendaire', 'fabuleux', 'fossile', 'ultra-chimère']);
     selectedEvoStages = signal<number[]>([1, 2, 3]);
     minWeight = signal<number | null>(0);
     maxWeight = signal<number | null>(null);
@@ -562,6 +562,8 @@ export class PokedexComponent implements OnInit {
         { id: 'starter', label: 'Starter' },
         { id: 'légendaire', label: 'Légendaire' },
         { id: 'fabuleux', label: 'Fabuleux' },
+        { id: 'fossile', label: 'Fossile' },
+        { id: 'ultra-chimère', label: 'Ultra-Chimère' },
     ];
     readonly evoStages = [1, 2, 3];
 
@@ -852,7 +854,7 @@ export class PokedexComponent implements OnInit {
         this.searchQuery.set('');
         this.selectedGenerations.set([...GENERATIONS]);
         this.selectedTypes.set([...ALL_TYPES]);
-        this.selectedCategories.set(['classique', 'starter', 'légendaire', 'fabuleux']);
+        this.selectedCategories.set(['classique', 'starter', 'légendaire', 'fabuleux', 'fossile', 'ultra-chimère']);
         this.selectedEvoStages.set([1, 2, 3]);
         this.minWeight.set(0);
         this.maxWeight.set(null);

@@ -3715,7 +3715,7 @@
       "Eau"
     ],
     "generation": 1,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/138.png",
     "stats": {
@@ -3743,7 +3743,7 @@
       "Eau"
     ],
     "generation": 1,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "2/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/139.png",
     "stats": {
@@ -3771,7 +3771,7 @@
       "Eau"
     ],
     "generation": 1,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/140.png",
     "stats": {
@@ -3799,7 +3799,7 @@
       "Eau"
     ],
     "generation": 1,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "2/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/141.png",
     "stats": {
@@ -3827,7 +3827,7 @@
       "Vol"
     ],
     "generation": 1,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/142.png",
     "stats": {
@@ -9306,7 +9306,7 @@
       "Plante"
     ],
     "generation": 3,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/345.png",
     "stats": {
@@ -9333,7 +9333,7 @@
       "Plante"
     ],
     "generation": 3,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "2/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/346.png",
     "stats": {
@@ -9360,7 +9360,7 @@
       "Insecte"
     ],
     "generation": 3,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/347.png",
     "stats": {
@@ -9387,7 +9387,7 @@
       "Insecte"
     ],
     "generation": 3,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "2/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/348.png",
     "stats": {
@@ -10980,7 +10980,7 @@
       "Roche"
     ],
     "generation": 4,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/408.png",
     "stats": {
@@ -11006,7 +11006,7 @@
       "Roche"
     ],
     "generation": 4,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "2/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/409.png",
     "stats": {
@@ -11033,7 +11033,7 @@
       "Acier"
     ],
     "generation": 4,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/410.png",
     "stats": {
@@ -11060,7 +11060,7 @@
       "Acier"
     ],
     "generation": 4,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "2/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/411.png",
     "stats": {
@@ -15178,7 +15178,7 @@
       "Roche"
     ],
     "generation": 5,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/564.png",
     "stats": {
@@ -15206,7 +15206,7 @@
       "Roche"
     ],
     "generation": 5,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "2/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/565.png",
     "stats": {
@@ -15234,7 +15234,7 @@
       "Vol"
     ],
     "generation": 5,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/566.png",
     "stats": {
@@ -15260,7 +15260,7 @@
       "Vol"
     ],
     "generation": 5,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "2/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/567.png",
     "stats": {
@@ -18726,7 +18726,7 @@
       "Dragon"
     ],
     "generation": 6,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/696.png",
     "stats": {
@@ -18753,7 +18753,7 @@
       "Dragon"
     ],
     "generation": 6,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "2/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/697.png",
     "stats": {
@@ -18780,7 +18780,7 @@
       "Glace"
     ],
     "generation": 6,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/698.png",
     "stats": {
@@ -18807,7 +18807,7 @@
       "Glace"
     ],
     "generation": 6,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "2/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/699.png",
     "stats": {
@@ -21330,7 +21330,7 @@
       "Poison"
     ],
     "generation": 7,
-    "category": "classique",
+    "category": "ultra-chimère",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/793.png",
     "stats": {
@@ -21356,7 +21356,7 @@
       "Combat"
     ],
     "generation": 7,
-    "category": "classique",
+    "category": "ultra-chimère",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/794.png",
     "stats": {
@@ -21382,7 +21382,7 @@
       "Combat"
     ],
     "generation": 7,
-    "category": "classique",
+    "category": "ultra-chimère",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/795.png",
     "stats": {
@@ -21407,7 +21407,7 @@
       "Électrik"
     ],
     "generation": 7,
-    "category": "classique",
+    "category": "ultra-chimère",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/796.png",
     "stats": {
@@ -21433,7 +21433,7 @@
       "Vol"
     ],
     "generation": 7,
-    "category": "classique",
+    "category": "ultra-chimère",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/797.png",
     "stats": {
@@ -21459,7 +21459,7 @@
       "Acier"
     ],
     "generation": 7,
-    "category": "classique",
+    "category": "ultra-chimère",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/798.png",
     "stats": {
@@ -21485,7 +21485,7 @@
       "Dragon"
     ],
     "generation": 7,
-    "category": "classique",
+    "category": "ultra-chimère",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/799.png",
     "stats": {
@@ -21587,7 +21587,7 @@
       "Poison"
     ],
     "generation": 7,
-    "category": "classique",
+    "category": "ultra-chimère",
     "evolution_stage": "1/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/803.png",
     "stats": {
@@ -21613,7 +21613,7 @@
       "Dragon"
     ],
     "generation": 7,
-    "category": "classique",
+    "category": "ultra-chimère",
     "evolution_stage": "2/2",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/804.png",
     "stats": {
@@ -21639,7 +21639,7 @@
       "Acier"
     ],
     "generation": 7,
-    "category": "classique",
+    "category": "ultra-chimère",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/805.png",
     "stats": {
@@ -21665,7 +21665,7 @@
       "Spectre"
     ],
     "generation": 7,
-    "category": "classique",
+    "category": "ultra-chimère",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/806.png",
     "stats": {
@@ -23642,7 +23642,7 @@
       "Dragon"
     ],
     "generation": 8,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/880.png",
     "stats": {
@@ -23670,7 +23670,7 @@
       "Glace"
     ],
     "generation": 8,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/881.png",
     "stats": {
@@ -23698,7 +23698,7 @@
       "Dragon"
     ],
     "generation": 8,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/882.png",
     "stats": {
@@ -23726,7 +23726,7 @@
       "Glace"
     ],
     "generation": 8,
-    "category": "classique",
+    "category": "fossile",
     "evolution_stage": "1/1",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/883.png",
     "stats": {
