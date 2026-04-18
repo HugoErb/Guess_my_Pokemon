@@ -20,7 +20,7 @@
 				@if (room()?.status === 'ready') {
 					<iconify-icon [icon]="ICONS.checkCircle" class="text-5xl mb-1 text-green-400"></iconify-icon>
 				} @else {
-					<iconify-icon [icon]="ICONS.timer" class="text-4xl mb-4 text-blue-400 animate-pulse"></iconify-icon>
+					<iconify-icon [icon]="ICONS.timer" class="text-4xl mb-4 text-red-500 animate-pulse"></iconify-icon>
 				}
 				<h2 class="text-2xl font-bold mb-4">
 					@if (room()?.status === 'waiting') {
