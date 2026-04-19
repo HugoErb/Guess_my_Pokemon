@@ -22,6 +22,7 @@ export class FriendsCardComponent implements OnInit, OnDestroy {
 	friends = signal<FriendWithStatus[]>([]);
 	pendingRequests = signal<FriendRequest[]>([]);
 	isLoadingFriends = signal(true);
+	confirmDeleteFriend = signal<FriendWithStatus | null>(null);
 
 	hasPendingRequests = computed(() => this.pendingRequests().length > 0);
 
@@ -98,6 +99,22 @@ export class FriendsCardComponent implements OnInit, OnDestroy {
 
 	inviteFriend(friend: FriendWithStatus): void {
 		this.inviteRequested.emit({ friendId: friend.friendId, username: friend.username });
+	}
+
+	askRemoveFriend(friend: FriendWithStatus): void {
+		this.confirmDeleteFriend.set(friend);
+	}
+
+	cancelRemove(): void {
+		this.confirmDeleteFriend.set(null);
+	}
+
+	async confirmRemove(): Promise<void> {
+		const friend = this.confirmDeleteFriend();
+		if (!friend) return;
+		this.confirmDeleteFriend.set(null);
+		await this.supabaseService.removeFriend(friend.id);
+		await this.reload();
 	}
 
 	setTab(tab: 'friends' | 'requests' | 'add'): void {
