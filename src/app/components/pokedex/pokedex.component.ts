@@ -176,7 +176,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
                   ? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-800 text-white border border-amber-700 transition-colors'
                   : 'px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 border border-slate-600 hover:bg-slate-600 transition-colors'"
               >
-                {{ cat.label }}
+                {{ cat.shortLabel ?? cat.label }}
               </button>
             }
           </div>
@@ -620,7 +620,7 @@ export class PokedexComponent implements OnInit {
         { id: 'fossile', label: 'Fossile' },
         { id: 'paradoxe', label: 'Paradoxe' },
         { id: 'ultra-chimère', label: 'Ultra-Chimère' },
-        { id: 'pseudo-légendaire', label: 'Pseudo-Légendaire' },
+        { id: 'pseudo-légendaire', label: 'Pseudo-Légendaire', shortLabel: 'Pseudo-Lég.' },
         { id: 'légendaire', label: 'Légendaire' },
         { id: 'fabuleux', label: 'Fabuleux' },
     ];
