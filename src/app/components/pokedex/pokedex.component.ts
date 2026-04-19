@@ -747,37 +747,42 @@ export class PokedexComponent implements OnInit {
 
     /** Lifecycle Angular — charge la liste des Pokémon et pré-calcule leur stade d'évolution. */
     ngOnInit(): void {
-        try {
-            const saved = localStorage.getItem(PokedexComponent.FILTERS_KEY);
-            if (saved) {
-                const s = JSON.parse(saved);
-                if (Array.isArray(s.selectedTypes))      this.selectedTypes.set(s.selectedTypes);
-                if (Array.isArray(s.selectedGenerations)) this.selectedGenerations.set(s.selectedGenerations);
-                if (Array.isArray(s.selectedCategories)) this.selectedCategories.set(s.selectedCategories);
-                if (Array.isArray(s.selectedEvoStages))  this.selectedEvoStages.set(s.selectedEvoStages);
-                if (s.minWeight      !== undefined) this.minWeight.set(s.minWeight);
-                if (s.maxWeight      !== undefined) this.maxWeight.set(s.maxWeight);
-                if (s.minHeight      !== undefined) this.minHeight.set(s.minHeight);
-                if (s.maxHeight      !== undefined) this.maxHeight.set(s.maxHeight);
-                if (s.onlyDualType   !== undefined) this.onlyDualType.set(s.onlyDualType);
-                if (s.onlyDualTypeStrict !== undefined) this.onlyDualTypeStrict.set(s.onlyDualTypeStrict);
-                if (s.onlyMonoType   !== undefined) this.onlyMonoType.set(s.onlyMonoType);
-                if (s.minStatPv      !== undefined) this.minStatPv.set(s.minStatPv);
-                if (s.maxStatPv      !== undefined) this.maxStatPv.set(s.maxStatPv);
-                if (s.minStatAtq     !== undefined) this.minStatAtq.set(s.minStatAtq);
-                if (s.maxStatAtq     !== undefined) this.maxStatAtq.set(s.maxStatAtq);
-                if (s.minStatDef     !== undefined) this.minStatDef.set(s.minStatDef);
-                if (s.maxStatDef     !== undefined) this.maxStatDef.set(s.maxStatDef);
-                if (s.minStatAtqSpe  !== undefined) this.minStatAtqSpe.set(s.minStatAtqSpe);
-                if (s.maxStatAtqSpe  !== undefined) this.maxStatAtqSpe.set(s.maxStatAtqSpe);
-                if (s.minStatDefSpe  !== undefined) this.minStatDefSpe.set(s.minStatDefSpe);
-                if (s.maxStatDefSpe  !== undefined) this.maxStatDefSpe.set(s.maxStatDefSpe);
-                if (s.minStatVit     !== undefined) this.minStatVit.set(s.minStatVit);
-                if (s.maxStatVit     !== undefined) this.maxStatVit.set(s.maxStatVit);
-                if (s.minStatTotal   !== undefined) this.minStatTotal.set(s.minStatTotal);
-                if (s.maxStatTotal   !== undefined) this.maxStatTotal.set(s.maxStatTotal);
-            }
-        } catch { /* localStorage corrompu, on ignore */ }
+        const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+        const isReload = navEntry?.type === 'reload';
+
+        if (isReload) {
+            try {
+                const saved = localStorage.getItem(PokedexComponent.FILTERS_KEY);
+                if (saved) {
+                    const s = JSON.parse(saved);
+                    if (Array.isArray(s.selectedTypes))      this.selectedTypes.set(s.selectedTypes);
+                    if (Array.isArray(s.selectedGenerations)) this.selectedGenerations.set(s.selectedGenerations);
+                    if (Array.isArray(s.selectedCategories)) this.selectedCategories.set(s.selectedCategories);
+                    if (Array.isArray(s.selectedEvoStages))  this.selectedEvoStages.set(s.selectedEvoStages);
+                    if (s.minWeight      !== undefined) this.minWeight.set(s.minWeight);
+                    if (s.maxWeight      !== undefined) this.maxWeight.set(s.maxWeight);
+                    if (s.minHeight      !== undefined) this.minHeight.set(s.minHeight);
+                    if (s.maxHeight      !== undefined) this.maxHeight.set(s.maxHeight);
+                    if (s.onlyDualType   !== undefined) this.onlyDualType.set(s.onlyDualType);
+                    if (s.onlyDualTypeStrict !== undefined) this.onlyDualTypeStrict.set(s.onlyDualTypeStrict);
+                    if (s.onlyMonoType   !== undefined) this.onlyMonoType.set(s.onlyMonoType);
+                    if (s.minStatPv      !== undefined) this.minStatPv.set(s.minStatPv);
+                    if (s.maxStatPv      !== undefined) this.maxStatPv.set(s.maxStatPv);
+                    if (s.minStatAtq     !== undefined) this.minStatAtq.set(s.minStatAtq);
+                    if (s.maxStatAtq     !== undefined) this.maxStatAtq.set(s.maxStatAtq);
+                    if (s.minStatDef     !== undefined) this.minStatDef.set(s.minStatDef);
+                    if (s.maxStatDef     !== undefined) this.maxStatDef.set(s.maxStatDef);
+                    if (s.minStatAtqSpe  !== undefined) this.minStatAtqSpe.set(s.minStatAtqSpe);
+                    if (s.maxStatAtqSpe  !== undefined) this.maxStatAtqSpe.set(s.maxStatAtqSpe);
+                    if (s.minStatDefSpe  !== undefined) this.minStatDefSpe.set(s.minStatDefSpe);
+                    if (s.maxStatDefSpe  !== undefined) this.maxStatDefSpe.set(s.maxStatDefSpe);
+                    if (s.minStatVit     !== undefined) this.minStatVit.set(s.minStatVit);
+                    if (s.maxStatVit     !== undefined) this.maxStatVit.set(s.maxStatVit);
+                    if (s.minStatTotal   !== undefined) this.minStatTotal.set(s.minStatTotal);
+                    if (s.maxStatTotal   !== undefined) this.maxStatTotal.set(s.maxStatTotal);
+                }
+            } catch { /* localStorage corrompu, on ignore */ }
+        }
 
         const id = this.roomId();
         if (id) {
