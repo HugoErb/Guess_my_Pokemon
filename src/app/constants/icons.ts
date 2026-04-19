@@ -42,6 +42,7 @@ export const ICONS = {
   // Amis
   friends: 'mdi:account-group',
   addFriend: 'mdi:account-plus',
+  trash: 'mdi:trash-can-outline',
 
   // Filtres
   weight: 'mdi:weight-kilogram',
