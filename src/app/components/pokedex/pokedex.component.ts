@@ -160,7 +160,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         <div class="w-full sm:w-auto relative shrink-0">
           <div class="flex items-center gap-2 mb-2">
             <p class="text-xs text-slate-400 uppercase tracking-wider">Catégorie</p>
-            <span class="text-xs text-slate-500">
+            <span class="text-xs text-slate-500 md:hidden">
               <button (click)="selectAllCategories()" class="hover:text-slate-300 transition-colors">Tout</button>
               -
               <button (click)="deselectAllCategories()" class="hover:text-slate-300 transition-colors">Aucun</button>
