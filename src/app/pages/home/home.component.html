@@ -102,9 +102,9 @@
 			&nbsp;!
 		</h1>
 
-		<div class="w-full max-w-6xl flex flex-col lg:flex-row gap-8 items-stretch justify-center">
+		<div class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
 			<!-- Carte Jouer -->
-			<div class="flex-1 max-w-md bg-slate-800 border border-slate-700 rounded-2xl p-8 shadow-xl flex flex-col items-center text-center gap-4">
+			<div class="bg-slate-800 border border-slate-700 rounded-2xl p-8 shadow-xl flex flex-col items-center text-center gap-4">
 				<div class="w-16 h-16 rounded-2xl bg-red-600/20 flex items-center justify-center border border-red-500/30">
 					<iconify-icon [icon]="ICONS.sword" class="text-4xl text-red-400"></iconify-icon>
 				</div>
@@ -130,7 +130,7 @@
 			</div>
 
 			<!-- Carte Compte -->
-			<div class="flex-1 max-w-md bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-xl flex flex-col">
+			<div class="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-xl flex flex-col">
 				<div class="h-24 avatar-gradient flex items-end px-8">
 					<div
 						class="group relative w-20 h-20 rounded-full border-4 border-slate-800 bg-slate-700 flex items-center justify-center text-3xl font-black text-white translate-y-8 shadow-xl overflow-hidden cursor-pointer"
@@ -183,7 +183,9 @@
 			</div>
 
 			<!-- Carte Amis -->
-			<app-friends-card class="flex-1 flex max-w-xl" (inviteRequested)="onInviteRequested($event)" />
+			<div class="">
+				<app-friends-card class="w-full h-full flex flex-col" (inviteRequested)="onInviteRequested($event)" />
+			</div>
 		</div>
 	</main>
 

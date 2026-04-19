@@ -1,4 +1,4 @@
-<div class="w-full h-full bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-xl flex flex-col">
+<div class="relative w-full h-96 lg:h-full bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-xl flex flex-col">
 	<!-- Header gradient -->
 	<div class="h-24 flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)">
 		<iconify-icon [icon]="ICONS.friends" class="text-5xl text-white/80"></iconify-icon>
@@ -8,11 +8,16 @@
 		<h3 class="text-xl font-black text-white">Amis</h3>
 
 		<!-- Onglets -->
-		<div class="flex bg-slate-900 rounded-xl p-1 gap-1">
+		<div class="relative flex bg-slate-900 rounded-xl p-1 gap-1">
+			<!-- Indicateur glissant -->
+			<div
+				class="absolute top-1 bottom-1 bg-slate-700 rounded-lg transition-all duration-200 ease-out pointer-events-none"
+				[style.width]="'calc((100% - 16px) / 3)'"
+				[style.left]="tabIndicatorLeft()"
+			></div>
 			<button
 				(click)="setTab('friends')"
-				class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all"
-				[class.bg-slate-700]="activeTab() === 'friends'"
+				class="relative flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors duration-200"
 				[class.text-white]="activeTab() === 'friends'"
 				[class.text-slate-500]="activeTab() !== 'friends'"
 			>
@@ -20,8 +25,7 @@
 			</button>
 			<button
 				(click)="setTab('requests')"
-				class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all relative"
-				[class.bg-slate-700]="activeTab() === 'requests'"
+				class="relative flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors duration-200"
 				[class.text-white]="activeTab() === 'requests'"
 				[class.text-slate-500]="activeTab() !== 'requests'"
 			>
@@ -32,8 +36,7 @@
 			</button>
 			<button
 				(click)="setTab('add')"
-				class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all"
-				[class.bg-slate-700]="activeTab() === 'add'"
+				class="relative flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors duration-200"
 				[class.text-white]="activeTab() === 'add'"
 				[class.text-slate-500]="activeTab() !== 'add'"
 			>
@@ -44,18 +47,18 @@
 		<!-- Onglet : Amis -->
 		@if (activeTab() === 'friends') {
 			@if (isLoadingFriends()) {
-				<div class="flex-1 flex items-center justify-center">
+				<div class="tab-content flex-1 flex items-center justify-center">
 					<iconify-icon [icon]="ICONS.loading" class="text-2xl text-slate-500 animate-spin"></iconify-icon>
 				</div>
 			} @else if (friends().length === 0) {
-				<div class="flex-1 flex flex-col items-center justify-center gap-2 text-slate-500 text-sm py-6">
+				<div class="tab-content flex-1 flex flex-col items-center justify-center gap-2 text-slate-500 text-sm py-6">
 					<iconify-icon [icon]="ICONS.friends" class="text-3xl"></iconify-icon>
 					<p>Aucun ami pour l'instant</p>
 				</div>
 			} @else {
-				<div class="flex flex-col gap-2 overflow-y-auto max-h-72">
+				<div class="tab-content flex flex-col gap-2 overflow-y-auto max-h-[136px] pr-1">
 					@for (friend of friends(); track friend.id) {
-						<div class="flex items-center gap-3 bg-slate-700/50 rounded-xl px-3 py-2">
+						<div class="group flex items-center gap-3 bg-slate-700/50 rounded-xl px-3 py-2">
 							<!-- Avatar -->
 							<div class="relative flex-shrink-0">
 								<div class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-sm font-bold text-white overflow-hidden">
@@ -79,12 +82,20 @@
 							@if (friend.status === 'online') {
 								<button
 									(click)="inviteFriend(friend)"
-									class="flex-shrink-0 px-3 py-1.5 bg-red-600 hover:bg-red-500 rounded-lg text-xs font-bold text-white transition-colors flex items-center gap-1.5"
+									class="flex-shrink-0 px-3 py-1.5 bg-red-600 hover:bg-red-500 rounded-lg text-xs font-bold text-white transition-all flex items-center gap-1.5 opacity-0 group-hover:opacity-100"
 								>
 									<iconify-icon [icon]="ICONS.sword" class="text-sm"></iconify-icon>
 									Inviter
 								</button>
 							}
+							<!-- Bouton Supprimer -->
+							<button
+								(click)="askRemoveFriend(friend)"
+								class="flex-shrink-0 p-1.5 bg-slate-700 hover:bg-red-600 rounded-lg text-slate-400 hover:text-white transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"
+								title="Supprimer"
+							>
+								<iconify-icon [icon]="ICONS.trash" class="text-base"></iconify-icon>
+							</button>
 						</div>
 					}
 				</div>
@@ -94,12 +105,12 @@
 		<!-- Onglet : Demandes -->
 		@if (activeTab() === 'requests') {
 			@if (pendingRequests().length === 0) {
-				<div class="flex-1 flex flex-col items-center justify-center gap-2 text-slate-500 text-sm py-6">
+				<div class="tab-content flex-1 flex flex-col items-center justify-center gap-2 text-slate-500 text-sm py-6">
 					<iconify-icon [icon]="ICONS.checkCircle" class="text-3xl"></iconify-icon>
 					<p>Aucune demande en attente</p>
 				</div>
 			} @else {
-				<div class="flex flex-col gap-2 overflow-y-auto max-h-72">
+				<div class="tab-content flex flex-col gap-2 overflow-y-auto max-h-[136px]">
 					@for (req of pendingRequests(); track req.id) {
 						<div class="flex items-center gap-3 bg-slate-700/50 rounded-xl px-3 py-2">
 							<div class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-sm font-bold text-white flex-shrink-0 overflow-hidden">
@@ -132,7 +143,7 @@
 
 		<!-- Onglet : Ajouter -->
 		@if (activeTab() === 'add') {
-			<div class="flex flex-col gap-4">
+			<div class="tab-content flex flex-col gap-4">
 				<p class="text-sm text-slate-400">Saisis le pseudo exact de la personne à ajouter.</p>
 				<div class="flex gap-2">
 					<div class="relative flex-1">
@@ -166,4 +177,29 @@
 			</div>
 		}
 	</div>
+
+	<!-- Modale confirmation suppression ami -->
+	@if (confirmDeleteFriend()) {
+		<div class="absolute inset-0 bg-black/60 rounded-2xl flex items-center justify-center z-10 p-6">
+			<div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 flex flex-col gap-4 w-full max-w-xs shadow-2xl">
+				<p class="text-white font-bold text-center text-sm">
+					Supprimer <span class="text-red-400">{{ confirmDeleteFriend()!.username }}</span> de tes amis ?
+				</p>
+				<div class="flex gap-3">
+					<button
+						(click)="cancelRemove()"
+						class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-bold text-slate-300 transition-colors"
+					>
+						Annuler
+					</button>
+					<button
+						(click)="confirmRemove()"
+						class="flex-1 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-sm font-bold text-white transition-colors"
+					>
+						Supprimer
+					</button>
+				</div>
+			</div>
+		</div>
+	}
 </div>

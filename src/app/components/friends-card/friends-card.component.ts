@@ -11,6 +11,11 @@ import { ICONS } from '../../constants/icons';
 	imports: [FormsModule],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
 	templateUrl: './friends-card.component.html',
+	styles: [
+		':host { display: block; }',
+		`@keyframes tabFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+		.tab-content { animation: tabFadeIn 0.18s ease-out both; }`,
+	],
 })
 export class FriendsCardComponent implements OnInit, OnDestroy {
 	protected readonly ICONS = ICONS;
@@ -25,6 +30,15 @@ export class FriendsCardComponent implements OnInit, OnDestroy {
 	confirmDeleteFriend = signal<FriendWithStatus | null>(null);
 
 	hasPendingRequests = computed(() => this.pendingRequests().length > 0);
+
+	tabIndicatorLeft = computed(() => {
+		const map: Record<string, string> = {
+			friends: '4px',
+			requests: 'calc(8px + (100% - 16px) / 3)',
+			add: 'calc(12px + (100% - 16px) * 2 / 3)',
+		};
+		return map[this.activeTab()];
+	});
 
 	addFriendInput = '';
 	addFriendError = '';
