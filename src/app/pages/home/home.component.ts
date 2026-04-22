@@ -103,6 +103,12 @@ export class HomeComponent implements OnInit, OnDestroy {
       void this.router.navigate(['/home'], { replaceUrl: true });
     }
 
+    // Toast si la room n'existe plus
+    if (this.route.snapshot.queryParams['roomNotFound']) {
+      this.triggerToast("Cette partie n'existe plus.");
+      void this.router.navigate(['/home'], { replaceUrl: true });
+    }
+
     // Écoute les invitations de jeu entrantes
     this.invitesSub = this.supabaseService.subscribeToIncomingGameInvites().subscribe((invite) => {
       this.showGameInviteToast(invite);

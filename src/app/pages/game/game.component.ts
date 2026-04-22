@@ -220,7 +220,10 @@ export class GameComponent implements OnInit, OnDestroy {
 		await this.gameService.joinAndWatch(this.roomId());
 
 		const r = this.room();
-		if (!r) return;
+		if (!r) {
+			void this.router.navigate(['/home'], { queryParams: { roomNotFound: true } });
+			return;
+		}
 
 		const isPlayer1 = this.gameService.isPlayer1();
 		const myPokemonId = isPlayer1 ? r.pokemon_p1 : r.pokemon_p2;
