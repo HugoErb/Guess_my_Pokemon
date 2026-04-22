@@ -72,6 +72,7 @@ export class GameComponent implements OnInit, OnDestroy {
 	isWinner = false;
 	devOpponentTries = signal(0);
 	private isSimulatingTurn = false;
+	private isInitialized = false;
 	private confettiInterval: ReturnType<typeof setInterval> | null = null;
 	readonly isDev = environment.devMode && isDevMode();
 
@@ -166,6 +167,13 @@ export class GameComponent implements OnInit, OnDestroy {
 				});
 			}
 
+			// Redirection si la room a été supprimée pendant la session
+			if (this.isInitialized && r === null) {
+				untracked(() => {
+					void this.router.navigate(['/home'], { queryParams: { roomNotFound: true } });
+				});
+			}
+
 			// Simulation Rejouer pour le mode DEV
 			if (this.isDev && r?.status === 'finished' && this.iWantReplay() && !this.opponentWantsReplay()) {
 				untracked(() => {
@@ -227,6 +235,8 @@ export class GameComponent implements OnInit, OnDestroy {
 			void this.router.navigate(['/home'], { queryParams: { roomNotFound: true } });
 			return;
 		}
+
+		this.isInitialized = true;
 
 		const isPlayer1 = this.gameService.isPlayer1();
 		const myPokemonId = isPlayer1 ? r.pokemon_p1 : r.pokemon_p2;

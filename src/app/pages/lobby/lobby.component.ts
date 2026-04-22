@@ -35,8 +35,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	private readonly injector = inject(Injector);
 
 	constructor() {
-		// Re-applique le filtre dès que les settings de la room changent
-		// (résout la race condition Realtime vs getRoomById)
 		effect(() => {
 			const s = this.gameService.settings();
 			untracked(() => {
@@ -45,6 +43,14 @@ export class LobbyComponent implements OnInit, OnDestroy {
 			});
 		});
 
+		effect(() => {
+			const r = this.room();
+			if (!this.isLoading && r === null) {
+				untracked(() => {
+					void this.router.navigate(['/home'], { queryParams: { roomNotFound: true } });
+				});
+			}
+		});
 	}
 
 	// États
