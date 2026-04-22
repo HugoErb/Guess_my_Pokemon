@@ -162,7 +162,12 @@ export class LobbyComponent implements OnInit, OnDestroy {
 			});
 
 		// 3. Lancer joinAndWatch (Realtime)
-		await this.gameService.joinAndWatch(this.roomId());
+		try {
+			await this.gameService.joinAndWatch(this.roomId());
+		} catch {
+			void this.router.navigate(['/home'], { queryParams: { roomNotFound: true } });
+			return;
+		}
 
 		if (!this.room()) {
 			void this.router.navigate(['/home'], { queryParams: { roomNotFound: true } });

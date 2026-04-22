@@ -228,7 +228,12 @@ export class GameComponent implements OnInit, OnDestroy {
 	 */
 	private async init(): Promise<void> {
 		await firstValueFrom(this.supabaseService.authReady$);
-		await this.gameService.joinAndWatch(this.roomId());
+		try {
+			await this.gameService.joinAndWatch(this.roomId());
+		} catch {
+			void this.router.navigate(['/home'], { queryParams: { roomNotFound: true } });
+			return;
+		}
 
 		const r = this.room();
 		if (!r) {
