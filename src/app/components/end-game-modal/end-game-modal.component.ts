@@ -50,7 +50,7 @@ import { Pokemon } from '../../models/pokemon.model';
 					>
 						<div class="flex items-center gap-2">
 							<iconify-icon [icon]="ICONS.dice" class="text-lg"></iconify-icon>
-							<span>{{ opponentLeft() ? "L'adversaire a quitté" : iWantReplay() ? "En attente..." : "Rejouer" }}</span>
+							<span>{{ iWantReplay() ? "En attente..." : "Rejouer" }}</span>
 						</div>
 						@if (opponentLeft()) {
 							<span class="text-[9px] font-medium uppercase tracking-wider opacity-80 italic">L'adversaire a quitté la partie</span>
