@@ -105,7 +105,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     // Toast si la room n'existe plus
     if (this.route.snapshot.queryParams['roomNotFound']) {
-      this.triggerToast("Cette partie n'existe plus.");
+      this.triggerToast("Cette partie n'existe plus. Vous avez été redirigé vers l'accueil.");
       void this.router.navigate(['/home'], { replaceUrl: true });
     }
 
