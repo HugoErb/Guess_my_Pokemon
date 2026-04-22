@@ -319,6 +319,17 @@ export class SupabaseService implements OnDestroy {
         }
     }
 
+    /** Diffuse l'événement de départ d'un joueur via le canal Broadcast de la room active. */
+    async broadcastPlayerLeft(): Promise<void> {
+        if (this.activeRoomChannel) {
+            await this.activeRoomChannel.send({
+                type: 'broadcast',
+                event: 'player_left',
+                payload: {},
+            });
+        }
+    }
+
     /** Retourne l'utilisateur courant ou null s'il n'est pas connecté. */
     getCurrentUser(): User | null {
         return this.userSubject.getValue();

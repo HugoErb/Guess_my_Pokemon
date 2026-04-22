@@ -108,9 +108,12 @@ export class GameComponent implements OnInit, OnDestroy {
 	closeHelpModal(): void { this.showHelpModal.set(false); }
 	isCancelling = false;
 
+	opponentLeft = signal(false);
+
 	private pokemonSub?: Subscription;
 	private opponentSub?: Subscription;
 	private devOpponentSub?: Subscription;
+	private broadcastSub?: Subscription;
 
 	turnCounter = signal(0);
 	private lastTurnId: string | null = null;
@@ -245,6 +248,12 @@ export class GameComponent implements OnInit, OnDestroy {
 		}
 
 		// Le dernier guess adverse est lu depuis room().last_guess (DB-synced via Realtime/polling)
+
+		this.broadcastSub = this.gameService.broadcastEvents$.subscribe(({ event }) => {
+			if (event === 'player_left') {
+				this.opponentLeft.set(true);
+			}
+		});
 	}
 
 	/**
@@ -372,9 +381,10 @@ export class GameComponent implements OnInit, OnDestroy {
 		}
 	}
 
-	/** Navigue vers la page d'accueil. */
-	goHome(): void {
-		this.router.navigate(['/home']);
+	/** Navigue vers la page d'accueil et notifie l'adversaire. */
+	async goHome(): Promise<void> {
+		await this.supabaseService.broadcastPlayerLeft().catch(() => {});
+		void this.router.navigate(['/home']);
 	}
 
 	/** Demande une revanche à l'adversaire. */
@@ -419,5 +429,6 @@ export class GameComponent implements OnInit, OnDestroy {
 		this.pokemonSub?.unsubscribe();
 		this.opponentSub?.unsubscribe();
 		this.devOpponentSub?.unsubscribe();
+		this.broadcastSub?.unsubscribe();
 	}
 }

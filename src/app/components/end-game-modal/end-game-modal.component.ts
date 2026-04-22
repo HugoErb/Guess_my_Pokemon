@@ -45,14 +45,16 @@ import { Pokemon } from '../../models/pokemon.model';
 				<div class="w-full flex flex-col gap-2">
 					<button
 						(click)="replay.emit()"
-						[disabled]="iWantReplay()"
+						[disabled]="iWantReplay() || opponentLeft()"
 						class="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold text-white transition-colors flex flex-col items-center justify-center gap-0.5"
 					>
 						<div class="flex items-center gap-2">
 							<iconify-icon [icon]="ICONS.dice" class="text-lg"></iconify-icon>
-							<span>{{ iWantReplay() ? "En attente..." : "Rejouer" }}</span>
+							<span>{{ opponentLeft() ? "L'adversaire a quitté" : iWantReplay() ? "En attente..." : "Rejouer" }}</span>
 						</div>
-						@if (iWantReplay() && !opponentWantsReplay()) {
+						@if (opponentLeft()) {
+							<span class="text-[9px] font-medium uppercase tracking-wider opacity-80 italic">L'adversaire a quitté la partie</span>
+						} @else if (iWantReplay() && !opponentWantsReplay()) {
 							<span class="text-[9px] font-medium uppercase tracking-wider opacity-80 italic">En attente de l'adversaire</span>
 						}
 					</button>
@@ -75,6 +77,7 @@ export class EndGameModalComponent {
 	gameTurn = input<number>(1);
 	iWantReplay = input<boolean>(false);
 	opponentWantsReplay = input<boolean>(false);
+	opponentLeft = input<boolean>(false);
 
 	replay = output<void>();
 	goHome = output<void>();
