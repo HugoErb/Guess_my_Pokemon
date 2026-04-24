@@ -38,8 +38,8 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
-/* Responsive : masqué sur mobile uniquement, sans conflit avec md:flex/md:block de Tailwind */
-@media (max-width: 767px) {
+/* Responsive : masqué sur mobile/tablette, sans conflit avec md:flex/md:block de Tailwind */
+@media (max-width: 1023px) {
   .mobile-hidden { display: none; }
 }
 
