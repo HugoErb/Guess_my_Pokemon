@@ -18,4 +18,5 @@ export interface Pokemon {
   height: number;
   weight: number;
   description: string;
+  rating?: number;
 }

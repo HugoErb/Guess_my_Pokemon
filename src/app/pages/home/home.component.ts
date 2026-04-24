@@ -220,6 +220,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // ─── Partie classique ────────────────────────────────────────────────────────
 
+  startDraft(): void {
+    void this.router.navigate(['/draft']);
+  }
+
   async createGame(): Promise<void> {
     this.isCreating = true;
     this.createError = '';

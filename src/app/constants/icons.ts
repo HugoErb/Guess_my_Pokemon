@@ -49,6 +49,11 @@ export const ICONS = {
   height: 'mdi:ruler',
   category: 'mdi:shape-outline',
   evolution: 'mdi:auto-fix', // can represent evolution/upgrade
+
+  // Team Builder
+  draft: 'mdi:cards-playing',
+  lock: 'mdi:lock',
+  star: 'mdi:star',
 } as const;
 
 export type IconName = keyof typeof ICONS;

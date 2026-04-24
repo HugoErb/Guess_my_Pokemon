@@ -9,5 +9,6 @@ export const routes: Routes = [
   { path: 'lobby/:roomId', loadComponent: () => import('./pages/lobby/lobby.component').then(m => m.LobbyComponent), canActivate: [authGuard] },
   { path: 'game/:roomId', loadComponent: () => import('./pages/game/game.component').then(m => m.GameComponent), canActivate: [authGuard] },
   { path: 'reset-password', loadComponent: () => import('./pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent) },
+  { path: 'draft', loadComponent: () => import('./pages/draft/draft.component').then(m => m.DraftComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '/login' }
 ];
