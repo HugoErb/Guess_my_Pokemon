@@ -58,7 +58,7 @@
 			} @else {
 				<div class="tab-content flex flex-col gap-2 overflow-y-auto max-h-[136px] pr-1">
 					@for (friend of friends(); track friend.id) {
-						<div class="group flex items-center gap-3 bg-slate-700/50 rounded-xl px-3 py-2">
+						<div class="flex items-center gap-3 bg-slate-700/50 rounded-xl px-3 py-2">
 							<!-- Avatar -->
 							<div class="relative flex-shrink-0">
 								<div class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-sm font-bold text-white overflow-hidden">
@@ -82,7 +82,7 @@
 							@if (friend.status === 'online') {
 								<button
 									(click)="inviteFriend(friend)"
-									class="flex-shrink-0 px-3 py-1.5 bg-red-600 hover:bg-red-500 rounded-lg text-xs font-bold text-white transition-all flex items-center gap-1.5 opacity-0 group-hover:opacity-100"
+									class="flex-shrink-0 px-3 py-1.5 bg-red-600 hover:bg-red-500 rounded-lg text-xs font-bold text-white transition-all flex items-center gap-1.5"
 								>
 									<iconify-icon [icon]="ICONS.sword" class="text-sm"></iconify-icon>
 									Inviter
@@ -91,7 +91,7 @@
 							<!-- Bouton Supprimer -->
 							<button
 								(click)="askRemoveFriend(friend)"
-								class="flex-shrink-0 p-1.5 bg-slate-700 hover:bg-red-600 rounded-lg text-slate-400 hover:text-white transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"
+								class="flex-shrink-0 p-1.5 bg-slate-700 hover:bg-red-600 rounded-lg text-slate-400 hover:text-white transition-all flex items-center justify-center"
 								title="Supprimer"
 							>
 								<iconify-icon [icon]="ICONS.trash" class="text-base"></iconify-icon>
