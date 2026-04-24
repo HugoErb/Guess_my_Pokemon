@@ -105,7 +105,7 @@ export class LoginComponent {
       const redirect = (rawRedirect?.startsWith('/') && !rawRedirect.startsWith('//')) ? rawRedirect : '/home';
       this.router.navigateByUrl(redirect);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Une erreur est survenue.';
+      const message = err instanceof Error ? err.message : (err as any)?.message ?? 'Une erreur est survenue.';
       if (message.startsWith('Un email de confirmation')) {
         this.infoMessage = message;
       } else {

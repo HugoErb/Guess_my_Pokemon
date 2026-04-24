@@ -72,20 +72,18 @@ export class SupabaseService implements OnDestroy {
         const user = data.user;
         if (!user) throw new Error("Aucun utilisateur retourné après l'inscription");
 
-        // Toujours tenter d'insérer le profil dès que l'utilisateur est créé,
-        // que la confirmation email soit activée ou non.
+        if (!data.session) {
+            // Confirmation email requise — le profil sera créé par ensureProfile après confirmation
+            throw new Error('Un email de confirmation a été envoyé. Clique sur le lien dans ta boîte mail pour activer ton compte.');
+        }
+
         const { error: profileError } = await this.supabase
             .from('profiles')
             .upsert({ id: user.id, username }, { onConflict: 'id', ignoreDuplicates: true });
 
         if (profileError) {
             if (profileError.code === '23505') throw new Error('Ce nom d\'utilisateur est déjà utilisé.');
-            throw profileError;
-        }
-
-        if (!data.session) {
-            // Confirmation email requise
-            throw new Error('Un email de confirmation a été envoyé. Clique sur le lien dans ta boîte mail pour activer ton compte.');
+            throw new Error(profileError.message);
         }
     }
 
