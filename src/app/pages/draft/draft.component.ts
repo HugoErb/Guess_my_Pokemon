@@ -134,9 +134,14 @@ export class DraftComponent {
 
   private initDraft(): void {
     const pool = this.allPokemon();
-    const legendary = this.pickOneLegendary(pool, new Set());
-    const normal = this.pickNUnique(pool, new Set(legendary ? [legendary.id] : []), 5);
-    const initial: (Pokemon | null)[] = [...normal, legendary];
+    const starter = this.pickOneStarter(pool, new Set());
+    const legendary = this.pickOneLegendary(pool, new Set(starter ? [starter.id] : []));
+    const excludeForNormal = new Set([
+      ...(starter ? [starter.id] : []),
+      ...(legendary ? [legendary.id] : []),
+    ]);
+    const normal = this.pickNUnique(pool, excludeForNormal, 4);
+    const initial: (Pokemon | null)[] = [starter, ...normal, legendary];
     this.usedIds.set(new Set(initial.filter((p): p is Pokemon => p !== null).map(p => p.id)));
     this.slots.set(initial);
     this.lockedIndices.set(new Set());
@@ -178,18 +183,26 @@ export class DraftComponent {
 
     // Après l'animation de sortie, remplacer et animer l'entrée
     setTimeout(() => {
-      const unlockedNormal = unlocked.filter(i => i !== 5);
+      const slot0Unlocked = unlocked.includes(0);
       const slot5Unlocked = unlocked.includes(5);
+      const unlockedNormal = unlocked.filter(i => i !== 0 && i !== 5);
 
-      const newNormal = this.pickNUnique(this.allPokemon(), this.usedIds(), unlockedNormal.length);
-      const excludeForLegend = new Set([...this.usedIds(), ...newNormal.map(p => p.id)]);
+      const newStarter = slot0Unlocked ? this.pickOneStarter(this.allPokemon(), this.usedIds()) : null;
+      const excludeForNormal = new Set([...this.usedIds(), ...(newStarter ? [newStarter.id] : [])]);
+      const newNormal = this.pickNUnique(this.allPokemon(), excludeForNormal, unlockedNormal.length);
+      const excludeForLegend = new Set([...excludeForNormal, ...newNormal.map(p => p.id)]);
       const newLegendary = slot5Unlocked ? this.pickOneLegendary(this.allPokemon(), excludeForLegend) : null;
 
-      const allNew = [...newNormal, ...(newLegendary ? [newLegendary] : [])];
+      const allNew = [
+        ...(newStarter ? [newStarter] : []),
+        ...newNormal,
+        ...(newLegendary ? [newLegendary] : []),
+      ];
       this.usedIds.update(s => new Set([...s, ...allNew.map(p => p.id)]));
 
       this.slots.update(arr => {
         const next = [...arr];
+        if (slot0Unlocked && newStarter) next[0] = newStarter;
         unlockedNormal.forEach((slotIdx, i) => (next[slotIdx] = newNormal[i]));
         if (slot5Unlocked && newLegendary) next[5] = newLegendary;
         return next;
@@ -276,6 +289,13 @@ export class DraftComponent {
   }
 
   // ─── Sélection aléatoire sans doublons ───────────────────────────────────────
+
+  private pickOneStarter(pool: Pokemon[], exclude: Set<number>): Pokemon {
+    const starters = pool.filter(p => p.category === 'starter' && !exclude.has(p.id));
+    const fallback = pool.filter(p => !exclude.has(p.id));
+    const source = starters.length > 0 ? starters : fallback;
+    return source[Math.floor(Math.random() * source.length)];
+  }
 
   private pickOneLegendary(pool: Pokemon[], exclude: Set<number>): Pokemon {
     const legends = pool.filter(p =>
