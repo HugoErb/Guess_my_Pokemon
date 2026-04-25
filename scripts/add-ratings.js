@@ -33,7 +33,8 @@ function main() {
 
   const updated = data.map(p => {
     const total = statTotal(p);
-    const raw = 1 + ((total - minTotal) / (maxTotal - minTotal)) * 9;
+    const ratio = (total - minTotal) / (maxTotal - minTotal);
+    const raw = 1 + Math.pow(ratio, 0.5) * 9;
     const rating = Math.round(raw * 10) / 10;
     return { ...p, rating };
   });
