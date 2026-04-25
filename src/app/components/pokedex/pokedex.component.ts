@@ -559,6 +559,7 @@ export class PokedexComponent implements OnInit {
     guess = output<number>();
 
     private static readonly FILTERS_KEY = 'gmp:filters';
+    private static readonly RELOAD_TOKEN_KEY = 'gmp:reload-token';
     private static dimmedKey(id: string) { return `gmp:dimmed:${id}`; }
 
     allPokemons = signal<Pokemon[]>([]);
@@ -749,16 +750,20 @@ export class PokedexComponent implements OnInit {
     ngOnInit(): void {
         const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
         const isReload = navEntry?.type === 'reload';
+        const reloadToken = Math.floor(performance.timeOrigin).toString();
+        const savedToken = sessionStorage.getItem(PokedexComponent.RELOAD_TOKEN_KEY);
+        const isFirstInitAfterReload = isReload && savedToken !== reloadToken;
 
-        if (isReload) {
+        if (isFirstInitAfterReload) {
+            sessionStorage.setItem(PokedexComponent.RELOAD_TOKEN_KEY, reloadToken);
             try {
                 const saved = localStorage.getItem(PokedexComponent.FILTERS_KEY);
                 if (saved) {
                     const s = JSON.parse(saved);
-                    if (Array.isArray(s.selectedTypes))      this.selectedTypes.set(s.selectedTypes);
+                    if (Array.isArray(s.selectedTypes))       this.selectedTypes.set(s.selectedTypes);
                     if (Array.isArray(s.selectedGenerations)) this.selectedGenerations.set(s.selectedGenerations);
-                    if (Array.isArray(s.selectedCategories)) this.selectedCategories.set(s.selectedCategories);
-                    if (Array.isArray(s.selectedEvoStages))  this.selectedEvoStages.set(s.selectedEvoStages);
+                    if (Array.isArray(s.selectedCategories))  this.selectedCategories.set(s.selectedCategories);
+                    if (Array.isArray(s.selectedEvoStages))   this.selectedEvoStages.set(s.selectedEvoStages);
                     if (s.minWeight      !== undefined) this.minWeight.set(s.minWeight);
                     if (s.maxWeight      !== undefined) this.maxWeight.set(s.maxWeight);
                     if (s.minHeight      !== undefined) this.minHeight.set(s.minHeight);
@@ -782,6 +787,8 @@ export class PokedexComponent implements OnInit {
                     if (s.maxStatTotal   !== undefined) this.maxStatTotal.set(s.maxStatTotal);
                 }
             } catch { /* localStorage corrompu, on ignore */ }
+        } else {
+            this.clearFilters();
         }
 
         const id = this.roomId();
