@@ -153,11 +153,11 @@
 			</h2>
 
 			<!-- Les 6 Pokémon sélectionnés -->
-			<div class="w-full max-w-3xl grid grid-cols-3 sm:grid-cols-6 gap-3">
+			<div class="w-full max-w-6xl grid grid-cols-3 sm:grid-cols-6 gap-5">
 				@for (p of lockedPokemon(); track $index) {
 					@if (p) {
 						<div class="bg-slate-800 border border-yellow-500/50 rounded-xl p-3 flex flex-col items-center gap-2 ring-1 ring-yellow-500/20">
-							<img [src]="p.sprite" [alt]="p.name" class="w-20 h-20 object-contain" />
+							<img [src]="p.sprite" [alt]="p.name" class="w-32 h-32 object-contain" />
 							<p class="text-xs font-bold text-white capitalize text-center leading-tight">{{ p.name }}</p>
 							<span class="text-xs font-black" [ngClass]="getRatingColor(getRating(p))">
 								★ {{ getRating(p) }}
