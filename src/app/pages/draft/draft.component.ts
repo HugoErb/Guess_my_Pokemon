@@ -21,6 +21,7 @@ import {
 } from '../../constants/animations';
 import confetti from 'canvas-confetti';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
+import { DraftHelpModalComponent } from '../../components/draft-help-modal/draft-help-modal.component';
 
 const TYPE_ICONS: Record<string, string> = {
   'Normal': 'mdi:circle-outline',
@@ -112,7 +113,7 @@ type SlotState = 'idle' | 'leaving' | 'entering';
 
 @Component({
   selector: 'app-draft',
-  imports: [NgClass, PokemonCardComponent],
+  imports: [NgClass, PokemonCardComponent, DraftHelpModalComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   animations: [slotsGridAnimation, slotStateAnimation, lockAnimation, scoreRevealAnimation],
   templateUrl: './draft.component.html',
@@ -141,6 +142,7 @@ export class DraftComponent {
   readonly slotStates = signal<SlotState[]>(['idle', 'idle', 'idle', 'idle', 'idle', 'idle']);
   readonly phase = signal<'loading' | 'draft' | 'complete'>('loading');
   readonly showScore = signal(false);
+  readonly showHelpModal = signal(false);
 
   readonly lockedCount = computed(() => this.lockedIndices().size);
   readonly selectedPokemon = signal<Pokemon | null>(null);
