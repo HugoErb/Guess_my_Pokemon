@@ -11,6 +11,15 @@
 				<iconify-icon [icon]="ICONS.pokeball" class="text-base text-yellow-400"></iconify-icon>
 				<span class="text-sm font-bold text-white font-mono">{{ lockedCount() }} / 6</span>
 			</div>
+			@if (phase() === 'draft') {
+				<button
+					(click)="resetTeam()"
+					class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-red-900/60 border border-slate-700 hover:border-red-700 rounded-xl text-sm font-bold text-slate-300 hover:text-red-300 transition-all"
+				>
+					<iconify-icon [icon]="ICONS.refresh" class="text-base"></iconify-icon>
+					<span class="hidden sm:inline">Réinitialiser</span>
+				</button>
+			}
 			<button
 				(click)="goHome()"
 				class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-sm font-bold text-slate-300 hover:text-white transition-all"
@@ -185,13 +194,60 @@
 
 			<!-- Score final -->
 			@if (showScore()) {
-				<div class="flex flex-col items-center gap-2" [@scoreReveal]>
+				<div class="flex flex-col items-center gap-6 w-full max-w-xl" [@scoreReveal]>
 					<p class="text-slate-400 text-xs uppercase tracking-widest">Score de ton équipe</p>
-					<div class="flex items-end gap-1.5">
-						<span class="text-5xl font-black font-mono leading-none" [ngClass]="scoreColor()">
-							{{ finalScore() }}
-						</span>
-						<span class="text-xl text-slate-500 mb-1">/10</span>
+
+					<!-- Trois colonnes de notes -->
+					<div class="grid grid-cols-3 gap-4 w-full">
+
+						<!-- Note stats -->
+						<div class="flex flex-col items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl p-4">
+							<span class="text-[10px] text-slate-500 uppercase tracking-wider text-center">Note stats</span>
+							<div class="flex items-end gap-1">
+								<span class="text-3xl font-black font-mono leading-none" [ngClass]="getScoreColor(statsScore())">{{ statsScore() }}</span>
+								<span class="text-sm text-slate-600 mb-0.5">/10</span>
+							</div>
+							<div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+								<div
+									class="h-full rounded-full transition-all duration-700"
+									[ngClass]="getScoreBarColor(statsScore())"
+									[style.width]="getRatingWidth(statsScore())"
+								></div>
+							</div>
+						</div>
+
+						<!-- Note couverture -->
+						<div class="flex flex-col items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl p-4">
+							<span class="text-[10px] text-slate-500 uppercase tracking-wider text-center">Couverture</span>
+							<div class="flex items-end gap-1">
+								<span class="text-3xl font-black font-mono leading-none" [ngClass]="getScoreColor(typeCoverageScore())">{{ typeCoverageScore() }}</span>
+								<span class="text-sm text-slate-600 mb-0.5">/10</span>
+							</div>
+							<div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+								<div
+									class="h-full rounded-full transition-all duration-700"
+									[ngClass]="getScoreBarColor(typeCoverageScore())"
+									[style.width]="getRatingWidth(typeCoverageScore())"
+								></div>
+							</div>
+						</div>
+
+						<!-- Note finale -->
+						<div class="flex flex-col items-center gap-2 bg-slate-800 border border-yellow-500/40 rounded-xl p-4 ring-1 ring-yellow-500/20">
+							<span class="text-[10px] text-slate-500 uppercase tracking-wider text-center">Note finale</span>
+							<div class="flex items-end gap-1">
+								<span class="text-3xl font-black font-mono leading-none" [ngClass]="getScoreColor(teamScore())">{{ teamScore() }}</span>
+								<span class="text-sm text-slate-600 mb-0.5">/10</span>
+							</div>
+							<div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+								<div
+									class="h-full rounded-full transition-all duration-700"
+									[ngClass]="getScoreBarColor(teamScore())"
+									[style.width]="getRatingWidth(teamScore())"
+								></div>
+							</div>
+						</div>
+
 					</div>
 				</div>
 			}

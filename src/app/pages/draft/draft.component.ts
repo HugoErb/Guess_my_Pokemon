@@ -64,6 +64,50 @@ const TYPE_COLORS: Record<string, string> = {
   'Fée': 'bg-pink-300',
 };
 
+const TYPE_OFFENSIVE: Record<string, string[]> = {
+  'Normal':   [],
+  'Feu':      ['Plante', 'Glace', 'Insecte', 'Acier'],
+  'Eau':      ['Feu', 'Sol', 'Roche'],
+  'Plante':   ['Eau', 'Sol', 'Roche'],
+  'Électrik': ['Eau', 'Vol'],
+  'Glace':    ['Plante', 'Sol', 'Vol', 'Dragon'],
+  'Combat':   ['Normal', 'Glace', 'Roche', 'Ténèbres', 'Acier'],
+  'Poison':   ['Plante', 'Fée'],
+  'Sol':      ['Feu', 'Électrik', 'Poison', 'Roche', 'Acier'],
+  'Vol':      ['Plante', 'Combat', 'Insecte'],
+  'Psy':      ['Combat', 'Poison'],
+  'Insecte':  ['Plante', 'Psy', 'Ténèbres'],
+  'Roche':    ['Feu', 'Glace', 'Vol', 'Insecte'],
+  'Spectre':  ['Psy', 'Spectre'],
+  'Dragon':   ['Dragon'],
+  'Ténèbres': ['Psy', 'Spectre'],
+  'Acier':    ['Glace', 'Roche', 'Fée'],
+  'Fée':      ['Combat', 'Dragon', 'Ténèbres'],
+};
+
+const TYPE_CHART: Record<string, Record<string, number>> = {
+  'Normal':   { 'Roche': 0.5, 'Acier': 0.5, 'Spectre': 0 },
+  'Feu':      { 'Feu': 0.5, 'Eau': 0.5, 'Plante': 2, 'Glace': 2, 'Insecte': 2, 'Roche': 0.5, 'Dragon': 0.5, 'Acier': 2, 'Fée': 0.5 },
+  'Eau':      { 'Feu': 2, 'Eau': 0.5, 'Plante': 0.5, 'Sol': 2, 'Roche': 2, 'Dragon': 0.5 },
+  'Plante':   { 'Feu': 0.5, 'Eau': 2, 'Plante': 0.5, 'Poison': 0.5, 'Sol': 2, 'Vol': 0.5, 'Insecte': 0.5, 'Roche': 2, 'Dragon': 0.5, 'Acier': 0.5 },
+  'Électrik': { 'Eau': 2, 'Plante': 0.5, 'Électrik': 0.5, 'Sol': 0, 'Vol': 2, 'Dragon': 0.5 },
+  'Glace':    { 'Feu': 0.5, 'Eau': 0.5, 'Plante': 2, 'Glace': 0.5, 'Sol': 2, 'Vol': 2, 'Dragon': 2, 'Acier': 0.5 },
+  'Combat':   { 'Normal': 2, 'Glace': 2, 'Poison': 0.5, 'Vol': 0.5, 'Psy': 0.5, 'Insecte': 0.5, 'Roche': 2, 'Spectre': 0, 'Ténèbres': 2, 'Acier': 2, 'Fée': 0.5 },
+  'Poison':   { 'Plante': 2, 'Poison': 0.5, 'Sol': 0.5, 'Roche': 0.5, 'Spectre': 0.5, 'Acier': 0, 'Fée': 2 },
+  'Sol':      { 'Feu': 2, 'Plante': 0.5, 'Électrik': 2, 'Poison': 2, 'Vol': 0, 'Roche': 2, 'Acier': 2 },
+  'Vol':      { 'Plante': 2, 'Électrik': 0.5, 'Combat': 2, 'Insecte': 2, 'Roche': 0.5, 'Acier': 0.5 },
+  'Psy':      { 'Combat': 2, 'Poison': 2, 'Psy': 0.5, 'Ténèbres': 0, 'Acier': 0.5 },
+  'Insecte':  { 'Feu': 0.5, 'Plante': 2, 'Combat': 0.5, 'Vol': 0.5, 'Psy': 2, 'Spectre': 0.5, 'Ténèbres': 2, 'Acier': 0.5, 'Fée': 0.5 },
+  'Roche':    { 'Feu': 2, 'Glace': 2, 'Combat': 0.5, 'Sol': 0.5, 'Vol': 2, 'Insecte': 2, 'Acier': 0.5 },
+  'Spectre':  { 'Normal': 0, 'Psy': 2, 'Spectre': 2, 'Ténèbres': 0.5 },
+  'Dragon':   { 'Dragon': 2, 'Acier': 0.5, 'Fée': 0 },
+  'Ténèbres': { 'Combat': 0.5, 'Psy': 2, 'Spectre': 2, 'Ténèbres': 0.5, 'Fée': 0.5 },
+  'Acier':    { 'Feu': 0.5, 'Eau': 0.5, 'Électrik': 0.5, 'Glace': 2, 'Roche': 2, 'Acier': 0.5, 'Fée': 2 },
+  'Fée':      { 'Feu': 0.5, 'Combat': 2, 'Poison': 0.5, 'Dragon': 2, 'Ténèbres': 2, 'Acier': 0.5 },
+};
+
+const ALL_TYPES = Object.keys(TYPE_OFFENSIVE);
+
 type SlotState = 'idle' | 'leaving' | 'entering';
 
 @Component({
@@ -101,7 +145,7 @@ export class DraftComponent {
   readonly lockedCount = computed(() => this.lockedIndices().size);
   readonly selectedPokemon = signal<Pokemon | null>(null);
 
-  readonly finalScore = computed((): number => {
+  readonly statsScore = computed((): number => {
     const locked = this.lockedPokemon();
     const range = this.statsRange();
     const ratings = locked
@@ -111,12 +155,75 @@ export class DraftComponent {
     return Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10;
   });
 
+  readonly typeCoverageScore = computed((): number => {
+    const team = this.lockedPokemon().filter((p): p is Pokemon => p !== null);
+    if (team.length === 0) return 0;
+
+    const allTypes = team.flatMap(p => p.types);
+    const uniqueTypes = new Set(allTypes);
+
+    // 1. Diversité (25%)
+    const diversityScore = (uniqueTypes.size / allTypes.length) * 10;
+
+    // 2. Couverture offensive (30%)
+    const offensiveCoverage = new Set<string>();
+    for (const t of uniqueTypes) {
+      for (const target of (TYPE_OFFENSIVE[t] ?? [])) offensiveCoverage.add(target);
+    }
+    const offensiveScore = (offensiveCoverage.size / ALL_TYPES.length) * 10;
+
+    // 3. Faiblesses communes (25%)
+    let sharedWeaknessPenalty = 0;
+    for (const attackerType of ALL_TYPES) {
+      const weakCount = team.filter(p => this.effectiveMultiplier(p.types, attackerType) > 1).length;
+      if (weakCount > 1) sharedWeaknessPenalty += (weakCount - 1) * 1.5;
+    }
+    const maxPenalty = team.length * 3;
+    const sharedWeaknessScore = Math.max(0, 10 - (sharedWeaknessPenalty / maxPenalty) * 10);
+
+    // 4. Synergie défensive (15%)
+    let coveredWeaknesses = 0;
+    let totalWeaknesses = 0;
+    for (const pokemon of team) {
+      for (const attackerType of ALL_TYPES) {
+        if (this.effectiveMultiplier(pokemon.types, attackerType) > 1) {
+          totalWeaknesses++;
+          const covered = team
+            .filter(p => p !== pokemon)
+            .some(p => this.effectiveMultiplier(p.types, attackerType) < 1);
+          if (covered) coveredWeaknesses++;
+        }
+      }
+    }
+    const synergyScore = totalWeaknesses === 0 ? 10 : (coveredWeaknesses / totalWeaknesses) * 10;
+
+    // 5. Immunités (5%)
+    let immunityCount = 0;
+    for (const pokemon of team) {
+      for (const attackerType of ALL_TYPES) {
+        if (this.effectiveMultiplier(pokemon.types, attackerType) === 0) immunityCount++;
+      }
+    }
+    const immunityScore = Math.min(10, (immunityCount / Math.max(1, team.length * 2)) * 10);
+
+    const raw = 0.25 * diversityScore
+              + 0.30 * offensiveScore
+              + 0.25 * sharedWeaknessScore
+              + 0.15 * synergyScore
+              + 0.05 * immunityScore;
+
+    return Math.round(raw * 10) / 10;
+  });
+
+  readonly teamScore = computed((): number => {
+    const s = this.statsScore();
+    const c = this.typeCoverageScore();
+    if (s === 0 && c === 0) return 0;
+    return Math.round(((s + c) / 2) * 10) / 10;
+  });
+
   readonly scoreColor = computed((): string => {
-    const s = this.finalScore();
-    if (s >= 8) return 'text-yellow-400';
-    if (s >= 6) return 'text-green-400';
-    if (s >= 4) return 'text-blue-400';
-    return 'text-slate-400';
+    return this.getScoreColor(this.teamScore());
   });
 
   constructor() {
@@ -234,12 +341,16 @@ export class DraftComponent {
 
   replay(): void {
     this.phase.set('loading');
-    // Laisser l'effect réinitialiser via la détection de phase='loading'
     setTimeout(() => {
       if (this.allPokemon().length > 0) {
         this.initDraft();
       }
     }, 50);
+  }
+
+  resetTeam(): void {
+    if (this.phase() !== 'draft') return;
+    this.initDraft();
   }
 
   goHome(): void {
@@ -255,6 +366,24 @@ export class DraftComponent {
   }
 
   // ─── Calculs rating ──────────────────────────────────────────────────────────
+
+  private effectiveMultiplier(defenderTypes: string[], attackerType: string): number {
+    return defenderTypes.reduce((mult, defType) => mult * (TYPE_CHART[attackerType]?.[defType] ?? 1), 1);
+  }
+
+  getScoreColor(score: number): string {
+    if (score >= 8) return 'text-yellow-400';
+    if (score >= 6) return 'text-green-400';
+    if (score >= 4) return 'text-blue-400';
+    return 'text-slate-400';
+  }
+
+  getScoreBarColor(score: number): string {
+    if (score >= 8) return 'bg-yellow-400';
+    if (score >= 6) return 'bg-green-400';
+    if (score >= 4) return 'bg-blue-400';
+    return 'bg-slate-500';
+  }
 
   private computeTotal(p: Pokemon): number {
     const s = p.stats;
