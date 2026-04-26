@@ -1,34 +1,42 @@
 ﻿<div class="min-h-screen bg-slate-900 text-white flex flex-col">
 
 	<!-- Header -->
-	<header class="flex items-center justify-between px-6 py-4 border-b border-slate-700">
+	<header class="bg-slate-800 border-b border-slate-700 px-3 md:px-6 py-3 flex items-center justify-between">
 		<div class="flex items-center gap-3">
-			<span class="text-xl font-bold tracking-wide">Team Builder</span>
-		</div>
-		<div class="flex items-center gap-3">
-			<!-- Compteur de slots verrouillés -->
-			<div class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-xl">
-				<iconify-icon [icon]="ICONS.pokeball" class="text-base text-yellow-400"></iconify-icon>
-				<span class="text-sm font-bold text-white font-mono">{{ lockedCount() }} / 6</span>
-			</div>
-			@if (phase() === 'draft') {
-				<button
-					(click)="resetTeam()"
-					class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-red-900/60 border border-slate-700 hover:border-red-700 rounded-xl text-sm font-bold text-slate-300 hover:text-red-300 transition-all"
-				>
-					<iconify-icon [icon]="ICONS.refresh" class="text-base"></iconify-icon>
-					<span class="hidden sm:inline">Réinitialiser</span>
-				</button>
-			}
-			<button
-				(click)="goHome()"
-				class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-sm font-bold text-slate-300 hover:text-white transition-all"
-			>
-				<iconify-icon [icon]="ICONS.home" class="text-base"></iconify-icon>
-				<span class="hidden sm:inline">Accueil</span>
-			</button>
+			<iconify-icon [icon]="ICONS.pokeball" class="text-2xl text-yellow-400"></iconify-icon>
+			<h1 class="text-lg font-bold text-white">Team Builder</h1>
 		</div>
 	</header>
+
+	<!-- Bandeau d'infos -->
+	@if (phase() === 'draft') {
+		<div class="bg-slate-800/50 border-b border-slate-700 px-3 py-2 flex items-center justify-between gap-2 shrink-0">
+			<!-- Gauche : compteur de slots verrouillés -->
+			<div class="flex items-center gap-2">
+				<div class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg">
+					<iconify-icon [icon]="ICONS.pokeball" class="text-sm text-yellow-400"></iconify-icon>
+					<span class="text-[11px] font-bold text-white font-mono">{{ lockedCount() }} / 6</span>
+				</div>
+			</div>
+			<!-- Droite : boutons d'action -->
+			<div class="flex items-center gap-2 shrink-0">
+				<button
+					(click)="resetTeam()"
+					class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-red-900/50 border border-slate-600/50 hover:border-red-800 rounded-lg text-[10px] font-black text-slate-400 hover:text-red-300 uppercase tracking-wider transition-all"
+				>
+					<iconify-icon [icon]="ICONS.refresh" class="text-sm"></iconify-icon>
+					<span class="hidden sm:inline">Réinitialiser</span>
+				</button>
+				<button
+					(click)="goHome()"
+					class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-red-900/50 border border-slate-600/50 hover:border-red-800 rounded-lg text-[10px] font-black text-slate-400 hover:text-red-300 uppercase tracking-wider transition-all"
+				>
+					<iconify-icon [icon]="ICONS.logout" class="text-sm"></iconify-icon>
+					<span class="hidden sm:inline">Quitter</span>
+				</button>
+			</div>
+		</div>
+	}
 
 	<!-- Chargement -->
 	@if (phase() === 'loading') {
