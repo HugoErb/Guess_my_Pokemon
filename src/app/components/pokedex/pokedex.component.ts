@@ -718,6 +718,7 @@ export class PokedexComponent implements OnInit {
     constructor() {
         effect(() => {
             localStorage.setItem(PokedexComponent.FILTERS_KEY, JSON.stringify({
+                roomId: this.roomId(),
                 selectedTypes: this.selectedTypes(),
                 selectedGenerations: this.selectedGenerations(),
                 selectedCategories: this.selectedCategories(),
@@ -760,6 +761,12 @@ export class PokedexComponent implements OnInit {
                 const saved = localStorage.getItem(PokedexComponent.FILTERS_KEY);
                 if (saved) {
                     const s = JSON.parse(saved);
+                    const currentRoomId = this.roomId();
+                    // Sur iOS, une navigation vers une nouvelle partie peut être perçue comme un 'reload'.
+                    // Si le roomId a changé, on force la réinitialisation plutôt que de restaurer.
+                    if (currentRoomId && s.roomId && s.roomId !== currentRoomId) {
+                        this.clearFilters();
+                    } else {
                     if (Array.isArray(s.selectedTypes))       this.selectedTypes.set(s.selectedTypes);
                     if (Array.isArray(s.selectedGenerations)) this.selectedGenerations.set(s.selectedGenerations);
                     if (Array.isArray(s.selectedCategories))  this.selectedCategories.set(s.selectedCategories);
@@ -785,6 +792,7 @@ export class PokedexComponent implements OnInit {
                     if (s.maxStatVit     !== undefined) this.maxStatVit.set(s.maxStatVit);
                     if (s.minStatTotal   !== undefined) this.minStatTotal.set(s.minStatTotal);
                     if (s.maxStatTotal   !== undefined) this.maxStatTotal.set(s.maxStatTotal);
+                    }
                 }
             } catch { /* localStorage corrompu, on ignore */ }
         } else {
