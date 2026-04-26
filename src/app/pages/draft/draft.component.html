@@ -62,21 +62,23 @@
 								[class.hover:border-red-500]="!lockedIndices().has($index)"
 								[class.hover:scale-105]="!lockedIndices().has($index)"
 							>
-								<!-- Badge de verrouillage -->
+								<!-- Bouton loupe (uniquement si verrouillé) -->
 								@if (lockedIndices().has($index)) {
-									<div
-										[@lockEffect]
-										class="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-yellow-500 flex items-center justify-center shadow-lg shadow-yellow-500/40"
-									>
-										<iconify-icon [icon]="ICONS.lock" class="text-white text-sm"></iconify-icon>
-									</div>
-									<!-- Bouton loupe -->
 									<button
+										[@lockEffect]
 										(click)="$event.stopPropagation(); openPokemonDetails(slot)"
-										class="absolute top-2 left-2 z-10 w-7 h-7 rounded-full bg-slate-700 hover:bg-slate-600 border border-slate-600 flex items-center justify-center shadow-lg transition-all hover:scale-110"
+										class="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-slate-700 hover:bg-slate-600 border border-slate-600 flex items-center justify-center shadow-lg transition-all hover:scale-110"
 									>
 										<iconify-icon [icon]="ICONS.search" class="text-white text-sm"></iconify-icon>
 									</button>
+								}
+
+								<!-- Label starter / légendaire -->
+								@if ($index === 0) {
+									<span class="text-[9px] font-bold uppercase tracking-wider text-green-400 bg-green-900/50 px-2 py-0.5 rounded-full border border-green-700/60">Starter</span>
+								}
+								@if ($index === 5) {
+									<span class="text-[9px] font-bold uppercase tracking-wider text-yellow-400 bg-yellow-900/50 px-2 py-0.5 rounded-full border border-yellow-700/60">Légendaire</span>
 								}
 
 								<!-- Sprite -->
@@ -156,7 +158,21 @@
 			<div class="w-full max-w-6xl grid grid-cols-3 sm:grid-cols-6 gap-5">
 				@for (p of lockedPokemon(); track $index) {
 					@if (p) {
-						<div class="bg-slate-800 border border-yellow-500/50 rounded-xl p-3 flex flex-col items-center gap-2 ring-1 ring-yellow-500/20">
+						<div class="relative bg-slate-800 border border-yellow-500/50 rounded-xl p-3 flex flex-col items-center gap-2 ring-1 ring-yellow-500/20">
+							<!-- Bouton loupe -->
+							<button
+								(click)="openPokemonDetails(p)"
+								class="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-slate-700 hover:bg-slate-600 border border-slate-600 flex items-center justify-center shadow-lg transition-all hover:scale-110"
+							>
+								<iconify-icon [icon]="ICONS.search" class="text-white text-sm"></iconify-icon>
+							</button>
+							<!-- Label starter / légendaire -->
+							@if ($index === 0) {
+								<span class="text-[9px] font-bold uppercase tracking-wider text-green-400 bg-green-900/50 px-2 py-0.5 rounded-full border border-green-700/60">Starter</span>
+							}
+							@if ($index === 5) {
+								<span class="text-[9px] font-bold uppercase tracking-wider text-yellow-400 bg-yellow-900/50 px-2 py-0.5 rounded-full border border-yellow-700/60">Légendaire</span>
+							}
 							<img [src]="p.sprite" [alt]="p.name" class="w-32 h-32 object-contain" />
 							<p class="text-xs font-bold text-white capitalize text-center leading-tight">{{ p.name }}</p>
 							<span class="text-xs font-black" [ngClass]="getRatingColor(getRating(p))">

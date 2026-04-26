@@ -264,7 +264,7 @@ export class DraftComponent {
   private computeRating(p: Pokemon, range: { min: number; max: number }): number {
     if (p.rating !== undefined) return p.rating;
     const total = this.computeTotal(p);
-    const raw = 1 + ((total - range.min) / (range.max - range.min)) * 9;
+    const raw = ((total - range.min) / (range.max - range.min)) * 10;
     return Math.round(raw * 10) / 10;
   }
 
@@ -287,7 +287,7 @@ export class DraftComponent {
   }
 
   getRatingWidth(rating: number): string {
-    return `${((rating - 1) / 9) * 100}%`;
+    return `${(rating / 10) * 100}%`;
   }
 
   getTypeColor(type: string): string {
