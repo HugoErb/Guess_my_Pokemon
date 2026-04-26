@@ -286,36 +286,45 @@ export class DraftComponent {
       return next;
     });
 
-    // Après l'animation de sortie, remplacer et animer l'entrée
-    setTimeout(() => {
-      const slot0Unlocked = unlocked.includes(0);
-      const slot5Unlocked = unlocked.includes(5);
-      const unlockedNormal = unlocked.filter(i => i !== 0 && i !== 5);
+    // Picker les nouveaux Pokémon immédiatement (pendant l'animation de sortie)
+    const slot0Unlocked = unlocked.includes(0);
+    const slot5Unlocked = unlocked.includes(5);
+    const unlockedNormal = unlocked.filter(i => i !== 0 && i !== 5);
 
-      const newStarter = slot0Unlocked ? this.pickOneStarter(this.allPokemon(), this.usedIds()) : null;
-      const excludeForNormal = new Set([...this.usedIds(), ...(newStarter ? [newStarter.id] : [])]);
-      const newNormal = this.pickNUnique(this.allPokemon(), excludeForNormal, unlockedNormal.length);
-      const excludeForLegend = new Set([...excludeForNormal, ...newNormal.map(p => p.id)]);
-      const newLegendary = slot5Unlocked ? this.pickOneLegendary(this.allPokemon(), excludeForLegend) : null;
+    const newStarter = slot0Unlocked ? this.pickOneStarter(this.allPokemon(), this.usedIds()) : null;
+    const excludeForNormal = new Set([...this.usedIds(), ...(newStarter ? [newStarter.id] : [])]);
+    const newNormal = this.pickNUnique(this.allPokemon(), excludeForNormal, unlockedNormal.length);
+    const excludeForLegend = new Set([...excludeForNormal, ...newNormal.map(p => p.id)]);
+    const newLegendary = slot5Unlocked ? this.pickOneLegendary(this.allPokemon(), excludeForLegend) : null;
 
-      const allNew = [
-        ...(newStarter ? [newStarter] : []),
-        ...newNormal,
-        ...(newLegendary ? [newLegendary] : []),
-      ];
-      this.usedIds.update(s => new Set([...s, ...allNew.map(p => p.id)]));
+    const allNew = [
+      ...(newStarter ? [newStarter] : []),
+      ...newNormal,
+      ...(newLegendary ? [newLegendary] : []),
+    ];
+    this.usedIds.update(s => new Set([...s, ...allNew.map(p => p.id)]));
 
-      this.slots.update(arr => {
-        const next = [...arr];
-        if (slot0Unlocked && newStarter) next[0] = newStarter;
-        unlockedNormal.forEach((slotIdx, i) => (next[slotIdx] = newNormal[i]));
-        if (slot5Unlocked && newLegendary) next[5] = newLegendary;
-        return next;
-      });
+    const newBySlot = new Map<number, Pokemon>();
+    if (slot0Unlocked && newStarter) newBySlot.set(0, newStarter);
+    unlockedNormal.forEach((slotIdx, i) => newBySlot.set(slotIdx, newNormal[i]));
+    if (slot5Unlocked && newLegendary) newBySlot.set(5, newLegendary);
 
-      // Stagger de l'animation d'entrée par slot
+    // Attendre : fin de l'animation sortie ET préchargement des sprites
+    const leavingDone = new Promise<void>(resolve => setTimeout(resolve, 300));
+    const spritesDone = this.preloadImages(allNew.map(p => p.sprite));
+
+    void Promise.all([leavingDone, spritesDone]).then(() => {
+      // Stagger : mettre à jour les données ET démarrer l'animation d'entrée en même temps
       unlocked.forEach((slotIdx, i) => {
         setTimeout(() => {
+          const newPokemon = newBySlot.get(slotIdx);
+          if (newPokemon) {
+            this.slots.update(arr => {
+              const next = [...arr];
+              next[slotIdx] = newPokemon;
+              return next;
+            });
+          }
           this.slotStates.update(states => {
             const next = [...states] as SlotState[];
             next[slotIdx] = 'entering';
@@ -332,7 +341,18 @@ export class DraftComponent {
           return next;
         });
       }, unlocked.length * 60 + 400);
-    }, 300);
+    });
+  }
+
+  private preloadImages(urls: string[]): Promise<void[]> {
+    return Promise.all(
+      urls.map(url => new Promise<void>(resolve => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+        img.src = url;
+      }))
+    );
   }
 
   replay(): void {

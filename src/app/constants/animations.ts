@@ -1,4 +1,4 @@
-import { trigger, transition, style, animate, query, group, keyframes, stagger } from '@angular/animations';
+import { trigger, state, transition, style, animate, query, group, keyframes, stagger } from '@angular/animations';
 
 /**
  * Animation pour les modales (entrée et sortie)
@@ -50,6 +50,7 @@ export const slotsGridAnimation = trigger('slotsGrid', [
 
 // ─── Team Builder : animation d'état par slot (leaving → entering) ────────────
 export const slotStateAnimation = trigger('slotState', [
+  state('leaving', style({ opacity: 0, transform: 'translateY(-14px) scale(0.88)' })),
   transition('* => leaving', [
     animate('260ms cubic-bezier(0.4, 0, 1, 1)',
       style({ opacity: 0, transform: 'translateY(-14px) scale(0.88)' })
