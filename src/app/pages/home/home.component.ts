@@ -189,8 +189,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     const invite = this.incomingInvite();
     if (!invite) return;
     this.clearInviteToast();
-    await this.supabaseService.acceptGameInvite(invite.id, invite.room_id);
-    this.router.navigate(['/lobby', invite.room_id]);
+    await this.supabaseService.acceptGameInvite(invite.id, invite.room_id, invite.game_mode);
+    if (invite.game_mode === 'stat_duel') {
+      this.router.navigate(['/stat-duel', invite.room_id]);
+    } else {
+      this.router.navigate(['/lobby', invite.room_id]);
+    }
   }
 
   async declineGameInvite(): Promise<void> {
@@ -206,12 +210,16 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // ─── Invitation envoyée à un ami ─────────────────────────────────────────────
 
-  async onInviteRequested(event: { friendId: string; username: string }): Promise<void> {
+  async onInviteRequested(event: { friendId: string; username: string; gameMode: 'guess_my_pokemon' | 'stat_duel' }): Promise<void> {
     this.isCreating = true;
     this.createError = '';
     try {
-      const { roomId, inviteId } = await this.supabaseService.sendGameInvite(event.friendId);
-      this.router.navigate(['/lobby', roomId], { queryParams: { inviteId, friendName: event.username } });
+      const { roomId, inviteId } = await this.supabaseService.sendGameInvite(event.friendId, event.gameMode);
+      if (event.gameMode === 'stat_duel') {
+        this.router.navigate(['/stat-duel', roomId]);
+      } else {
+        this.router.navigate(['/lobby', roomId], { queryParams: { inviteId, friendName: event.username } });
+      }
     } catch {
       this.createError = 'Impossible d\'inviter l\'ami. Réessaie.';
       this.isCreating = false;
@@ -222,6 +230,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   startDraft(): void {
     void this.router.navigate(['/draft']);
+  }
+
+  startStatDuel(): void {
+    void this.router.navigate(['/stat-duel']);
   }
 
   async createGame(): Promise<void> {

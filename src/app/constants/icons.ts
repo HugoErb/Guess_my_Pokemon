@@ -54,6 +54,10 @@ export const ICONS = {
   draft: 'mdi:cards-playing',
   lock: 'mdi:lock',
   star: 'mdi:star',
+
+  // Duel de Base Stats
+  statDuel: 'mdi:chart-bar',
+  robot: 'mdi:robot',
 } as const;
 
 export type IconName = keyof typeof ICONS;

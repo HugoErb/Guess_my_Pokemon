@@ -21,7 +21,7 @@ export class FriendsCardComponent implements OnInit, OnDestroy {
 	protected readonly ICONS = ICONS;
 	private readonly supabaseService = inject(SupabaseService);
 
-	@Output() inviteRequested = new EventEmitter<{ friendId: string; username: string }>();
+	@Output() inviteRequested = new EventEmitter<{ friendId: string; username: string; gameMode: 'guess_my_pokemon' | 'stat_duel' }>();
 
 	activeTab = signal<'friends' | 'requests' | 'add'>('friends');
 	friends = signal<FriendWithStatus[]>([]);
@@ -111,8 +111,8 @@ export class FriendsCardComponent implements OnInit, OnDestroy {
 		await this.supabaseService.declineFriendRequest(friendshipId);
 	}
 
-	inviteFriend(friend: FriendWithStatus): void {
-		this.inviteRequested.emit({ friendId: friend.friendId, username: friend.username });
+	inviteFriend(friend: FriendWithStatus, gameMode: 'guess_my_pokemon' | 'stat_duel'): void {
+		this.inviteRequested.emit({ friendId: friend.friendId, username: friend.username, gameMode });
 	}
 
 	askRemoveFriend(friend: FriendWithStatus): void {

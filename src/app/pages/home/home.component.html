@@ -149,6 +149,20 @@
 							<span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Créer une équipe</span>
 						</div>
 					</button>
+
+					<!-- Bouton Duel de Base Stats -->
+					<button
+						(click)="startStatDuel()"
+						class="w-full rounded-xl bg-slate-700 hover:bg-slate-600 border border-slate-600/80 transition-all flex items-center gap-4 px-5 py-4"
+					>
+						<div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
+							<iconify-icon [icon]="ICONS.statDuel" class="text-xl text-yellow-400"></iconify-icon>
+						</div>
+						<div class="flex flex-col items-start">
+							<span class="text-base font-black text-white">Duel de Base Stats</span>
+							<span class="text-xs font-bold text-slate-400 uppercase tracking-widest">1 ou 2 joueurs</span>
+						</div>
+					</button>
 				</div>
 			</div>
 
@@ -224,13 +238,16 @@
 	@if (incomingInvite()) {
 		<div class="fixed top-6 right-6 z-[100] bg-slate-800 border border-blue-500/60 rounded-2xl shadow-2xl p-4 w-80 flex flex-col gap-3">
 			<div class="flex items-center gap-3">
-				<div class="w-10 h-10 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0">
-					<iconify-icon [icon]="ICONS.sword" class="text-xl text-blue-400"></iconify-icon>
+				<div [class]="'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border ' + (incomingInvite()!.game_mode === 'stat_duel' ? 'bg-yellow-500/20 border-yellow-500/30' : 'bg-blue-600/20 border-blue-500/30')">
+					<iconify-icon
+						[icon]="incomingInvite()!.game_mode === 'stat_duel' ? ICONS.statDuel : ICONS.sword"
+						[class]="'text-xl ' + (incomingInvite()!.game_mode === 'stat_duel' ? 'text-yellow-400' : 'text-blue-400')">
+					</iconify-icon>
 				</div>
 				<div class="flex-1 min-w-0">
 					<p class="text-sm font-bold text-white">
 						<span class="text-blue-400">{{ incomingInvite()!.sender_profile?.username ?? 'Un ami' }}</span>
-						t'invite à jouer&nbsp;!
+						t'invite à&nbsp;<span [class]="incomingInvite()!.game_mode === 'stat_duel' ? 'text-yellow-400' : 'text-blue-400'">{{ incomingInvite()!.game_mode === 'stat_duel' ? 'Duel de Base Stats' : 'Guess my Pokémon' }}</span>&nbsp;!
 					</p>
 					<p class="text-xs text-slate-400">Expire dans {{ inviteCountdown() }}s</p>
 				</div>

@@ -3,7 +3,7 @@ import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { filter, map, skipUntil } from 'rxjs/operators';
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
-import { FriendRequest, FriendStatus, FriendWithStatus, Friendship, GameInvite, GameSettings, Profile, Room, RoomPatch } from '../models/room.model';
+import { FriendRequest, FriendStatus, FriendWithStatus, Friendship, GameInvite, GameMode, GameSettings, Profile, Room, RoomPatch, StatDuelRoom, StatPick } from '../models/room.model';
 
 @Injectable({ providedIn: 'root' })
 export class SupabaseService implements OnDestroy {
@@ -184,20 +184,20 @@ export class SupabaseService implements OnDestroy {
 
     // ─── Rooms ───────────────────────────────────────────────────────────────────
 
-    /** Crée une nouvelle room de jeu et retourne son identifiant. */
+    /** Crée une nouvelle room de jeu (Guess my Pokémon) et retourne son identifiant. */
     async createRoom(): Promise<string> {
         const user = this.userSubject.getValue();
         if (!user) throw new Error('Utilisateur non connecté');
 
-        const { data, error } = await this.supabase.from('rooms').insert({ player1_id: user.id, status: 'waiting' }).select('id').single();
+        const { data, error } = await this.supabase.from('guess_pokemon_rooms').insert({ player1_id: user.id, status: 'waiting' }).select('id').single();
 
         if (error) throw error;
         return (data as { id: string }).id;
     }
 
-    /** Récupère une room par son identifiant. */
+    /** Récupère une room (Guess my Pokémon) par son identifiant. */
     async getRoomById(roomId: string): Promise<Room> {
-        const { data, error } = await this.supabase.from('rooms').select('*').eq('id', roomId).single();
+        const { data, error } = await this.supabase.from('guess_pokemon_rooms').select('*').eq('id', roomId).single();
 
         if (error) throw error;
         return data as Room;
@@ -218,20 +218,20 @@ export class SupabaseService implements OnDestroy {
         if (room.status !== 'waiting') throw new Error('Room non joignable');
         if (room.player1_id === user.id) throw new Error('Le créateur ne peut pas rejoindre sa propre room');
 
-        const { error } = await this.supabase.from('rooms').update({ player2_id: user.id, status: 'ready' }).eq('id', roomId).select('*');
+        const { error } = await this.supabase.from('guess_pokemon_rooms').update({ player2_id: user.id, status: 'ready' }).eq('id', roomId).select('*');
 
         if (error) throw error;
     }
 
     /** Lance la partie en passant la room au statut 'selecting'. */
     async launchGame(roomId: string, settings: GameSettings): Promise<void> {
-        const { error } = await this.supabase.from('rooms').update({ status: 'selecting', settings }).eq('id', roomId);
+        const { error } = await this.supabase.from('guess_pokemon_rooms').update({ status: 'selecting', settings }).eq('id', roomId);
 
         if (error) throw error;
     }
 
     /**
-     * S'abonne aux mises à jour Realtime d'une room via PostgreSQL Changes et Broadcast.
+     * S'abonne aux mises à jour Realtime d'une room (Guess my Pokémon) via PostgreSQL Changes et Broadcast.
      * Émet les nouvelles valeurs de la room à chaque modification.
      */
     subscribeToRoom(roomId: string): Observable<Room> {
@@ -243,7 +243,7 @@ export class SupabaseService implements OnDestroy {
                     {
                         event: '*',
                         schema: 'public',
-                        table: 'rooms',
+                        table: 'guess_pokemon_rooms',
                         filter: `id=eq.${roomId}`,
                     },
                     (payload) => {
@@ -270,27 +270,127 @@ export class SupabaseService implements OnDestroy {
     }
 
     /**
-     * Met à jour les données d'une room en base.
+     * Met à jour les données d'une room (Guess my Pokémon) en base.
      * Lance une erreur si la mise à jour est refusée ou n'affecte aucune ligne.
      */
     async updateRoom(roomId: string, patch: RoomPatch): Promise<void> {
         const { data, error } = await this.supabase
-            .from('rooms')
+            .from('guess_pokemon_rooms')
             .update(patch)
             .eq('id', roomId)
             .select('*');
 
         if (error) throw error;
         if (!data || data.length === 0) {
-            throw new Error('UPDATE rooms refusé ou aucune ligne modifiée');
+            throw new Error('UPDATE guess_pokemon_rooms refusé ou aucune ligne modifiée');
         }
     }
 
-    /** Supprime une room de la base de données. */
+    /** Supprime une room (Guess my Pokémon) de la base de données. */
     async deleteRoom(roomId: string): Promise<void> {
-        const { error } = await this.supabase.from('rooms').delete().eq('id', roomId);
+        const { error } = await this.supabase.from('guess_pokemon_rooms').delete().eq('id', roomId);
 
         if (error) throw error;
+    }
+
+    // ─── Stat Duel Rooms ─────────────────────────────────────────────────────────
+
+    /** Crée une nouvelle room Duel de Base Stats et retourne son identifiant. */
+    async createStatDuelRoom(): Promise<string> {
+        const user = this.userSubject.getValue();
+        if (!user) throw new Error('Utilisateur non connecté');
+
+        const { data, error } = await this.supabase
+            .from('stat_duel_rooms')
+            .insert({ player1_id: user.id, status: 'waiting' })
+            .select('id')
+            .single();
+
+        if (error) throw error;
+        return (data as { id: string }).id;
+    }
+
+    /** Récupère une room Duel de Base Stats par son identifiant. */
+    async getStatDuelRoom(roomId: string): Promise<StatDuelRoom> {
+        const { data, error } = await this.supabase
+            .from('stat_duel_rooms')
+            .select('*')
+            .eq('id', roomId)
+            .single();
+
+        if (error) throw error;
+        return data as StatDuelRoom;
+    }
+
+    /** Ajoute l'utilisateur courant en tant que joueur 2 d'une room Duel de Base Stats. */
+    async joinStatDuelRoom(roomId: string): Promise<void> {
+        const user = this.userSubject.getValue();
+        if (!user) throw new Error('Utilisateur non connecté');
+
+        const { error } = await this.supabase
+            .from('stat_duel_rooms')
+            .update({ player2_id: user.id })
+            .eq('id', roomId);
+
+        if (error) throw error;
+    }
+
+    /** Met à jour les données d'une room Duel de Base Stats. */
+    async updateStatDuelRoom(roomId: string, patch: Partial<StatDuelRoom>): Promise<void> {
+        const { error } = await this.supabase
+            .from('stat_duel_rooms')
+            .update(patch)
+            .eq('id', roomId);
+
+        if (error) throw error;
+    }
+
+    /** Ajoute un pick de stat dans p1_picks ou p2_picks via concaténation JSON. */
+    async appendStatPick(roomId: string, column: 'p1_picks' | 'p2_picks', pick: StatPick): Promise<void> {
+        const { data: current, error: fetchError } = await this.supabase
+            .from('stat_duel_rooms')
+            .select(column)
+            .eq('id', roomId)
+            .single();
+
+        if (fetchError) throw fetchError;
+
+        const existing: StatPick[] = (current as any)[column] ?? [];
+        const updated = [...existing, pick];
+
+        const { error } = await this.supabase
+            .from('stat_duel_rooms')
+            .update({ [column]: updated })
+            .eq('id', roomId);
+
+        if (error) throw error;
+    }
+
+    /** S'abonne aux mises à jour Realtime d'une room Duel de Base Stats. */
+    subscribeToStatDuelRoom(roomId: string): Observable<StatDuelRoom> {
+        return new Observable<StatDuelRoom>((observer) => {
+            const channel = this.supabase
+                .channel(`stat-duel-${roomId}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'stat_duel_rooms',
+                        filter: `id=eq.${roomId}`,
+                    },
+                    (payload) => {
+                        observer.next(payload.new as StatDuelRoom);
+                    },
+                )
+                .subscribe((status) => {
+                    if (status === 'CHANNEL_ERROR') {
+                        observer.error(new Error(`Erreur canal stat-duel-${roomId}`));
+                    }
+                });
+
+            return () => { this.supabase.removeChannel(channel); };
+        });
     }
 
     // ─── Utilitaire interne ──────────────────────────────────────────────────────
@@ -505,16 +605,18 @@ export class SupabaseService implements OnDestroy {
 
     // ─── Invitations de jeu ──────────────────────────────────────────────────────
 
-    /** Crée une room et une invitation de jeu pour un ami. */
-    async sendGameInvite(recipientId: string): Promise<{ roomId: string; inviteId: string }> {
+    /** Crée une room et une invitation de jeu pour un ami dans le mode choisi. */
+    async sendGameInvite(recipientId: string, gameMode: GameMode = 'guess_my_pokemon'): Promise<{ roomId: string; inviteId: string }> {
         const me = this.getCurrentUser();
         if (!me) throw new Error('Non connecté');
 
-        const roomId = await this.createRoom();
+        const roomId = gameMode === 'stat_duel'
+            ? await this.createStatDuelRoom()
+            : await this.createRoom();
 
         const { data, error } = await this.supabase
             .from('game_invites')
-            .insert({ sender_id: me.id, recipient_id: recipientId, room_id: roomId })
+            .insert({ sender_id: me.id, recipient_id: recipientId, room_id: roomId, game_mode: gameMode })
             .select('id')
             .single();
 
@@ -522,11 +624,15 @@ export class SupabaseService implements OnDestroy {
         return { roomId, inviteId: (data as { id: string }).id };
     }
 
-    /** Accepte une invitation de jeu et rejoint la room. */
-    async acceptGameInvite(inviteId: string, roomId: string): Promise<void> {
+    /** Accepte une invitation de jeu et rejoint la room correspondant au mode. */
+    async acceptGameInvite(inviteId: string, roomId: string, gameMode: GameMode = 'guess_my_pokemon'): Promise<void> {
+        const joinFn = gameMode === 'stat_duel'
+            ? this.joinStatDuelRoom(roomId)
+            : this.joinRoom(roomId);
+
         await Promise.all([
             this.supabase.from('game_invites').update({ status: 'accepted' }).eq('id', inviteId),
-            this.joinRoom(roomId),
+            joinFn,
         ]);
     }
 

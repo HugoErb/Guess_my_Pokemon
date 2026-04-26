@@ -53,14 +53,35 @@ export interface Friendship {
   created_at: string;
 }
 
+export type GameMode = 'guess_my_pokemon' | 'stat_duel';
+
 export interface GameInvite {
   id: string;
   sender_id: string;
   recipient_id: string;
   room_id: string;
+  game_mode: GameMode;
   status: 'pending' | 'accepted' | 'declined';
   created_at: string;
   sender_profile?: { username: string };
+}
+
+export interface StatPick {
+  stat: string;
+  value: number;
+}
+
+export interface StatDuelRoom {
+  id: string;
+  player1_id: string;
+  player2_id: string | null;
+  status: 'waiting' | 'playing' | 'finished';
+  pokemon_ids: number[];
+  p1_picks: StatPick[];
+  p2_picks: StatPick[];
+  round_start_at: string | null;
+  winner: 'player1' | 'player2' | 'draw' | null;
+  created_at: string;
 }
 
 export type FriendStatus = 'online' | 'in_game' | 'offline';
