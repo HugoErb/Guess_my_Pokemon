@@ -20,6 +20,7 @@ import {
   slotsGridAnimation,
 } from '../../constants/animations';
 import confetti from 'canvas-confetti';
+import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 
 const TYPE_ICONS: Record<string, string> = {
   'Normal': 'mdi:circle-outline',
@@ -67,7 +68,7 @@ type SlotState = 'idle' | 'leaving' | 'entering';
 
 @Component({
   selector: 'app-draft',
-  imports: [NgClass],
+  imports: [NgClass, PokemonCardComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   animations: [slotsGridAnimation, slotStateAnimation, lockAnimation, scoreRevealAnimation],
   templateUrl: './draft.component.html',
@@ -98,6 +99,7 @@ export class DraftComponent {
   readonly showScore = signal(false);
 
   readonly lockedCount = computed(() => this.lockedIndices().size);
+  readonly selectedPokemon = signal<Pokemon | null>(null);
 
   readonly finalScore = computed((): number => {
     const locked = this.lockedPokemon();
@@ -242,6 +244,14 @@ export class DraftComponent {
 
   goHome(): void {
     void this.router.navigate(['/home']);
+  }
+
+  openPokemonDetails(pokemon: Pokemon): void {
+    this.selectedPokemon.set(pokemon);
+  }
+
+  closePokemonDetails(): void {
+    this.selectedPokemon.set(null);
   }
 
   // ─── Calculs rating ──────────────────────────────────────────────────────────

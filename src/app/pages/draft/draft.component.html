@@ -70,6 +70,13 @@
 									>
 										<iconify-icon [icon]="ICONS.lock" class="text-white text-sm"></iconify-icon>
 									</div>
+									<!-- Bouton loupe -->
+									<button
+										(click)="$event.stopPropagation(); openPokemonDetails(slot)"
+										class="absolute top-2 left-2 z-10 w-7 h-7 rounded-full bg-slate-700 hover:bg-slate-600 border border-slate-600 flex items-center justify-center shadow-lg transition-all hover:scale-110"
+									>
+										<iconify-icon [icon]="ICONS.search" class="text-white text-sm"></iconify-icon>
+									</button>
 								}
 
 								<!-- Sprite -->
@@ -149,10 +156,10 @@
 			<div class="w-full max-w-3xl grid grid-cols-3 sm:grid-cols-6 gap-3">
 				@for (p of lockedPokemon(); track $index) {
 					@if (p) {
-						<div class="bg-slate-800 border border-yellow-500/50 rounded-xl p-2 flex flex-col items-center gap-1 ring-1 ring-yellow-500/20">
-							<img [src]="p.sprite" [alt]="p.name" class="w-14 h-14 object-contain" />
-							<p class="text-[10px] font-bold text-white capitalize text-center leading-tight">{{ p.name }}</p>
-							<span class="text-[11px] font-black" [ngClass]="getRatingColor(getRating(p))">
+						<div class="bg-slate-800 border border-yellow-500/50 rounded-xl p-3 flex flex-col items-center gap-2 ring-1 ring-yellow-500/20">
+							<img [src]="p.sprite" [alt]="p.name" class="w-20 h-20 object-contain" />
+							<p class="text-xs font-bold text-white capitalize text-center leading-tight">{{ p.name }}</p>
+							<span class="text-xs font-black" [ngClass]="getRatingColor(getRating(p))">
 								★ {{ getRating(p) }}
 							</span>
 						</div>
@@ -162,13 +169,13 @@
 
 			<!-- Score final -->
 			@if (showScore()) {
-				<div class="flex flex-col items-center gap-3" [@scoreReveal]>
-					<p class="text-slate-400 text-sm uppercase tracking-widest">Score de ton équipe</p>
-					<div class="flex items-end gap-2">
-						<span class="text-8xl font-black font-mono leading-none" [ngClass]="scoreColor()">
+				<div class="flex flex-col items-center gap-2" [@scoreReveal]>
+					<p class="text-slate-400 text-xs uppercase tracking-widest">Score de ton équipe</p>
+					<div class="flex items-end gap-1.5">
+						<span class="text-5xl font-black font-mono leading-none" [ngClass]="scoreColor()">
 							{{ finalScore() }}
 						</span>
-						<span class="text-3xl text-slate-500 mb-2">/10</span>
+						<span class="text-xl text-slate-500 mb-1">/10</span>
 					</div>
 				</div>
 			}
@@ -191,6 +198,27 @@
 				</button>
 			</div>
 		</main>
+	}
+
+	<!-- Modal fiche Pokémon -->
+	@if (selectedPokemon()) {
+		<div
+			class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+			(click)="closePokemonDetails()"
+		>
+			<div
+				class="relative w-full max-w-sm max-h-[90vh] overflow-y-auto rounded-2xl"
+				(click)="$event.stopPropagation()"
+			>
+				<button
+					(click)="closePokemonDetails()"
+					class="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-slate-300 hover:text-white transition-all"
+				>
+					<iconify-icon icon="mdi:close" class="text-lg"></iconify-icon>
+				</button>
+				<app-pokemon-card [pokemon]="selectedPokemon()!" />
+			</div>
+		</div>
 	}
 
 </div>
