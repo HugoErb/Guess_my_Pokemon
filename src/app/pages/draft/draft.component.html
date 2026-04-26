@@ -248,20 +248,20 @@
 			}
 
 			<!-- Actions -->
-			<div class="flex gap-3 md:gap-4 shrink-0">
+			<div class="flex flex-col gap-2 w-full max-w-xs shrink-0">
 				<button
 					(click)="replay()"
-					class="flex items-center gap-2 px-5 py-2.5 md:px-6 md:py-3 bg-purple-600 hover:bg-purple-500 rounded-xl font-bold text-white text-sm md:text-base transition-all shadow-lg shadow-purple-600/20"
+					class="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2"
 				>
-					<iconify-icon [icon]="ICONS.dice" class="text-lg md:text-xl"></iconify-icon>
+					<iconify-icon [icon]="ICONS.dice" class="text-lg"></iconify-icon>
 					Rejouer
 				</button>
 				<button
 					(click)="goHome()"
-					class="flex items-center gap-2 px-5 py-2.5 md:px-6 md:py-3 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-xl font-bold text-slate-300 hover:text-white text-sm md:text-base transition-all"
+					class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2"
 				>
-					<iconify-icon [icon]="ICONS.home" class="text-lg md:text-xl"></iconify-icon>
-					Accueil
+					<iconify-icon [icon]="ICONS.home" class="text-lg"></iconify-icon>
+					Retour à l'accueil
 				</button>
 			</div>
 		</main>
@@ -270,11 +270,12 @@
 	<!-- Modal fiche Pokémon -->
 	@if (selectedPokemon()) {
 		<div
-			class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+			class="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm"
 			(click)="closePokemonDetails()"
 		>
+			<div class="flex min-h-full items-center justify-center p-4">
 			<div
-				class="relative w-full max-w-sm max-h-[90vh] overflow-y-auto rounded-2xl"
+				class="relative w-full max-w-sm rounded-2xl"
 				(click)="$event.stopPropagation()"
 			>
 				<button
@@ -284,6 +285,7 @@
 					<iconify-icon icon="mdi:close" class="text-lg"></iconify-icon>
 				</button>
 				<app-pokemon-card [pokemon]="selectedPokemon()!" />
+			</div>
 			</div>
 		</div>
 	}
