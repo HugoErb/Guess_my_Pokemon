@@ -106,7 +106,7 @@
 								</div>
 
 								<!-- Badges de type -->
-								<div class="flex flex-wrap gap-1 justify-center">
+								<div class="flex flex-col items-center gap-1">
 									@for (type of slot.types; track type) {
 										<span
 											class="px-2 py-0.5 rounded-full text-xs font-semibold text-white type-text-outline flex items-center gap-1"
@@ -120,7 +120,7 @@
 
 								<!-- Rating (uniquement si verrouillé) -->
 								@if (lockedIndices().has($index)) {
-									<div class="w-full mt-1">
+									<div class="w-full mt-auto">
 										<div class="flex items-center justify-between mb-1">
 											<span class="text-[9px] text-slate-500 uppercase tracking-wider">Rating</span>
 											<span
@@ -167,26 +167,57 @@
 			<div class="w-full max-w-6xl grid grid-cols-3 sm:grid-cols-6 gap-5">
 				@for (p of lockedPokemon(); track $index) {
 					@if (p) {
-						<div class="relative bg-slate-800 border border-yellow-500/50 rounded-xl p-3 flex flex-col items-center gap-2 ring-1 ring-yellow-500/20">
-							<!-- Bouton loupe -->
-							<button
-								(click)="openPokemonDetails(p)"
-								class="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-slate-700 hover:bg-slate-600 border border-slate-600 flex items-center justify-center shadow-lg transition-all hover:scale-110"
-							>
-								<iconify-icon [icon]="ICONS.search" class="text-white text-sm"></iconify-icon>
-							</button>
-							<!-- Label starter / légendaire -->
-							@if ($index === 0) {
-								<span class="text-[9px] font-bold uppercase tracking-wider text-green-400 bg-green-900/50 px-2 py-0.5 rounded-full border border-green-700/60">Starter</span>
-							}
-							@if ($index === 5) {
-								<span class="text-[9px] font-bold uppercase tracking-wider text-yellow-400 bg-yellow-900/50 px-2 py-0.5 rounded-full border border-yellow-700/60">Légendaire</span>
-							}
-							<img [src]="p.sprite" [alt]="p.name" class="w-32 h-32 object-contain" />
-							<p class="text-xs font-bold text-white capitalize text-center leading-tight">{{ p.name }}</p>
-							<span class="text-xs font-black" [ngClass]="getRatingColor(getRating(p))">
-								★ {{ getRating(p) }}
-							</span>
+						<div class="relative">
+							<div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 flex flex-col items-center gap-3 select-none h-full">
+								<!-- Bouton loupe -->
+								<button
+									(click)="openPokemonDetails(p)"
+									class="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-slate-700 hover:bg-slate-600 border border-slate-600 flex items-center justify-center shadow-lg transition-all hover:scale-110"
+								>
+									<iconify-icon [icon]="ICONS.search" class="text-white text-sm"></iconify-icon>
+								</button>
+								<!-- Label starter / légendaire -->
+								@if ($index === 0) {
+									<span class="text-[9px] font-bold uppercase tracking-wider text-green-400 bg-green-900/50 px-2 py-0.5 rounded-full border border-green-700/60">Starter</span>
+								}
+								@if ($index === 5) {
+									<span class="text-[9px] font-bold uppercase tracking-wider text-yellow-400 bg-yellow-900/50 px-2 py-0.5 rounded-full border border-yellow-700/60">Légendaire</span>
+								}
+								<!-- Sprite -->
+								<div class="relative">
+									<img [src]="p.sprite" [alt]="p.name" class="w-32 h-32 object-contain brightness-110" />
+								</div>
+								<!-- Nom -->
+								<div class="text-center">
+									<p class="text-sm font-bold text-white capitalize leading-tight">{{ p.name }}</p>
+								</div>
+								<!-- Badges de type -->
+								<div class="flex flex-col items-center gap-1">
+									@for (type of p.types; track type) {
+										<span
+											class="px-2 py-0.5 rounded-full text-xs font-semibold text-white type-text-outline flex items-center gap-1"
+											[ngClass]="getTypeColor(type)"
+										>
+											<iconify-icon [icon]="getTypeIcon(type)" class="text-sm type-icon-outline"></iconify-icon>
+											{{ type }}
+										</span>
+									}
+								</div>
+								<!-- Rating -->
+								<div class="w-full mt-auto">
+									<div class="flex items-center justify-between mb-1">
+										<span class="text-[9px] text-slate-500 uppercase tracking-wider">Base Stats</span>
+										<span class="text-[11px] font-black" [ngClass]="getRatingColor(getRating(p))">{{ getRating(p) }}</span>
+									</div>
+									<div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+										<div
+											class="h-full rounded-full transition-all duration-500"
+											[ngClass]="getRatingBarColor(getRating(p))"
+											[style.width]="getRatingWidth(getRating(p))"
+										></div>
+									</div>
+								</div>
+							</div>
 						</div>
 					}
 				}
@@ -195,14 +226,13 @@
 			<!-- Score final -->
 			@if (showScore()) {
 				<div class="flex flex-col items-center gap-6 w-full max-w-xl" [@scoreReveal]>
-					<p class="text-slate-400 text-xs uppercase tracking-widest">Score de ton équipe</p>
 
 					<!-- Trois colonnes de notes -->
 					<div class="grid grid-cols-3 gap-4 w-full">
 
-						<!-- Note stats -->
+						<!-- Bases stats -->
 						<div class="flex flex-col items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl p-4">
-							<span class="text-[10px] text-slate-500 uppercase tracking-wider text-center">Note stats</span>
+							<span class="text-[10px] text-slate-500 uppercase tracking-wider text-center">Base stats</span>
 							<div class="flex items-end gap-1">
 								<span class="text-3xl font-black font-mono leading-none" [ngClass]="getScoreColor(statsScore())">{{ statsScore() }}</span>
 								<span class="text-sm text-slate-600 mb-0.5">/10</span>
@@ -218,7 +248,7 @@
 
 						<!-- Note couverture -->
 						<div class="flex flex-col items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl p-4">
-							<span class="text-[10px] text-slate-500 uppercase tracking-wider text-center">Couverture</span>
+							<span class="text-[10px] text-slate-500 uppercase tracking-wider text-center">Couverture de type</span>
 							<div class="flex items-end gap-1">
 								<span class="text-3xl font-black font-mono leading-none" [ngClass]="getScoreColor(typeCoverageScore())">{{ typeCoverageScore() }}</span>
 								<span class="text-sm text-slate-600 mb-0.5">/10</span>

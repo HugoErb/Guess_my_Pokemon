@@ -222,10 +222,6 @@ export class DraftComponent {
     return Math.round(((s + c) / 2) * 10) / 10;
   });
 
-  readonly scoreColor = computed((): string => {
-    return this.getScoreColor(this.teamScore());
-  });
-
   constructor() {
     effect(() => {
       const all = this.allPokemon();
