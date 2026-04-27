@@ -163,7 +163,7 @@
 	@if (phase() === 'complete') {
 		<main class="flex-1 flex flex-col items-center justify-start md:justify-center px-4 py-3 md:py-10 gap-3 md:gap-8 min-h-0 overflow-y-auto md:overflow-hidden">
 
-			<h2 class="text-base md:text-2xl font-black text-white text-center uppercase tracking-widest shrink-0">
+			<h2 class="text-base md:text-2xl font-black text-white text-center uppercase tracking-widest shrink-0 mb-2 md:mb-0">
 				Ton équipe est prête&nbsp;!
 			</h2>
 
@@ -220,7 +220,7 @@
 
 			<!-- Score final -->
 			@if (showScore()) {
-				<div class="grid grid-cols-3 gap-2 md:gap-4 w-full max-w-xl shrink-0" [@scoreReveal]>
+				<div class="grid grid-cols-3 gap-2 md:gap-4 w-full max-w-xl shrink-0 mt-2 mb-2 md:mt-0 md:mb-0" [@scoreReveal]>
 					<div class="flex flex-col items-center gap-1 md:gap-2 bg-slate-800 border border-slate-700 rounded-xl p-2 md:p-4">
 						<span class="text-[9px] md:text-[10px] text-slate-500 uppercase tracking-wider text-center">Base stats</span>
 						<div class="flex items-end gap-0.5">

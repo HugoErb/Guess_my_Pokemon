@@ -232,15 +232,18 @@
 							@for (stat of STAT_DEFS; track stat.key) {
 								@let alreadyPicked = pickedStatKeys().has(stat.key);
 								@let justPicked = justPickedStat()?.stat === stat.key;
+								@let isPending = !isSolo() && pendingMyPickStat() === stat.key;
 								<button
 									(click)="pickStat(stat.key)"
 									[disabled]="alreadyPicked || hasPickedThisRound()"
 									[class]="getStatButtonClass(stat.key, alreadyPicked)">
 									<span class="text-xs font-black uppercase tracking-wider"
-										[ngClass]="(alreadyPicked && !justPicked) ? 'text-slate-600' : stat.colorClass">
+										[ngClass]="(alreadyPicked && !justPicked && !isPending) ? 'text-slate-600' : stat.colorClass">
 										{{ stat.label }}
 									</span>
-									@if (justPicked) {
+									@if (isPending) {
+										<iconify-icon [icon]="ICONS.loading" class="text-base animate-spin text-blue-400"></iconify-icon>
+									} @else if (justPicked) {
 										<span class="text-2xl font-black stat-pop" [ngClass]="stat.colorClass">
 											{{ currentPokemon()!.stats[stat.key] }}
 										</span>
@@ -252,6 +255,13 @@
 								</button>
 							}
 						</div>
+
+						@if (!isSolo() && waitingForReveal()) {
+							<div class="flex items-center justify-center gap-2 text-sm text-slate-400 mt-1">
+								<iconify-icon [icon]="ICONS.loading" class="text-base animate-spin text-blue-400"></iconify-icon>
+								<span>En attente de l'adversaire…</span>
+							</div>
+						}
 					</div>
 				}
 
@@ -260,7 +270,7 @@
 					<p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Mon Pokémon en cours</p>
 					<div class="flex flex-col gap-2">
 						@for (stat of STAT_DEFS; track stat.key) {
-							@let pick = getMyPickForStat(stat.key);
+							@let pick = isSolo() ? getMyPickForStat(stat.key) : getMyRevealedPickForStat(stat.key);
 							<div class="flex items-center gap-3">
 								<span class="text-xs font-black uppercase w-10 text-right flex-shrink-0"
 									[ngClass]="pick ? stat.colorClass : 'text-slate-600'">{{ stat.label }}</span>
@@ -276,24 +286,34 @@
 							</div>
 						}
 					</div>
-					@if (myPicks().length > 0) {
+					@if ((isSolo() ? myPicks() : myRevealedPicks()).length > 0) {
 						<div class="mt-3 pt-3 border-t border-slate-700/50 flex justify-between items-center">
 							<span class="text-xs text-slate-500">Total actuel</span>
-							<span class="text-sm font-black text-yellow-400">{{ myTotal() }}</span>
+							<span class="text-sm font-black text-yellow-400">{{ isSolo() ? myTotal() : myRevealedTotal() }}</span>
 						</div>
 					}
 				</div>
 
 				<!-- Adversaire (multi) -->
 				@if (!isSolo()) {
-					<div class="bg-slate-800/30 border border-slate-700/30 rounded-xl px-4 py-3 flex items-center justify-between gap-4">
-						<span class="text-xs font-bold text-slate-500 flex-shrink-0">Adversaire</span>
-						<div class="flex gap-1">
-							@for (i of INDICES; track i) {
-								<div class="w-2.5 h-2.5 rounded-full" [ngClass]="i < opponentPicks().length ? 'bg-blue-400' : 'bg-slate-700'"></div>
-							}
+					<div class="bg-slate-800/30 border border-slate-700/30 rounded-xl px-4 py-3 flex flex-col gap-2">
+						<div class="flex items-center justify-between gap-4">
+							<span class="text-xs font-bold text-slate-500 flex-shrink-0">Adversaire</span>
+							<div class="flex gap-1">
+								@for (i of INDICES; track i) {
+									<div class="w-2.5 h-2.5 rounded-full" [ngClass]="i < opponentRevealedPicks().length ? 'bg-blue-400' : 'bg-slate-700'"></div>
+								}
+							</div>
+							<span class="text-xs text-slate-500 flex-shrink-0">{{ opponentRevealedPicks().length }}/6</span>
 						</div>
-						<span class="text-xs text-slate-500 flex-shrink-0">{{ opponentPicks().length }}/6</span>
+						@if (justRevealedOpponentPick()) {
+							<div class="flex items-center justify-center gap-2 text-sm border-t border-slate-700/30 pt-2">
+								<span class="text-slate-400">A choisi</span>
+								<span class="font-black text-blue-300 stat-pop uppercase">{{ justRevealedOpponentPick()!.stat }}</span>
+								<span class="text-slate-400">→</span>
+								<span class="font-black text-blue-400 stat-pop">{{ justRevealedOpponentPick()!.value }}</span>
+							</div>
+						}
 					</div>
 				}
 			</div>

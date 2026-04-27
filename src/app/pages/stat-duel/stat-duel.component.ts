@@ -71,6 +71,10 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   myPicks = signal<StatPick[]>([]);
   opponentPicks = signal<StatPick[]>([]);
   room = signal<StatDuelRoom | null>(null);
+  revealedRound = signal(-1);
+  waitingForReveal = signal(false);
+  pendingMyPickStat = signal<string | null>(null);
+  justRevealedOpponentPick = signal<StatPick | null>(null);
 
   // ─── Computed ────────────────────────────────────────────────────────────────
   currentPokemon = computed(() => this.pokemonList()[this.currentRound()] ?? null);
@@ -78,6 +82,10 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   hasPickedThisRound = computed(() => this.myPicks().length > this.currentRound());
   myTotal = computed(() => this.myPicks().reduce((s, p) => s + p.value, 0));
   opponentTotal = computed(() => this.opponentPicks().reduce((s, p) => s + p.value, 0));
+  myRevealedPicks = computed(() => this.myPicks().slice(0, this.revealedRound() + 1));
+  opponentRevealedPicks = computed(() => this.opponentPicks().slice(0, this.revealedRound() + 1));
+  isCurrentRoundRevealed = computed(() => this.revealedRound() >= this.currentRound());
+  myRevealedTotal = computed(() => this.myRevealedPicks().reduce((s, p) => s + p.value, 0));
 
   // ─── Timer ───────────────────────────────────────────────────────────────────
   private clockInterval: ReturnType<typeof setInterval> | null = null;
@@ -88,6 +96,9 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
   // ─── Dev mode bot ────────────────────────────────────────────────────────────
   private botPickedRounds = new Set<number>();
+
+  // ─── UI state ────────────────────────────────────────────────────────────────
+  showHelpModal = signal(false);
 
   // ─── Partage lien ────────────────────────────────────────────────────────────
   inviteLink = '';
@@ -157,6 +168,8 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     // Rejoindre en tant que P2 si la place est libre et qu'on n'est pas P1
     if (!room.player2_id && room.player1_id !== me.id) {
       await this.supabaseService.joinStatDuelRoom(roomId);
+      const refreshed = await this.supabaseService.getStatDuelRoom(roomId);
+      this.room.set(refreshed);
     }
 
     if (room.status === 'playing' || room.status === 'finished') {
@@ -178,6 +191,11 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         this.myPicks.set(isP1 ? updated.p1_picks : updated.p2_picks);
         this.opponentPicks.set(isP1 ? updated.p2_picks : updated.p1_picks);
 
+        // Reveal simultané : dès que les deux ont choisi, on révèle
+        if (this.waitingForReveal() && this.opponentPicks().length > this.currentRound()) {
+          this.triggerReveal();
+        }
+
         if (updated.p1_picks.length === ROUND_COUNT && updated.p2_picks.length === ROUND_COUNT) {
           this.endMultiGame(updated);
         }
@@ -196,6 +214,10 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     const isP1 = room.player1_id === me.id;
     this.myPicks.set(isP1 ? room.p1_picks : room.p2_picks);
     this.opponentPicks.set(isP1 ? room.p2_picks : room.p1_picks);
+
+    // En cas de reconnexion mid-game, les manches terminées sont déjà révélées
+    const completedRounds = Math.min(room.p1_picks.length, room.p2_picks.length) - 1;
+    this.revealedRound.set(completedRounds);
 
     this.phase.set('playing');
     this.startMultiClock(room.round_start_at!);
@@ -243,6 +265,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   private startMultiClock(roundStartAt: string): void {
     this.stopClock();
     const startMs = new Date(roundStartAt).getTime();
+    let prevRound = -1;
     this.clockInterval = setInterval(() => {
       const elapsed = Date.now() - startMs;
       const round = Math.min(Math.floor(elapsed / ROUND_DURATION_MS), ROUND_COUNT - 1);
@@ -250,15 +273,22 @@ export class StatDuelComponent implements OnInit, OnDestroy {
       const remainingFloat = Math.max(0, 10 - elapsedInRound / 1000);
       const remaining = Math.ceil(remainingFloat);
 
-      this.currentRound.set(round);
-
-      if (!this.hasPickedThisRound()) {
-        this.timerValue.set(remaining);
-        this.timerProgress.set(remainingFloat);
+      // Transition de manche : révéler si on attendait
+      if (round !== prevRound && prevRound >= 0 && this.waitingForReveal()) {
+        this.triggerReveal();
       }
+      prevRound = round;
 
-      if (remaining <= 0 && this.myPicks().length <= round) {
-        this.autoPickStat();
+      this.currentRound.set(round);
+      this.timerValue.set(remaining);
+      this.timerProgress.set(remainingFloat);
+
+      if (remaining <= 0) {
+        if (this.myPicks().length <= round) {
+          this.autoPickStat();
+        } else if (this.waitingForReveal() && !this.isCurrentRoundRevealed()) {
+          this.triggerReveal();
+        }
       }
 
       if (elapsed >= ROUND_COUNT * ROUND_DURATION_MS) {
@@ -274,6 +304,21 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     }
   }
 
+  private triggerReveal(): void {
+    this.waitingForReveal.set(false);
+    this.pendingMyPickStat.set(null);
+    const round = this.currentRound();
+    this.revealedRound.set(round);
+    const myPick = this.myPicks()[round];
+    if (myPick) this.justPickedStat.set(myPick);
+    const opPick = this.opponentPicks()[round];
+    if (opPick) this.justRevealedOpponentPick.set(opPick);
+    setTimeout(() => {
+      this.justPickedStat.set(null);
+      this.justRevealedOpponentPick.set(null);
+    }, 2000);
+  }
+
   // ─── Pick stat ───────────────────────────────────────────────────────────────
 
   pickStat(statKey: keyof Pokemon['stats']): void {
@@ -281,13 +326,12 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     const pokemon = this.currentPokemon();
     if (!pokemon) return;
 
-    this.stopClock();
-
     const pick: StatPick = { stat: statKey, value: pokemon.stats[statKey] };
     this.myPicks.update(arr => [...arr, pick]);
-    this.justPickedStat.set(pick);
 
     if (this.isSolo()) {
+      this.stopClock();
+      this.justPickedStat.set(pick);
       setTimeout(() => {
         this.justPickedStat.set(null);
         this.advanceSoloRound();
@@ -296,8 +340,13 @@ export class StatDuelComponent implements OnInit, OnDestroy {
       const me = this.supabaseService.getCurrentUser();
       if (!me || !this.roomId) return;
       const isP1 = this.room()?.player1_id === me.id;
+      this.pendingMyPickStat.set(statKey);
+      this.waitingForReveal.set(true);
       void this.supabaseService.appendStatPick(this.roomId, isP1 ? 'p1_picks' : 'p2_picks', pick);
-      setTimeout(() => this.justPickedStat.set(null), 1500);
+      // Si l'adversaire a déjà choisi, on révèle immédiatement
+      if (this.opponentPicks().length > this.currentRound()) {
+        this.triggerReveal();
+      }
     }
   }
 
@@ -372,6 +421,10 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     this.pokemonList.set([]);
     this.currentRound.set(0);
     this.timerValue.set(10);
+    this.revealedRound.set(-1);
+    this.waitingForReveal.set(false);
+    this.pendingMyPickStat.set(null);
+    this.justRevealedOpponentPick.set(null);
     this.botPickedRounds.clear();
     this.roomSub?.unsubscribe();
     this.phase.set('mode-select');
@@ -439,6 +492,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
   getStatButtonClass(statKey: keyof Pokemon['stats'], alreadyPicked: boolean): string {
     const base = 'flex flex-col items-center gap-1 px-4 py-3 rounded-xl border transition-all font-bold relative';
+    if (!this.isSolo() && this.pendingMyPickStat() === statKey) return `${base} bg-blue-500/15 border-blue-500/50 cursor-not-allowed`;
     if (this.justPickedStat()?.stat === statKey) return `${base} bg-yellow-500/15 border-yellow-500 cursor-not-allowed`;
     if (alreadyPicked) return `${base} bg-slate-700/30 border-slate-700/30 opacity-30 cursor-not-allowed`;
     if (this.hasPickedThisRound()) return `${base} bg-slate-700/50 border-slate-700/50 opacity-50 cursor-not-allowed`;
@@ -467,6 +521,10 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
   getMyPickForStat(statKey: string): StatPick | undefined {
     return this.myPicks().find(p => p.stat === statKey);
+  }
+
+  getMyRevealedPickForStat(statKey: string): StatPick | undefined {
+    return this.myRevealedPicks().find(p => p.stat === statKey);
   }
 
   getOpponentPickForStat(statKey: string): StatPick | undefined {
