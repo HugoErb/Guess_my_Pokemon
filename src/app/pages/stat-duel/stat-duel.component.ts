@@ -89,7 +89,8 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   // ─── Dev mode bot ────────────────────────────────────────────────────────────
   private botPickedRounds = new Set<number>();
 
-  // ─── Copie lien ──────────────────────────────────────────────────────────────
+  // ─── Partage lien ────────────────────────────────────────────────────────────
+  inviteLink = '';
   linkCopied = signal(false);
 
   // ─── Type colors map ─────────────────────────────────────────────────────────
@@ -146,6 +147,8 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   private async initMulti(roomId: string): Promise<void> {
     const me = this.supabaseService.getCurrentUser();
     if (!me) return;
+
+    this.inviteLink = `${window.location.origin}/stat-duel/${roomId}`;
 
     const room = await this.supabaseService.getStatDuelRoom(roomId);
     this.room.set(room);
@@ -384,9 +387,17 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   // ─── Partage lien multi ──────────────────────────────────────────────────────
 
   async copyRoomLink(): Promise<void> {
-    if (!this.roomId) return;
-    const url = `${window.location.origin}/stat-duel/${this.roomId}`;
-    await navigator.clipboard.writeText(url);
+    if (!this.inviteLink) return;
+    try {
+      await navigator.clipboard.writeText(this.inviteLink);
+    } catch {
+      const el = document.createElement('input');
+      el.value = this.inviteLink;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    }
     this.linkCopied.set(true);
     setTimeout(() => this.linkCopied.set(false), 2000);
   }
