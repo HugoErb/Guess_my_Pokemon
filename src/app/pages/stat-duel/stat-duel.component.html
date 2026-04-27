@@ -3,9 +3,6 @@
 	<!-- Header -->
 	<header class="flex items-center justify-between px-6 py-4 border-b border-slate-700 flex-shrink-0">
 		<div class="flex items-center gap-3">
-			<button (click)="goHome()" class="p-2 rounded-lg hover:bg-slate-800 transition-colors text-slate-400 hover:text-white">
-				<iconify-icon [icon]="ICONS.home" class="text-xl"></iconify-icon>
-			</button>
 			<iconify-icon [icon]="ICONS.statDuel" class="text-2xl text-yellow-400"></iconify-icon>
 			<span class="text-xl font-bold tracking-wide">Duel de Base Stats</span>
 		</div>
@@ -15,6 +12,64 @@
 			</div>
 		}
 	</header>
+
+	<!-- Barre d'actions -->
+	<div class="bg-slate-800/50 border-b border-slate-700 px-3 py-2 flex items-center justify-end gap-2 shrink-0">
+		<button
+			(click)="showHelpModal.set(true)"
+			class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all"
+		>
+			<iconify-icon [icon]="ICONS.help" class="text-sm"></iconify-icon>
+			<span class="hidden sm:inline">Aide</span>
+		</button>
+		<button
+			(click)="goHome()"
+			class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-red-900/50 border border-slate-600/50 hover:border-red-800 rounded-lg text-[10px] font-black text-slate-400 hover:text-red-300 uppercase tracking-wider transition-all"
+		>
+			<iconify-icon [icon]="ICONS.logout" class="text-sm"></iconify-icon>
+			<span class="hidden sm:inline">Quitter</span>
+		</button>
+	</div>
+
+	<!-- Modal d'aide -->
+	@if (showHelpModal()) {
+		<div
+			class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+			(click)="showHelpModal.set(false)"
+		>
+			<div
+				class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4"
+				(click)="$event.stopPropagation()"
+			>
+				<iconify-icon [icon]="ICONS.statDuel" class="text-5xl text-yellow-400 mx-auto"></iconify-icon>
+				<h2 class="text-xl font-bold text-white uppercase tracking-wider text-center">Duel de Base Stats</h2>
+				<ol class="space-y-3 text-sm text-slate-300 list-none text-justify">
+					<li class="flex gap-3">
+						<span class="text-yellow-400 font-bold text-base leading-snug">1.</span>
+						<span>Chaque manche, un Pokémon est révélé. Tu dois <strong class="text-white">choisir une de ses stats</strong> avant la fin du chrono (10 secondes).</span>
+					</li>
+					<li class="flex gap-3">
+						<span class="text-yellow-400 font-bold text-base leading-snug">2.</span>
+						<span>La <strong class="text-white">valeur de la stat choisie</strong> est ajoutée à ton score. Chaque stat ne peut être choisie qu'une seule fois sur l'ensemble des 6 manches.</span>
+					</li>
+					<li class="flex gap-3">
+						<span class="text-yellow-400 font-bold text-base leading-snug">3.</span>
+						<span>Si tu ne choisis pas à temps, une stat est sélectionnée <strong class="text-white">aléatoirement</strong> pour toi.</span>
+					</li>
+					<li class="flex gap-3">
+						<span class="text-yellow-400 font-bold text-base leading-snug">4.</span>
+						<span>Après 6 manches, le joueur avec le <strong class="text-white">total le plus élevé</strong> remporte la partie !</span>
+					</li>
+				</ol>
+				<button
+					(click)="showHelpModal.set(false)"
+					class="mt-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium text-white transition-colors"
+				>
+					Fermer
+				</button>
+			</div>
+		</div>
+	}
 
 	<main class="flex-1 flex flex-col overflow-hidden">
 
@@ -247,7 +302,7 @@
 
 		<!-- ──────────────────────────────────────── Phase : result ─── -->
 		@if (phase() === 'result') {
-			<div class="flex-1 flex flex-col items-center overflow-y-auto px-4 py-6">
+			<div class="flex-1 flex flex-col items-center justify-center overflow-y-auto px-4 py-6 pb-20">
 			<div class="w-full max-w-lg flex flex-col gap-6">
 
 				<!-- Titre -->
