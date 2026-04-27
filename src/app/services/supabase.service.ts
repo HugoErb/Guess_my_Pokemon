@@ -610,9 +610,16 @@ export class SupabaseService implements OnDestroy {
         const me = this.getCurrentUser();
         if (!me) throw new Error('Non connecté');
 
-        const roomId = gameMode === 'stat_duel'
-            ? await this.createStatDuelRoom()
-            : await this.createRoom();
+        let roomId: string;
+        try {
+            roomId = gameMode === 'stat_duel'
+                ? await this.createStatDuelRoom()
+                : await this.createRoom();
+            console.log('[sendGameInvite] room créée:', roomId);
+        } catch (err) {
+            console.error('[sendGameInvite] échec création room:', err);
+            throw err;
+        }
 
         const { data, error } = await this.supabase
             .from('game_invites')
@@ -620,7 +627,10 @@ export class SupabaseService implements OnDestroy {
             .select('id')
             .single();
 
-        if (error) throw error;
+        if (error) {
+            console.error('[sendGameInvite] échec insert game_invites:', error);
+            throw error;
+        }
         return { roomId, inviteId: (data as { id: string }).id };
     }
 

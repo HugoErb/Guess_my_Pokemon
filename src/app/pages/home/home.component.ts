@@ -220,7 +220,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       } else {
         this.router.navigate(['/lobby', roomId], { queryParams: { inviteId, friendName: event.username } });
       }
-    } catch {
+    } catch (err) {
+      console.error('[onInviteRequested] erreur:', err);
       this.createError = 'Impossible d\'inviter l\'ami. Réessaie.';
       this.isCreating = false;
     }
