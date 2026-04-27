@@ -6,11 +6,6 @@
 			<iconify-icon [icon]="ICONS.statDuel" class="text-2xl text-yellow-400"></iconify-icon>
 			<span class="text-xl font-bold tracking-wide">Duel de Base Stats</span>
 		</div>
-		@if (phase() === 'playing') {
-			<div class="text-sm font-bold text-slate-400">
-				Manche <span class="text-white">{{ currentRound() + 1 }}</span> / {{ ROUND_COUNT }}
-			</div>
-		}
 	</header>
 
 	<!-- Barre d'actions -->
