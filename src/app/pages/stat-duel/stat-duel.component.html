@@ -317,8 +317,8 @@
 
 		<!-- ──────────────────────────────────────── Phase : result ─── -->
 		@if (phase() === 'result') {
-			<div class="flex-1 flex flex-col items-center justify-center overflow-y-auto px-4 py-6 pb-20">
-			<div class="w-full max-w-lg flex flex-col gap-6">
+			<div class="flex-1 overflow-y-auto px-4 py-6">
+			<div class="w-full max-w-lg mx-auto md:max-w-3xl flex flex-col gap-6">
 
 				<!-- Titre -->
 				<div class="text-center">
@@ -329,51 +329,73 @@
 					}
 				</div>
 
-				<!-- Mes stats finales -->
-				<div class="bg-slate-800 border border-yellow-500/30 rounded-2xl p-6">
-					<p class="text-xs font-bold text-yellow-400/80 uppercase tracking-widest mb-4">Mon Pokémon</p>
-					<div class="flex flex-col gap-3">
-						@for (stat of STAT_DEFS; track stat.key) {
-							@let pick = getMyPickForStat(stat.key);
-							<div class="flex items-center gap-3">
-								<span class="text-xs font-black uppercase w-10 text-right flex-shrink-0" [ngClass]="stat.colorClass">{{ stat.label }}</span>
-								<div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-									<div class="h-full rounded-full transition-all duration-500" [ngClass]="stat.bgClass"
-										[style.width]="pick ? getStatBarWidth(pick.value) : '0%'"></div>
-								</div>
-								<span class="text-sm font-black text-white w-8 text-right flex-shrink-0">{{ pick ? pick.value : '—' }}</span>
-							</div>
-						}
-					</div>
-					<div class="mt-4 pt-4 border-t border-slate-700 flex justify-between items-center">
-						<span class="text-sm font-bold text-slate-400">Total</span>
-						<span class="text-2xl font-black text-yellow-400">{{ myTotal() }}</span>
-					</div>
-				</div>
+				<!-- Cards : empilées sur mobile, côte à côte sur bureau -->
+				<div class="flex flex-col md:flex-row md:items-start gap-6">
 
-				<!-- Adversaire (multi) -->
-				@if (!isSolo()) {
-					<div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6">
-						<p class="text-xs font-bold text-blue-400/80 uppercase tracking-widest mb-4">Adversaire</p>
-						<div class="flex flex-col gap-3">
+					<!-- Mes stats finales -->
+					<div class="flex-1 bg-slate-800 border border-yellow-500/30 rounded-2xl p-6">
+						<div class="flex items-center justify-between mb-1">
+							<p class="text-xs font-bold text-yellow-400/80 uppercase tracking-widest">Mon Pokémon</p>
+							<button
+								class="md:hidden flex items-center gap-1 text-xs font-bold text-slate-400 uppercase tracking-wide"
+								(click)="statsExpanded.set(!statsExpanded())"
+							>
+								Détails
+								<iconify-icon [icon]="statsExpanded() ? 'mdi:chevron-up' : 'mdi:chevron-down'" class="text-base"></iconify-icon>
+							</button>
+						</div>
+						<div [class]="statsExpanded() ? 'flex flex-col gap-3 mt-3' : 'hidden md:flex md:flex-col md:gap-3 md:mt-3'">
 							@for (stat of STAT_DEFS; track stat.key) {
-								@let pick = getOpponentPickForStat(stat.key);
+								@let pick = getMyPickForStat(stat.key);
 								<div class="flex items-center gap-3">
-									<span class="text-xs font-black uppercase w-10 text-right flex-shrink-0 text-slate-500">{{ stat.label }}</span>
+									<span class="text-xs font-black uppercase w-10 text-right flex-shrink-0" [ngClass]="stat.colorClass">{{ stat.label }}</span>
 									<div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-										<div class="h-full rounded-full bg-blue-500 transition-all duration-500"
+										<div class="h-full rounded-full transition-all duration-500" [ngClass]="stat.bgClass"
 											[style.width]="pick ? getStatBarWidth(pick.value) : '0%'"></div>
 									</div>
-									<span class="text-sm font-black text-slate-300 w-8 text-right flex-shrink-0">{{ pick ? pick.value : '—' }}</span>
+									<span class="text-sm font-black text-white w-8 text-right flex-shrink-0">{{ pick ? pick.value : '—' }}</span>
 								</div>
 							}
 						</div>
 						<div class="mt-4 pt-4 border-t border-slate-700 flex justify-between items-center">
 							<span class="text-sm font-bold text-slate-400">Total</span>
-							<span class="text-2xl font-black text-blue-400">{{ opponentTotal() }}</span>
+							<span class="text-2xl font-black text-yellow-400">{{ myTotal() }}</span>
 						</div>
 					</div>
-				}
+
+					<!-- Adversaire (multi) -->
+					@if (!isSolo()) {
+						<div class="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6">
+							<div class="flex items-center justify-between mb-1">
+								<p class="text-xs font-bold text-blue-400/80 uppercase tracking-widest">Adversaire</p>
+								<button
+									class="md:hidden flex items-center gap-1 text-xs font-bold text-slate-400 uppercase tracking-wide"
+									(click)="statsExpanded.set(!statsExpanded())"
+								>
+									Détails
+									<iconify-icon [icon]="statsExpanded() ? 'mdi:chevron-up' : 'mdi:chevron-down'" class="text-base"></iconify-icon>
+								</button>
+							</div>
+							<div [class]="statsExpanded() ? 'flex flex-col gap-3 mt-3' : 'hidden md:flex md:flex-col md:gap-3 md:mt-3'">
+								@for (stat of STAT_DEFS; track stat.key) {
+									@let pick = getOpponentPickForStat(stat.key);
+									<div class="flex items-center gap-3">
+										<span class="text-xs font-black uppercase w-10 text-right flex-shrink-0" [ngClass]="stat.colorClass">{{ stat.label }}</span>
+										<div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+											<div class="h-full rounded-full transition-all duration-500" [ngClass]="stat.bgClass"
+												[style.width]="pick ? getStatBarWidth(pick.value) : '0%'"></div>
+										</div>
+										<span class="text-sm font-black text-slate-300 w-8 text-right flex-shrink-0">{{ pick ? pick.value : '—' }}</span>
+									</div>
+								}
+							</div>
+							<div class="mt-4 pt-4 border-t border-slate-700 flex justify-between items-center">
+								<span class="text-sm font-bold text-slate-400">Total</span>
+								<span class="text-2xl font-black text-blue-400">{{ opponentTotal() }}</span>
+							</div>
+						</div>
+					}
+				</div>
 
 				<!-- Actions -->
 				<div class="flex flex-col gap-2">

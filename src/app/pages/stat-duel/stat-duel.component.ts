@@ -99,6 +99,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
   // ─── UI state ────────────────────────────────────────────────────────────────
   showHelpModal = signal(false);
+  statsExpanded = signal(false);
 
   // ─── Partage lien ────────────────────────────────────────────────────────────
   inviteLink = '';
