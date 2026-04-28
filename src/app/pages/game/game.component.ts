@@ -148,8 +148,9 @@ export class GameComponent implements OnInit, OnDestroy {
 				}
 			}
 
-			// Animation de duel au démarrage de la partie
-			if (r?.status === 'playing' && !this.duelShown) {
+			// Animation de duel au démarrage de la partie (pas rejoué sur F5)
+			const introKey = `duel-intro-shown-${this.roomId()}`;
+			if (r?.status === 'playing' && !this.duelShown && !sessionStorage.getItem(introKey)) {
 				untracked(() => { this.triggerDuelIntro(r.player1_id, r.player2_id ?? null); });
 			}
 
@@ -196,6 +197,7 @@ export class GameComponent implements OnInit, OnDestroy {
 	/** Charge les profils des deux joueurs et affiche l'animation de duel. */
 	private async triggerDuelIntro(player1Id: string, player2Id: string | null): Promise<void> {
 		this.duelShown = true;
+		sessionStorage.setItem(`duel-intro-shown-${this.roomId()}`, '1');
 		try {
 			const fetchProfile = (id: string | null) =>
 				id
