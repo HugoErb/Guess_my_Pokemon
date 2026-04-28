@@ -143,6 +143,7 @@ export class DraftComponent {
   readonly phase = signal<'loading' | 'draft' | 'complete'>('loading');
   readonly showScore = signal(false);
   readonly showHelpModal = signal(false);
+  readonly isResetting = signal(false);
 
   readonly lockedCount = computed(() => this.lockedIndices().size);
   readonly selectedPokemon = signal<Pokemon | null>(null);
@@ -224,11 +225,71 @@ export class DraftComponent {
     return Math.round(((s + c) / 2) * 10) / 10;
   });
 
+  private readonly STORAGE_KEY = 'draft_state';
+
+  private saveState(): void {
+    const state = {
+      slots: this.slots().map(p => p?.id ?? null),
+      lockedIndices: [...this.lockedIndices()],
+      lockedPokemon: this.lockedPokemon().map(p => p?.id ?? null),
+      usedIds: [...this.usedIds()],
+      phase: this.phase(),
+      showScore: this.showScore(),
+    };
+    sessionStorage.setItem(this.STORAGE_KEY, JSON.stringify(state));
+  }
+
+  private loadSavedState(): Record<string, unknown> | null {
+    try {
+      const raw = sessionStorage.getItem(this.STORAGE_KEY);
+      return raw ? JSON.parse(raw) as Record<string, unknown> : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private clearSavedState(): void {
+    sessionStorage.removeItem(this.STORAGE_KEY);
+  }
+
+  private restoreState(saved: Record<string, unknown>): void {
+    const all = this.allPokemon();
+    const byId = new Map(all.map(p => [p.id, p]));
+
+    const slotIds = saved['slots'] as (number | null)[];
+    const lockedIds = saved['lockedPokemon'] as (number | null)[];
+    const slots = slotIds.map(id => (id !== null ? (byId.get(id) ?? null) : null));
+    const lockedPokemon = lockedIds.map(id => (id !== null ? (byId.get(id) ?? null) : null));
+
+    const allFound = [...slots, ...lockedPokemon]
+      .filter(id => id !== null)
+      .every(p => p !== undefined);
+    if (!allFound) {
+      this.initDraft();
+      return;
+    }
+
+    this.slots.set(slots);
+    this.lockedIndices.set(new Set(saved['lockedIndices'] as number[]));
+    this.lockedPokemon.set(lockedPokemon);
+    this.usedIds.set(new Set(saved['usedIds'] as number[]));
+    this.slotStates.set(['idle', 'idle', 'idle', 'idle', 'idle', 'idle']);
+    this.phase.set(saved['phase'] as 'draft' | 'complete');
+    this.showScore.set(saved['showScore'] as boolean);
+  }
+
   constructor() {
     effect(() => {
       const all = this.allPokemon();
       if (all.length > 0 && this.phase() === 'loading') {
-        untracked(() => this.initDraft());
+        untracked(() => {
+          const saved = this.loadSavedState();
+          if (saved) {
+            this.restoreState(saved);
+          } else {
+            this.initDraft();
+          }
+        });
       }
     });
 
@@ -256,6 +317,7 @@ export class DraftComponent {
     this.slotStates.set(['idle', 'idle', 'idle', 'idle', 'idle', 'idle']);
     this.showScore.set(false);
     this.phase.set('draft');
+    this.saveState();
   }
 
   onSlotClick(index: number): void {
@@ -277,9 +339,15 @@ export class DraftComponent {
 
     if (unlocked.length === 0) {
       this.phase.set('complete');
-      setTimeout(() => this.showScore.set(true), 700);
+      this.saveState();
+      setTimeout(() => {
+        this.showScore.set(true);
+        this.saveState();
+      }, 700);
       return;
     }
+
+    this.saveState();
 
     // Animation sortie
     this.slotStates.update(states => {
@@ -342,6 +410,7 @@ export class DraftComponent {
           unlocked.forEach(i => (next[i] = 'idle'));
           return next;
         });
+        this.saveState();
       }, unlocked.length * 60 + 400);
     });
   }
@@ -358,6 +427,7 @@ export class DraftComponent {
   }
 
   replay(): void {
+    this.clearSavedState();
     this.phase.set('loading');
     setTimeout(() => {
       if (this.allPokemon().length > 0) {
@@ -368,10 +438,16 @@ export class DraftComponent {
 
   resetTeam(): void {
     if (this.phase() !== 'draft') return;
-    this.initDraft();
+    this.clearSavedState();
+    this.isResetting.set(true);
+    setTimeout(() => {
+      this.initDraft();
+      this.isResetting.set(false);
+    }, 50);
   }
 
   goHome(): void {
+    this.clearSavedState();
     void this.router.navigate(['/home']);
   }
 

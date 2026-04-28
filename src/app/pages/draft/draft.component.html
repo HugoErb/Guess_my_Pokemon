@@ -60,6 +60,7 @@
 			</p>
 
 			<!-- Grille des 6 slots -->
+			@if (!isResetting()) {
 			<div
 				class="w-full max-w-6xl grid grid-cols-2 lg:grid-cols-6 gap-x-2 gap-y-4 md:gap-5"
 				[@slotsGrid]
@@ -156,6 +157,15 @@
 					</div>
 				}
 			</div>
+		} @else {
+		<div class="w-full max-w-6xl grid grid-cols-2 lg:grid-cols-6 gap-x-2 gap-y-4 md:gap-5">
+			@for (_ of [0,1,2,3,4,5]; track $index) {
+				<div class="bg-slate-800 border border-slate-700 rounded-xl md:rounded-2xl p-2 md:p-5 h-32 md:h-64 flex items-center justify-center animate-pulse">
+					<iconify-icon [icon]="ICONS.pokeball" class="text-2xl md:text-3xl text-slate-700"></iconify-icon>
+				</div>
+			}
+		</div>
+		} <!-- end @if (!isResetting()) -->
 		</main>
 	}
 
