@@ -17,6 +17,7 @@ export const ICONS = {
   skull: 'mdi:skull',
   pokedex: 'mdi:book-open-page-variant',
   timer: 'mdi:timer-sand',      // animé : animate-pulse
+  guess: 'ri:question-fill',
 
   // Auth
   email: 'mdi:email-outline',
@@ -52,12 +53,12 @@ export const ICONS = {
   evolution: 'mdi:auto-fix', // can represent evolution/upgrade
 
   // Team Builder
-  draft: 'mdi:cards-playing',
+  draft: 'arcticons:pokemon-masters-ex-alt-2',
   lock: 'mdi:lock',
   star: 'mdi:star',
 
   // Duel de Base Stats
-  statDuel: 'mdi:chart-bar',
+  statDuel: 'famicons:stats-chart',
   robot: 'mdi:robot',
 } as const;
 
