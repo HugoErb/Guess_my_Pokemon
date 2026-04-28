@@ -98,7 +98,7 @@
 	<main class="flex-1 flex flex-col items-center justify-center px-4 py-8">
 		<h1 class="text-3xl font-bold mb-10 text-center">
 			Bienvenue,
-			<span class="text-red-400">{{ isLoadingProfile ? "..." : username }}</span>
+			<span class="text-red-400">{{ username || '...' }}</span>
 			&nbsp;!
 		</h1>
 

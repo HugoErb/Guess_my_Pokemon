@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter, CUSTOM_ELEMENTS_SCHEMA, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter, CUSTOM_ELEMENTS_SCHEMA, HostListener, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { SupabaseService } from '../../services/supabase.service';
@@ -28,6 +28,8 @@ export class FriendsCardComponent implements OnInit, OnDestroy {
 	pendingRequests = signal<FriendRequest[]>([]);
 	isLoadingFriends = signal(true);
 	confirmDeleteFriend = signal<FriendWithStatus | null>(null);
+	openMenuFriend = signal<FriendWithStatus | null>(null);
+	menuPosition = signal<{ top: number; right: number } | null>(null);
 
 	hasPendingRequests = computed(() => this.pendingRequests().length > 0);
 
@@ -129,6 +131,30 @@ export class FriendsCardComponent implements OnInit, OnDestroy {
 		this.confirmDeleteFriend.set(null);
 		await this.supabaseService.removeFriend(friend.id);
 		await this.reload();
+	}
+
+	@HostListener('document:click')
+	onDocumentClick(): void {
+		this.openMenuFriend.set(null);
+		this.menuPosition.set(null);
+	}
+
+	toggleMenu(friend: FriendWithStatus, event: Event): void {
+		event.stopPropagation();
+		if (this.openMenuFriend()?.id === friend.id) {
+			this.openMenuFriend.set(null);
+			this.menuPosition.set(null);
+		} else {
+			const btn = event.currentTarget as HTMLElement;
+			const rect = btn.getBoundingClientRect();
+			this.menuPosition.set({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+			this.openMenuFriend.set(friend);
+		}
+	}
+
+	closeMenu(): void {
+		this.openMenuFriend.set(null);
+		this.menuPosition.set(null);
 	}
 
 	setTab(tab: 'friends' | 'requests' | 'add'): void {
