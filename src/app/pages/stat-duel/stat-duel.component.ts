@@ -93,6 +93,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
   // ─── Abonnements ─────────────────────────────────────────────────────────────
   private roomSub?: Subscription;
+  private waitingPollInterval: ReturnType<typeof setInterval> | null = null;
 
   // ─── Dev mode bot ────────────────────────────────────────────────────────────
   private botPickedRounds = new Set<number>();
@@ -130,6 +131,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.stopClock();
     this.roomSub?.unsubscribe();
+    this.stopWaitingPoll();
   }
 
   // ─── Mode select ─────────────────────────────────────────────────────────────
@@ -180,6 +182,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     this.roomSub = this.supabaseService.subscribeToStatDuelRoom(roomId).subscribe(async (updated) => {
       this.room.set(updated);
+      if (updated.player2_id) this.stopWaitingPoll();
 
       if (updated.status === 'playing' && this.phase() === 'waiting') {
         await this.loadPokemonAndStartMulti(updated);
@@ -202,6 +205,29 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }
       }
     });
+
+    this.startWaitingPoll(roomId);
+  }
+
+  private startWaitingPoll(roomId: string): void {
+    this.waitingPollInterval = setInterval(async () => {
+      if (this.phase() !== 'waiting' || this.room()?.player2_id) {
+        this.stopWaitingPoll();
+        return;
+      }
+      const refreshed = await this.supabaseService.getStatDuelRoom(roomId);
+      if (refreshed.player2_id) {
+        this.room.set(refreshed);
+        this.stopWaitingPoll();
+      }
+    }, 3000);
+  }
+
+  private stopWaitingPoll(): void {
+    if (this.waitingPollInterval) {
+      clearInterval(this.waitingPollInterval);
+      this.waitingPollInterval = null;
+    }
   }
 
   private async loadPokemonAndStartMulti(room: StatDuelRoom): Promise<void> {
