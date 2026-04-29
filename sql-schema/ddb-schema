@@ -1,0 +1,66 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.friendships (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  requester_id uuid NOT NULL,
+  recipient_id uuid NOT NULL,
+  status text NOT NULL DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'accepted'::text])),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT friendships_pkey PRIMARY KEY (id),
+  CONSTRAINT friendships_requester_id_fkey FOREIGN KEY (requester_id) REFERENCES auth.users(id),
+  CONSTRAINT friendships_recipient_id_fkey FOREIGN KEY (recipient_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.game_invites (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  sender_id uuid NOT NULL,
+  recipient_id uuid NOT NULL,
+  room_id uuid NOT NULL,
+  status text NOT NULL DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'accepted'::text, 'declined'::text])),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  game_mode text NOT NULL DEFAULT 'guess_my_pokemon'::text,
+  CONSTRAINT game_invites_pkey PRIMARY KEY (id),
+  CONSTRAINT game_invites_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES auth.users(id),
+  CONSTRAINT game_invites_recipient_id_fkey FOREIGN KEY (recipient_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.guess_pokemon_rooms (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  player1_id uuid NOT NULL,
+  player2_id uuid,
+  pokemon_p1 integer,
+  pokemon_p2 integer,
+  p1_ready boolean NOT NULL DEFAULT false,
+  p2_ready boolean NOT NULL DEFAULT false,
+  current_turn uuid,
+  status USER-DEFINED NOT NULL DEFAULT 'waiting'::room_status,
+  winner_id uuid,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  settings jsonb,
+  last_guess integer,
+  CONSTRAINT guess_pokemon_rooms_pkey PRIMARY KEY (id),
+  CONSTRAINT rooms_player1_id_fkey FOREIGN KEY (player1_id) REFERENCES auth.users(id),
+  CONSTRAINT rooms_player2_id_fkey FOREIGN KEY (player2_id) REFERENCES auth.users(id),
+  CONSTRAINT rooms_current_turn_fkey FOREIGN KEY (current_turn) REFERENCES auth.users(id),
+  CONSTRAINT rooms_winner_id_fkey FOREIGN KEY (winner_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.profiles (
+  id uuid NOT NULL,
+  username text NOT NULL UNIQUE,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  avatar_url text,
+  CONSTRAINT profiles_pkey PRIMARY KEY (id),
+  CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.stat_duel_rooms (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  player1_id uuid NOT NULL,
+  player2_id uuid,
+  status text DEFAULT 'waiting'::text,
+  pokemon_ids ARRAY DEFAULT '{}'::integer[],
+  p1_picks jsonb DEFAULT '[]'::jsonb,
+  p2_picks jsonb DEFAULT '[]'::jsonb,
+  round_start_at timestamp with time zone,
+  winner text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT stat_duel_rooms_pkey PRIMARY KEY (id)
+);
