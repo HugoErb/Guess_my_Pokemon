@@ -24,12 +24,14 @@ import {
 import confetti from 'canvas-confetti';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { DraftHelpModalComponent } from '../../components/draft-help-modal/draft-help-modal.component';
+import { ModeSelectCardComponent } from '../../components/mode-select-card/mode-select-card.component';
+import { ModeSelectComponent } from '../../components/mode-select-card/mode-select.component';
 
 type SlotState = 'idle' | 'leaving' | 'entering';
 
 @Component({
   selector: 'app-draft',
-  imports: [NgClass, PokemonCardComponent, DraftHelpModalComponent],
+  imports: [NgClass, PokemonCardComponent, DraftHelpModalComponent, ModeSelectCardComponent, ModeSelectComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   animations: [slotsGridAnimation, slotStateAnimation, lockAnimation, scoreRevealAnimation],
   templateUrl: './draft.component.html',

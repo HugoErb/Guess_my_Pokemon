@@ -8,6 +8,9 @@ import { Pokemon } from '../../models/pokemon.model';
 import { StatDuelRoom, StatPick } from '../../models/room.model';
 import { ICONS } from '../../constants/icons';
 import { DuelIntroComponent } from '../../components/duel-intro/duel-intro.component';
+import { ModeSelectCardComponent } from '../../components/mode-select-card/mode-select-card.component';
+import { ModeSelectComponent } from '../../components/mode-select-card/mode-select.component';
+import { environment } from '../../../environments/environment';
 
 type Phase = 'mode-select' | 'waiting' | 'playing' | 'result';
 
@@ -33,7 +36,7 @@ const ROUND_DURATION_MS = 11_000; // 10s pick + 1s transition
 @Component({
   selector: 'app-stat-duel',
   standalone: true,
-  imports: [NgClass, DuelIntroComponent],
+  imports: [NgClass, DuelIntroComponent, ModeSelectCardComponent, ModeSelectComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './stat-duel.component.html',
   styles: [`
@@ -48,6 +51,7 @@ const ROUND_DURATION_MS = 11_000; // 10s pick + 1s transition
 export class StatDuelComponent implements OnInit, OnDestroy {
   protected readonly ICONS = ICONS;
   protected readonly STAT_DEFS = STAT_DEFS;
+  protected readonly isDevEnv = environment.devMode;
   protected readonly ROUND_COUNT = ROUND_COUNT;
   protected readonly INDICES = [0, 1, 2, 3, 4, 5];
 

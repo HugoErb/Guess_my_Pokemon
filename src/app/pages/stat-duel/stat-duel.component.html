@@ -78,41 +78,31 @@
 
 		<!-- ─────────────────────────────────── Phase : mode-select ─── -->
 		@if (phase() === 'mode-select') {
-			<div class="flex-1 flex flex-col items-center justify-center px-4 py-8">
-			<div class="w-full max-w-sm flex flex-col gap-4">
-				<h2 class="text-2xl font-black text-center text-white mb-2">Choisir un mode</h2>
+			<div class="flex-1 flex flex-col items-center justify-center gap-6">
+				<app-mode-select title="Duel de Base Stats" [icon]="ICONS.statDuel" iconColor="text-yellow-300" iconSize="text-4xl">
+					<app-mode-select-card
+						title="Un joueur"
+						description="Choisis les meilleures stats de 6 Pokémon et maximise ton total de base stats."
+						[icon]="ICONS.user"
+						accent="yellow"
+						(selected)="startSolo()"
+					/>
+					<app-mode-select-card
+						title="Deux joueurs"
+						description="Affronte un ami en choisissant les meilleures stats de 6 Pokémon communs."
+						[icon]="ICONS.friends"
+						accent="green"
+						(selected)="createMultiRoom()"
+					/>
+				</app-mode-select>
 
-				<!-- Solo -->
-				<button (click)="startSolo()"
-					class="w-full rounded-xl bg-red-600 hover:bg-red-500 transition-all flex items-center gap-4 px-5 py-4">
-					<div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
-						<iconify-icon [icon]="ICONS.user" class="text-xl text-white"></iconify-icon>
-					</div>
-					<div class="flex flex-col items-start">
-						<span class="text-base font-black text-white">Solo</span>
-						<span class="text-xs font-bold text-red-200 uppercase tracking-widest">1 joueur</span>
-					</div>
-				</button>
-
-				<!-- Multijoueur -->
-				<button (click)="createMultiRoom()"
-					class="w-full rounded-xl bg-red-600 hover:bg-red-500 transition-all flex items-center gap-4 px-5 py-4">
-					<div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
-						<iconify-icon [icon]="ICONS.friends" class="text-xl text-white"></iconify-icon>
-					</div>
-					<div class="flex flex-col items-start">
-						<span class="text-base font-black text-white">Multijoueur</span>
-						<span class="text-xs font-bold text-red-200 uppercase tracking-widest">2 joueurs en ligne</span>
-					</div>
-				</button>
-
-				<!-- Mode Dev -->
-				<button (click)="startDevMode()"
-					class="w-full bg-slate-800 border border-dashed border-slate-600 hover:border-slate-500 rounded-2xl p-4 flex items-center gap-3 transition-all">
-					<iconify-icon [icon]="ICONS.robot" class="text-xl text-slate-500"></iconify-icon>
-					<span class="text-sm font-bold text-slate-500">Mode Dev — 2J vs Bot</span>
-				</button>
-			</div>
+				@if (isDevEnv) {
+					<button (click)="startDevMode()"
+						class="bg-slate-800 border border-dashed border-slate-600 hover:border-slate-500 rounded-2xl p-4 flex items-center gap-3 transition-all">
+						<iconify-icon [icon]="ICONS.robot" class="text-xl text-slate-500"></iconify-icon>
+						<span class="text-sm font-bold text-slate-500">Mode Dev — 2J vs Bot</span>
+					</button>
+				}
 			</div>
 		}
 
