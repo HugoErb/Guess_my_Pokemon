@@ -231,6 +231,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   }
 
   private async loadPokemonAndStartMulti(room: StatDuelRoom): Promise<void> {
+    if (this.phase() === 'playing') return;
     const allPokemon = await this.loadAll();
     const pokemonMap = new Map(allPokemon.map(p => [p.id, p]));
     const list = room.pokemon_ids.map(id => pokemonMap.get(id)).filter((p): p is Pokemon => !!p);
@@ -259,15 +260,38 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
   // ─── Lancer la partie multi (P1) ─────────────────────────────────────────────
 
+  private isLaunching = false;
+
   async launchMultiGame(): Promise<void> {
-    if (!this.roomId) return;
-    const allPokemon = await this.loadAll();
-    const pokemonIds = this.shuffle(allPokemon).slice(0, ROUND_COUNT).map(p => p.id);
-    await this.supabaseService.updateStatDuelRoom(this.roomId, {
-      status: 'playing',
-      pokemon_ids: pokemonIds,
-      round_start_at: new Date().toISOString(),
-    });
+    if (this.isLaunching || !this.roomId) return;
+    const currentRoom = this.room();
+    if (!currentRoom) return;
+
+    this.isLaunching = true;
+    try {
+      const allPokemon = await this.loadAll();
+      const pokemonIds = this.shuffle(allPokemon).slice(0, ROUND_COUNT).map(p => p.id);
+      const roundStartAt = new Date().toISOString();
+
+      await this.supabaseService.updateStatDuelRoom(this.roomId, {
+        status: 'playing',
+        pokemon_ids: pokemonIds,
+        round_start_at: roundStartAt,
+      });
+
+      // P1 transite directement — la subscription ne renvoie pas toujours l'écho
+      // au client qui a émis le changement (comportement Supabase realtime)
+      await this.loadPokemonAndStartMulti({
+        ...currentRoom,
+        status: 'playing',
+        pokemon_ids: pokemonIds,
+        round_start_at: roundStartAt,
+        p1_picks: [],
+        p2_picks: [],
+      });
+    } finally {
+      this.isLaunching = false;
+    }
   }
 
   // ─── Horloges ────────────────────────────────────────────────────────────────
