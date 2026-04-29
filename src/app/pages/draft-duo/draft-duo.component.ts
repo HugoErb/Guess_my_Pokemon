@@ -27,14 +27,13 @@ import {
 import confetti from 'canvas-confetti';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { DraftHelpModalComponent } from '../../components/draft-help-modal/draft-help-modal.component';
-import { FriendsCardComponent } from '../../components/friends-card/friends-card.component';
 
 type DuoPhase = 'loading' | 'waiting' | 'playing' | 'waiting-opponent' | 'complete';
 type SlotState = 'idle' | 'leaving' | 'entering';
 
 @Component({
   selector: 'app-draft-duo',
-  imports: [NgClass, PokemonCardComponent, DraftHelpModalComponent, FriendsCardComponent],
+  imports: [NgClass, PokemonCardComponent, DraftHelpModalComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   animations: [slotsGridAnimation, slotStateAnimation, lockAnimation, scoreRevealAnimation],
   templateUrl: './draft-duo.component.html',
@@ -485,12 +484,6 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
       this.linkCopied.set(true);
       setTimeout(() => this.linkCopied.set(false), 2000);
     } catch { /* ignore */ }
-  }
-
-  async onInviteRequested(event: { friendId: string; username: string; gameMode: 'guess_my_pokemon' | 'stat_duel' | 'draft_duo' }): Promise<void> {
-    try {
-      await this.supabaseService.sendDirectGameInvite(event.friendId, this.roomId(), 'draft_duo');
-    } catch { /* silencieux */ }
   }
 
   // ─── Navigation ──────────────────────────────────────────────────────────────
