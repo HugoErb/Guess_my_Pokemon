@@ -218,14 +218,19 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
   private startWaitingPoll(roomId: string): void {
     this.waitingPollInterval = setInterval(async () => {
-      if (this.phase() !== 'waiting' || this.room()?.player2_id) {
+      if (this.phase() !== 'waiting') {
         this.stopWaitingPoll();
         return;
       }
       const refreshed = await this.supabaseService.getStatDuelRoom(roomId);
-      if (refreshed.player2_id) {
+
+      if (!this.room()?.player2_id && refreshed.player2_id) {
         this.room.set(refreshed);
-        this.stopWaitingPoll();
+      }
+
+      if (refreshed.status === 'playing' && this.phase() === 'waiting') {
+        this.room.set(refreshed);
+        await this.loadPokemonAndStartMulti(refreshed);
       }
     }, 3000);
   }
