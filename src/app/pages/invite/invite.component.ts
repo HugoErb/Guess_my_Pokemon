@@ -1,5 +1,5 @@
 import { Component, input, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { SupabaseService } from '../../services/supabase.service';
 import { ICONS } from '../../constants/icons';
@@ -20,18 +20,53 @@ export class InviteComponent implements OnInit {
 	constructor(
 		private readonly supabaseService: SupabaseService,
 		private readonly router: Router,
+		private readonly route: ActivatedRoute,
 	) {}
 
-	/** Lifecycle Angular — charge la room à l'initialisation. */
 	ngOnInit(): void {
-		this.loadRoom();
+		const mode = this.route.snapshot.queryParamMap.get('mode');
+		if (mode === 'draft_duo') {
+			this.loadDraftDuoRoom();
+		} else {
+			this.loadRoom();
+		}
 	}
 
-	/**
-	 * Vérifie la validité de la room et gère la logique de rejoindre :
-	 * redirige vers le lobby si déjà membre, rejoint sinon,
-	 * ou affiche une erreur si la room est pleine ou invalide.
-	 */
+	private async loadDraftDuoRoom(): Promise<void> {
+		try {
+			const room = await this.supabaseService.getDraftDuoRoom(this.roomId());
+
+			if (room?.status !== 'waiting') {
+				this.state = 'error';
+				this.errorMessage = "Cette invitation n'est plus valide.";
+				return;
+			}
+
+			if (room.player2_id) {
+				this.state = 'full';
+				this.errorMessage = 'Cette partie est déjà complète.';
+				return;
+			}
+
+			const currentUser = await firstValueFrom(this.supabaseService.authReady$);
+			if (currentUser?.id === room.player1_id) {
+				this.router.navigate(['/draft-duo', this.roomId()]);
+				return;
+			}
+
+			try {
+				await this.supabaseService.joinDraftDuoRoom(this.roomId());
+				await this.router.navigate(['/draft-duo', this.roomId()]);
+			} catch {
+				this.state = 'error';
+				this.errorMessage = 'Impossible de rejoindre la partie.';
+			}
+		} catch {
+			this.state = 'error';
+			this.errorMessage = "Cette invitation n'est plus valide.";
+		}
+	}
+
 	private async loadRoom(): Promise<void> {
 		try {
 			const room = await this.supabaseService.getRoomById(this.roomId());
@@ -69,7 +104,6 @@ export class InviteComponent implements OnInit {
 		}
 	}
 
-	/** Refuse l'invitation et redirige vers l'accueil. */
 	decline(): void {
 		this.router.navigate(['/home']);
 	}

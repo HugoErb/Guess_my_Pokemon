@@ -53,7 +53,7 @@ export interface Friendship {
   created_at: string;
 }
 
-export type GameMode = 'guess_my_pokemon' | 'stat_duel';
+export type GameMode = 'guess_my_pokemon' | 'stat_duel' | 'draft_duo';
 
 export interface GameInvite {
   id: string;
@@ -80,6 +80,17 @@ export interface StatDuelRoom {
   p1_picks: StatPick[];
   p2_picks: StatPick[];
   round_start_at: string | null;
+  winner: 'player1' | 'player2' | 'draw' | null;
+  created_at: string;
+}
+
+export interface DraftDuoRoom {
+  id: string;
+  player1_id: string;
+  player2_id: string | null;
+  status: 'waiting' | 'playing' | 'finished';
+  p1_team: number[];
+  p2_team: number[];
   winner: 'player1' | 'player2' | 'draw' | null;
   created_at: string;
 }

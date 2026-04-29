@@ -51,6 +51,24 @@ CREATE TABLE public.profiles (
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 );
+CREATE TABLE public.draft_duo_rooms (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  player1_id uuid NOT NULL,
+  player2_id uuid,
+  status text NOT NULL DEFAULT 'waiting'::text,
+  p1_team integer[] NOT NULL DEFAULT '{}'::integer[],
+  p2_team integer[] NOT NULL DEFAULT '{}'::integer[],
+  winner text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT draft_duo_rooms_pkey PRIMARY KEY (id),
+  CONSTRAINT draft_duo_rooms_player1_id_fkey FOREIGN KEY (player1_id) REFERENCES auth.users(id),
+  CONSTRAINT draft_duo_rooms_player2_id_fkey FOREIGN KEY (player2_id) REFERENCES auth.users(id)
+);
+-- RLS
+ALTER TABLE public.draft_duo_rooms ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "draft_duo_rooms_select" ON public.draft_duo_rooms FOR SELECT USING (auth.uid() = player1_id OR auth.uid() = player2_id OR status = 'waiting');
+CREATE POLICY "draft_duo_rooms_insert" ON public.draft_duo_rooms FOR INSERT WITH CHECK (auth.uid() = player1_id);
+CREATE POLICY "draft_duo_rooms_update" ON public.draft_duo_rooms FOR UPDATE USING (auth.uid() = player1_id OR auth.uid() = player2_id OR (player2_id IS NULL AND status = 'waiting'));
 CREATE TABLE public.stat_duel_rooms (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   player1_id uuid NOT NULL,

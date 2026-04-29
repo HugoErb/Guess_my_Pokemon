@@ -192,6 +192,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     await this.supabaseService.acceptGameInvite(invite.id, invite.room_id, invite.game_mode);
     if (invite.game_mode === 'stat_duel') {
       this.router.navigate(['/stat-duel', invite.room_id]);
+    } else if (invite.game_mode === 'draft_duo') {
+      this.router.navigate(['/draft-duo', invite.room_id]);
     } else {
       this.router.navigate(['/lobby', invite.room_id]);
     }
@@ -210,15 +212,17 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // ─── Invitation envoyée à un ami ─────────────────────────────────────────────
 
-  async onInviteRequested(event: { friendId: string; username: string; gameMode: 'guess_my_pokemon' | 'stat_duel' }): Promise<void> {
+  async onInviteRequested(event: { friendId: string; username: string; gameMode: 'guess_my_pokemon' | 'stat_duel' | 'draft_duo' }): Promise<void> {
     this.isCreating = true;
     this.createError = '';
     try {
-      const { roomId, inviteId } = await this.supabaseService.sendGameInvite(event.friendId, event.gameMode);
+      const { roomId } = await this.supabaseService.sendGameInvite(event.friendId, event.gameMode);
       if (event.gameMode === 'stat_duel') {
         this.router.navigate(['/stat-duel', roomId]);
+      } else if (event.gameMode === 'draft_duo') {
+        this.router.navigate(['/draft-duo', roomId]);
       } else {
-        this.router.navigate(['/lobby', roomId], { queryParams: { inviteId, friendName: event.username } });
+        this.router.navigate(['/lobby', roomId], { queryParams: { friendName: event.username } });
       }
     } catch (err) {
       console.error('[onInviteRequested] erreur:', err);

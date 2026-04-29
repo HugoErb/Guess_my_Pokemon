@@ -12,5 +12,6 @@ export const routes: Routes = [
   { path: 'draft', loadComponent: () => import('./pages/draft/draft.component').then(m => m.DraftComponent), canActivate: [authGuard] },
   { path: 'stat-duel', loadComponent: () => import('./pages/stat-duel/stat-duel.component').then(m => m.StatDuelComponent), canActivate: [authGuard] },
   { path: 'stat-duel/:roomId', loadComponent: () => import('./pages/stat-duel/stat-duel.component').then(m => m.StatDuelComponent), canActivate: [authGuard] },
+  { path: 'draft-duo/:roomId', loadComponent: () => import('./pages/draft-duo/draft-duo.component').then(m => m.DraftDuoComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '/login' }
 ];

@@ -1,4 +1,4 @@
-import { Component, output, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, Input, output, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ICONS } from '../../constants/icons';
 import { modalAnimation } from '../../constants/animations';
 
@@ -28,7 +28,9 @@ import { modalAnimation } from '../../constants/animations';
 					</div>
 					<div>
 						<h2 class="text-lg font-bold text-white uppercase tracking-wider">Aide</h2>
-						<p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.1em]">Team Builder — règles et calcul des notes</p>
+						<p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.1em]">
+							Team Builder {{ mode === 'duo' ? 'Duo' : 'Solo' }} — règles et calcul des notes
+						</p>
 					</div>
 				</div>
 
@@ -48,16 +50,27 @@ import { modalAnimation } from '../../constants/animations';
 							</li>
 							<li class="flex gap-3">
 								<span class="text-yellow-400 font-bold text-base leading-snug shrink-0">2.</span>
-								<span><strong class="text-white">Clique sur un Pokémon</strong> pour le garder dans ton équipe. Les cinq autres sont remplacés par de nouveaux tirages.</span>
+								@if (mode === 'duo') {
+									<span>Tu as <strong class="text-white">10 secondes</strong> pour cliquer sur un Pokémon et le garder dans ton équipe. Sans action, un Pokémon est automatiquement sélectionné pour toi.</span>
+								} @else {
+									<span><strong class="text-white">Clique sur un Pokémon</strong> pour le garder dans ton équipe. Les cinq autres sont remplacés par de nouveaux tirages.</span>
+								}
 							</li>
 							<li class="flex gap-3">
 								<span class="text-yellow-400 font-bold text-base leading-snug shrink-0">3.</span>
 								<span>Répète jusqu'à avoir <strong class="text-white">verrouillé 6 Pokémon</strong>. Une fois tous sélectionnés, ton équipe est évaluée.</span>
 							</li>
-							<li class="flex gap-3">
-								<span class="text-yellow-400 font-bold text-base leading-snug shrink-0">4.</span>
-								<span>Consulte la fiche d'un Pokémon avec la <strong class="text-white">loupe</strong> qui apparaît sur chaque carte verrouillée.</span>
-							</li>
+							@if (mode === 'duo') {
+								<li class="flex gap-3">
+									<span class="text-yellow-400 font-bold text-base leading-snug shrink-0">4.</span>
+									<span>Tu n'as <strong class="text-white">pas besoin d'attendre</strong> ton adversaire pour sélectionner tes Pokémon. Tu vois sa progression en temps réel. Les résultats s'affichent quand les deux joueurs ont terminé.</span>
+								</li>
+							} @else {
+								<li class="flex gap-3">
+									<span class="text-yellow-400 font-bold text-base leading-snug shrink-0">4.</span>
+									<span>Consulte la fiche d'un Pokémon avec la <strong class="text-white">loupe</strong> qui apparaît sur chaque carte verrouillée.</span>
+								</li>
+							}
 						</ol>
 					</div>
 				</div>
@@ -95,74 +108,61 @@ import { modalAnimation } from '../../constants/animations';
 					</div>
 				</div>
 
-				<!-- Note Couverture de types -->
-				<div class="space-y-3">
-					<div class="flex items-center gap-3">
-						<div class="flex-1 h-px bg-slate-700"></div>
-						<span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Note Couverture de types</span>
-						<div class="flex-1 h-px bg-slate-700"></div>
-					</div>
+				<!-- Note Couverture de types (DUO uniquement) -->
+				@if (mode === 'duo') {
+					<div class="space-y-3">
+						<div class="flex items-center gap-3">
+							<div class="flex-1 h-px bg-slate-700"></div>
+							<span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Note Couverture de types</span>
+							<div class="flex-1 h-px bg-slate-700"></div>
+						</div>
 
-					<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 space-y-3">
-						<p class="text-sm text-slate-300">
-							Évalue l'équilibre défensif et offensif de ton équipe selon cinq critères pondérés.
-						</p>
+						<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 space-y-3">
+							<p class="text-sm text-slate-300">
+								Évalue l'efficacité offensive de ton équipe <strong class="text-white">contre les types de l'équipe adverse</strong>. Plus tu couvres les types de l'adversaire, meilleure est ta note — et moins bonne sera la sienne.
+							</p>
 
-						<div class="space-y-2">
-							<!-- Diversité -->
-							<div class="flex items-start gap-3 bg-slate-800/60 rounded-lg p-3">
-								<span class="text-[10px] font-black text-blue-400 uppercase tracking-wider shrink-0 mt-0.5 w-8 text-right">25%</span>
-								<div>
-									<div class="text-xs font-bold text-white mb-0.5">Diversité de types</div>
-									<p class="text-xs text-slate-400">Ratio de types uniques dans l'équipe. Plus tes Pokémon ont des types variés, meilleur est le score.</p>
+							<div class="space-y-2">
+								<div class="flex items-start gap-3 bg-slate-800/60 rounded-lg p-3">
+									<span class="text-[10px] font-black text-orange-400 uppercase tracking-wider shrink-0 mt-0.5 w-8 text-right">50%</span>
+									<div>
+										<div class="text-xs font-bold text-white mb-0.5">Couverture offensive</div>
+										<p class="text-xs text-slate-400">% des types adverses que tu peux toucher en super-efficace avec les types de ton équipe.</p>
+									</div>
 								</div>
-							</div>
 
-							<!-- Couverture offensive -->
-							<div class="flex items-start gap-3 bg-slate-800/60 rounded-lg p-3">
-								<span class="text-[10px] font-black text-orange-400 uppercase tracking-wider shrink-0 mt-0.5 w-8 text-right">30%</span>
-								<div>
-									<div class="text-xs font-bold text-white mb-0.5">Couverture offensive</div>
-									<p class="text-xs text-slate-400">Nombre de types adverses que ton équipe peut toucher en super-efficace. Plus tu couvres de types, mieux c'est.</p>
+								<div class="flex items-start gap-3 bg-slate-800/60 rounded-lg p-3">
+									<span class="text-[10px] font-black text-red-400 uppercase tracking-wider shrink-0 mt-0.5 w-8 text-right">30%</span>
+									<div>
+										<div class="text-xs font-bold text-white mb-0.5">Pokémon exploités</div>
+										<p class="text-xs text-slate-400">% des Pokémon adverses que tu peux toucher super-efficacement avec au moins un type de ton équipe.</p>
+									</div>
 								</div>
-							</div>
 
-							<!-- Faiblesse partagée -->
-							<div class="flex items-start gap-3 bg-slate-800/60 rounded-lg p-3">
-								<span class="text-[10px] font-black text-red-400 uppercase tracking-wider shrink-0 mt-0.5 w-8 text-right">25%</span>
-								<div>
-									<div class="text-xs font-bold text-white mb-0.5">Pénalité faiblesses partagées</div>
-									<p class="text-xs text-slate-400">Pénalise les équipes où plusieurs Pokémon ont la même faiblesse. Une équipe vulnérable au même type est fragile.</p>
-								</div>
-							</div>
-
-							<!-- Synergie défensive -->
-							<div class="flex items-start gap-3 bg-slate-800/60 rounded-lg p-3">
-								<span class="text-[10px] font-black text-green-400 uppercase tracking-wider shrink-0 mt-0.5 w-8 text-right">15%</span>
-								<div>
-									<div class="text-xs font-bold text-white mb-0.5">Synergie défensive</div>
-									<p class="text-xs text-slate-400">Proportion des faiblesses de l'équipe qui sont compensées par une résistance d'un autre membre.</p>
-								</div>
-							</div>
-
-							<!-- Immunités -->
-							<div class="flex items-start gap-3 bg-slate-800/60 rounded-lg p-3">
-								<span class="text-[10px] font-black text-purple-400 uppercase tracking-wider shrink-0 mt-0.5 w-8 text-right">5%</span>
-								<div>
-									<div class="text-xs font-bold text-white mb-0.5">Immunités</div>
-									<p class="text-xs text-slate-400">Bonus pour les Pokémon totalement immunisés contre certains types (ex. Spectre immunisé Normal).</p>
+								<div class="flex items-start gap-3 bg-slate-800/60 rounded-lg p-3">
+									<span class="text-[10px] font-black text-blue-400 uppercase tracking-wider shrink-0 mt-0.5 w-8 text-right">20%</span>
+									<div>
+										<div class="text-xs font-bold text-white mb-0.5">Résilience défensive</div>
+										<p class="text-xs text-slate-400">% des types de l'adversaire auxquels au moins un de tes Pokémon résiste.</p>
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
-				</div>
+				}
 
 				<!-- Note finale -->
 				<div class="bg-amber-900/20 border border-amber-700/40 rounded-xl px-4 py-3 flex gap-2 items-start">
 					<iconify-icon [icon]="ICONS.alert" class="text-amber-400 text-base shrink-0 mt-0.5"></iconify-icon>
-					<p class="text-xs text-amber-300">
-						La <strong class="text-white">note finale</strong> est la moyenne de la note Base Stats et de la note Couverture de types.
-					</p>
+					@if (mode === 'duo') {
+						<p class="text-xs text-amber-300">
+							La <strong class="text-white">note finale</strong> est la moyenne de la note Base Stats et de la note Couverture de types. Le joueur avec la meilleure note finale remporte la partie.
+						</p>
+					} @else {
+						<p class="text-xs text-amber-300">
+							La <strong class="text-white">note finale</strong> correspond directement à ta note de Base Stats.
+						</p>
+					}
 				</div>
 
 				<button
@@ -176,6 +176,7 @@ import { modalAnimation } from '../../constants/animations';
 	`,
 })
 export class DraftHelpModalComponent {
+	@Input() mode: 'solo' | 'duo' = 'solo';
 	close = output<void>();
 
 	protected readonly ICONS = ICONS;

@@ -3,7 +3,7 @@ import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { filter, map, skipUntil } from 'rxjs/operators';
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
-import { FriendRequest, FriendStatus, FriendWithStatus, Friendship, GameInvite, GameMode, GameSettings, Profile, Room, RoomPatch, StatDuelRoom, StatPick } from '../models/room.model';
+import { DraftDuoRoom, FriendRequest, FriendStatus, FriendWithStatus, Friendship, GameInvite, GameMode, GameSettings, Profile, Room, RoomPatch, StatDuelRoom, StatPick } from '../models/room.model';
 
 @Injectable({ providedIn: 'root' })
 export class SupabaseService implements OnDestroy {
@@ -393,6 +393,94 @@ export class SupabaseService implements OnDestroy {
         });
     }
 
+    // ─── Draft Duo ───────────────────────────────────────────────────────────────
+
+    /** Crée une room Draft Duo et retourne son identifiant. */
+    async createDraftDuoRoom(): Promise<string> {
+        const user = this.userSubject.getValue();
+        if (!user) throw new Error('Utilisateur non connecté');
+
+        const { data, error } = await this.supabase
+            .from('draft_duo_rooms')
+            .insert({ player1_id: user.id })
+            .select('id')
+            .single();
+
+        if (error) throw error;
+        return (data as { id: string }).id;
+    }
+
+    /** Récupère une room Draft Duo par son identifiant. */
+    async getDraftDuoRoom(roomId: string): Promise<DraftDuoRoom> {
+        const { data, error } = await this.supabase
+            .from('draft_duo_rooms')
+            .select('*')
+            .eq('id', roomId)
+            .single();
+
+        if (error) throw error;
+        return data as DraftDuoRoom;
+    }
+
+    /** Ajoute l'utilisateur courant en tant que joueur 2 d'une room Draft Duo. */
+    async joinDraftDuoRoom(roomId: string): Promise<void> {
+        const user = this.userSubject.getValue();
+        if (!user) throw new Error('Utilisateur non connecté');
+
+        const { error } = await this.supabase
+            .from('draft_duo_rooms')
+            .update({ player2_id: user.id })
+            .eq('id', roomId)
+            .is('player2_id', null);
+
+        if (error) throw error;
+    }
+
+    /** Met à jour les données d'une room Draft Duo. */
+    async updateDraftDuoRoom(roomId: string, patch: Partial<DraftDuoRoom>): Promise<void> {
+        const { error } = await this.supabase
+            .from('draft_duo_rooms')
+            .update(patch)
+            .eq('id', roomId);
+
+        if (error) throw error;
+    }
+
+    /** S'abonne aux mises à jour Realtime d'une room Draft Duo. */
+    subscribeToDraftDuoRoom(roomId: string): Observable<DraftDuoRoom> {
+        return new Observable<DraftDuoRoom>((observer) => {
+            const channel = this.supabase
+                .channel(`draft-duo-${roomId}`)
+                .on(
+                    'postgres_changes',
+                    { event: '*', schema: 'public', table: 'draft_duo_rooms', filter: `id=eq.${roomId}` },
+                    (payload) => { observer.next(payload.new as DraftDuoRoom); },
+                )
+                .subscribe((status) => {
+                    if (status === 'CHANNEL_ERROR') {
+                        observer.error(new Error(`Erreur canal draft-duo-${roomId}`));
+                    }
+                });
+
+            return () => { this.supabase.removeChannel(channel); };
+        });
+    }
+
+    /** Envoie une invitation à rejoindre une room existante (sans créer de nouvelle room). */
+    async sendDirectGameInvite(recipientId: string, roomId: string, gameMode: GameMode): Promise<string> {
+        const me = this.getCurrentUser();
+        if (!me) throw new Error('Non connecté');
+
+        const { data, error } = await this.supabase
+            .from('game_invites')
+            .insert({ sender_id: me.id, recipient_id: recipientId, room_id: roomId, game_mode: gameMode })
+            .select('id')
+            .single();
+
+        if (error) throw error;
+        return (data as { id: string }).id;
+    }
+
     // ─── Utilitaire interne ──────────────────────────────────────────────────────
 
     /**
@@ -612,9 +700,13 @@ export class SupabaseService implements OnDestroy {
 
         let roomId: string;
         try {
-            roomId = gameMode === 'stat_duel'
-                ? await this.createStatDuelRoom()
-                : await this.createRoom();
+            if (gameMode === 'stat_duel') {
+                roomId = await this.createStatDuelRoom();
+            } else if (gameMode === 'draft_duo') {
+                roomId = await this.createDraftDuoRoom();
+            } else {
+                roomId = await this.createRoom();
+            }
             console.log('[sendGameInvite] room créée:', roomId);
         } catch (err) {
             console.error('[sendGameInvite] échec création room:', err);
@@ -636,9 +728,14 @@ export class SupabaseService implements OnDestroy {
 
     /** Accepte une invitation de jeu et rejoint la room correspondant au mode. */
     async acceptGameInvite(inviteId: string, roomId: string, gameMode: GameMode = 'guess_my_pokemon'): Promise<void> {
-        const joinFn = gameMode === 'stat_duel'
-            ? this.joinStatDuelRoom(roomId)
-            : this.joinRoom(roomId);
+        let joinFn: Promise<void>;
+        if (gameMode === 'stat_duel') {
+            joinFn = this.joinStatDuelRoom(roomId);
+        } else if (gameMode === 'draft_duo') {
+            joinFn = this.joinDraftDuoRoom(roomId);
+        } else {
+            joinFn = this.joinRoom(roomId);
+        }
 
         await Promise.all([
             this.supabase.from('game_invites').update({ status: 'accepted' }).eq('id', inviteId),
