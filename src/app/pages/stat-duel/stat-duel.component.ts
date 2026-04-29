@@ -7,6 +7,7 @@ import { SupabaseService } from '../../services/supabase.service';
 import { Pokemon } from '../../models/pokemon.model';
 import { StatDuelRoom, StatPick } from '../../models/room.model';
 import { ICONS } from '../../constants/icons';
+import { DuelIntroComponent } from '../../components/duel-intro/duel-intro.component';
 
 type Phase = 'mode-select' | 'waiting' | 'playing' | 'result';
 
@@ -32,7 +33,7 @@ const ROUND_DURATION_MS = 11_000; // 10s pick + 1s transition
 @Component({
   selector: 'app-stat-duel',
   standalone: true,
-  imports: [NgClass],
+  imports: [NgClass, DuelIntroComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './stat-duel.component.html',
   styles: [`
@@ -97,6 +98,12 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
   // ─── Dev mode bot ────────────────────────────────────────────────────────────
   private botPickedRounds = new Set<number>();
+
+  // ─── Duel intro ──────────────────────────────────────────────────────────────
+  showDuelIntro = signal(false);
+  duelPlayer1 = signal<{ username: string; avatar_url?: string } | null>(null);
+  duelPlayer2 = signal<{ username: string; avatar_url?: string } | null>(null);
+  private duelShown = false;
 
   // ─── UI state ────────────────────────────────────────────────────────────────
   showHelpModal = signal(false);
@@ -248,6 +255,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     this.revealedRound.set(completedRounds);
 
     this.phase.set('playing');
+    void this.triggerDuelIntro(room);
     this.startMultiClock(room.round_start_at!);
 
     if (this.isDevMode()) {
@@ -462,6 +470,39 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
       await this.supabaseService.appendStatPick(this.roomId, 'p2_picks', { stat: randomStat, value });
     }, delayFromNow);
+  }
+
+  // ─── Duel intro ──────────────────────────────────────────────────────────────
+
+  private async triggerDuelIntro(room: StatDuelRoom): Promise<void> {
+    if (!this.roomId) return;
+    const introKey = `stat-duel-intro-shown-${this.roomId}`;
+    if (this.duelShown || sessionStorage.getItem(introKey)) return;
+    this.duelShown = true;
+    sessionStorage.setItem(introKey, '1');
+    try {
+      const fetchProfile = (id: string | null) =>
+        id
+          ? this.supabaseService.getProfile(id).catch(() => ({ username: '?', avatar_url: undefined }))
+          : Promise.resolve({ username: '?', avatar_url: undefined });
+      const [p1, p2] = await Promise.all([fetchProfile(room.player1_id), fetchProfile(room.player2_id ?? null)]);
+      const p1Data = { username: p1.username, avatar_url: p1.avatar_url };
+      const p2Data = { username: p2.username, avatar_url: p2.avatar_url };
+      await Promise.all(
+        [p1Data, p2Data]
+          .filter(p => p.avatar_url)
+          .map(p => new Promise<void>(resolve => {
+            const img = new Image();
+            img.onload = img.onerror = () => resolve();
+            img.src = p.avatar_url!;
+          }))
+      );
+      this.duelPlayer1.set(p1Data);
+      this.duelPlayer2.set(p2Data);
+      this.showDuelIntro.set(true);
+    } catch {
+      // skip l'animation si les profils sont indisponibles
+    }
   }
 
   // ─── Rejouer / Navigation ────────────────────────────────────────────────────
