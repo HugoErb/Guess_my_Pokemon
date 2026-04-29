@@ -294,7 +294,7 @@ export class DraftComponent {
 
   replay(): void {
     this.clearSavedState();
-    this.phase.set('mode-select');
+    this.phase.set('loading');
   }
 
   resetTeam(): void {

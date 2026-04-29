@@ -10,6 +10,22 @@
 
 	<!-- Phase sélection de mode -->
 	@if (phase() === 'mode-select') {
+		<div class="bg-slate-800/50 border-b border-slate-700 px-3 py-2 flex items-center justify-end gap-2 shrink-0">
+			<button
+				(click)="showHelpModal.set(true)"
+				class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all"
+			>
+				<iconify-icon [icon]="ICONS.help" class="text-sm"></iconify-icon>
+				<span class="hidden sm:inline">Aide</span>
+			</button>
+			<button
+				(click)="goHome()"
+				class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-red-900/50 border border-slate-600/50 hover:border-red-800 rounded-lg text-[10px] font-black text-slate-400 hover:text-red-300 uppercase tracking-wider transition-all"
+			>
+				<iconify-icon [icon]="ICONS.logout" class="text-sm"></iconify-icon>
+				<span class="hidden sm:inline">Quitter</span>
+			</button>
+		</div>
 		<main class="flex-1 flex flex-col items-center justify-center gap-8 px-4">
 			<div class="text-center">
 				<p class="text-slate-400 text-sm">Choisis ton mode de jeu</p>
@@ -26,11 +42,8 @@
 					</div>
 					<div class="text-center">
 						<h2 class="text-base font-black text-white mb-1">Solo</h2>
-						<p class="text-xs text-slate-400">Construis ta meilleure équipe et vise la meilleure note de stats.</p>
+						<p class="text-xs text-slate-400">Construis la meilleure équipe de Pokémon et vise la meilleure note de base stats.</p>
 					</div>
-					<span class="px-4 py-1.5 bg-purple-600 group-hover:bg-purple-500 rounded-lg text-xs font-bold text-white transition-colors">
-						Jouer seul
-					</span>
 				</button>
 
 				<!-- Duo en ligne -->
@@ -48,18 +61,10 @@
 					</div>
 					<div class="text-center">
 						<h2 class="text-base font-black text-white mb-1">Duo en ligne</h2>
-						<p class="text-xs text-slate-400">Affronte un ami ! La note de couverture de types est calculée contre son équipe.</p>
+						<p class="text-xs text-slate-400">Affronte un ami en construisant une équipe de Pokémon meilleure en tout point que la sienne.</p>
 					</div>
-					<span class="px-4 py-1.5 bg-green-600 group-hover:bg-green-500 rounded-lg text-xs font-bold text-white transition-colors">
-						@if (isCreatingRoom()) { Création… } @else { Jouer à 2 }
-					</span>
 				</button>
 			</div>
-
-			<button (click)="goHome()" class="text-xs text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1.5">
-				<iconify-icon [icon]="ICONS.home" class="text-sm"></iconify-icon>
-				Retour à l'accueil
-			</button>
 		</main>
 	}
 
@@ -261,16 +266,15 @@
 			<!-- Score final (solo = uniquement la note de base stats) -->
 			@if (showScore()) {
 				<div class="flex justify-center w-full max-w-xl shrink-0 mt-2 mb-2 md:mt-0 md:mb-0" [@scoreReveal]>
-					<div class="flex flex-col items-center gap-2 bg-slate-800 border border-yellow-500/40 rounded-xl p-4 md:p-6 ring-1 ring-yellow-500/20 w-48 md:w-64">
+					<div class="flex flex-col items-center gap-1.5 bg-slate-800 border border-yellow-500/40 rounded-xl p-3 md:p-4 ring-1 ring-yellow-500/20 w-40 md:w-52">
 						<span class="text-[10px] text-slate-500 uppercase tracking-wider text-center">Note finale</span>
 						<div class="flex items-end gap-0.5">
-							<span class="text-3xl md:text-5xl font-black font-mono leading-none" [ngClass]="getScoreColor(statsScore())">{{ statsScore() }}</span>
-							<span class="text-sm text-slate-600 mb-1">/10</span>
+							<span class="text-2xl md:text-4xl font-black font-mono leading-none" [ngClass]="getScoreColor(statsScore())">{{ statsScore() }}</span>
+							<span class="text-xs text-slate-600 mb-1">/10</span>
 						</div>
 						<div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
 							<div class="h-full rounded-full transition-all duration-700" [ngClass]="getScoreBarColor(statsScore())" [style.width]="getRatingWidth(statsScore())"></div>
 						</div>
-						<p class="text-[10px] text-slate-500 text-center mt-1">Basé sur les stats de base de ton équipe</p>
 					</div>
 				</div>
 			}
