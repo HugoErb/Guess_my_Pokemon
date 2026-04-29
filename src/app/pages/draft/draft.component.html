@@ -26,23 +26,27 @@
 				<span class="hidden sm:inline">Quitter</span>
 			</button>
 		</div>
-		<main class="flex-1 flex flex-col items-center justify-center gap-8 px-4">
-			<div class="text-center">
-				<p class="text-slate-400 text-sm">Choisis ton mode de jeu</p>
+		<main class="flex-1 flex flex-col items-center justify-center gap-8 px-4 pb-16">
+
+			<div class="flex flex-col items-center gap-2">
+				<div class="flex items-center gap-3">
+					<iconify-icon [icon]="ICONS.draft" class="text-6xl text-purple-300"></iconify-icon>
+					<h2 class="text-4xl font-black text-white tracking-wide">Team Builder</h2>
+				</div>
 			</div>
 
-			<div class="flex flex-col sm:flex-row gap-4 w-full max-w-lg">
+			<div class="flex flex-col sm:flex-row gap-6 w-full max-w-2xl">
 				<!-- Solo -->
 				<button
 					(click)="startSolo()"
-					class="flex-1 group bg-slate-800 border border-slate-700 hover:border-purple-500 rounded-2xl p-6 flex flex-col items-center gap-4 transition-all hover:scale-105 hover:shadow-lg hover:shadow-purple-900/30"
+					class="flex-1 group bg-slate-800 border border-slate-700 hover:border-purple-500 rounded-2xl p-10 flex flex-col items-center gap-6 transition-all hover:scale-105 hover:shadow-lg hover:shadow-purple-900/30"
 				>
-					<div class="w-14 h-14 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center group-hover:bg-purple-600/30 transition-colors">
-						<iconify-icon [icon]="ICONS.user" class="text-3xl text-purple-300"></iconify-icon>
+					<div class="w-20 h-20 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center group-hover:bg-purple-600/30 transition-colors">
+						<iconify-icon [icon]="ICONS.user" class="text-5xl text-purple-300"></iconify-icon>
 					</div>
 					<div class="text-center">
-						<h2 class="text-base font-black text-white mb-1">Solo</h2>
-						<p class="text-xs text-slate-400">Construis la meilleure équipe de Pokémon et vise la meilleure note de base stats.</p>
+						<h2 class="text-lg font-black text-white mb-2">Solo</h2>
+						<p class="text-sm text-slate-400">Construis la meilleure équipe de Pokémon et vise la meilleure note de base stats.</p>
 					</div>
 				</button>
 
@@ -50,18 +54,18 @@
 				<button
 					(click)="startDuo()"
 					[disabled]="isCreatingRoom()"
-					class="flex-1 group bg-slate-800 border border-slate-700 hover:border-green-500 disabled:opacity-60 disabled:cursor-not-allowed rounded-2xl p-6 flex flex-col items-center gap-4 transition-all hover:scale-105 hover:shadow-lg hover:shadow-green-900/30"
+					class="flex-1 group bg-slate-800 border border-slate-700 hover:border-green-500 disabled:opacity-60 disabled:cursor-not-allowed rounded-2xl p-10 flex flex-col items-center gap-6 transition-all hover:scale-105 hover:shadow-lg hover:shadow-green-900/30"
 				>
-					<div class="w-14 h-14 rounded-xl bg-green-600/20 border border-green-500/30 flex items-center justify-center group-hover:bg-green-600/30 transition-colors">
+					<div class="w-20 h-20 rounded-xl bg-green-600/20 border border-green-500/30 flex items-center justify-center group-hover:bg-green-600/30 transition-colors">
 						@if (isCreatingRoom()) {
-							<iconify-icon [icon]="ICONS.loading" class="text-3xl text-green-300 animate-spin"></iconify-icon>
+							<iconify-icon [icon]="ICONS.loading" class="text-5xl text-green-300 animate-spin"></iconify-icon>
 						} @else {
-							<iconify-icon [icon]="ICONS.friends" class="text-3xl text-green-300"></iconify-icon>
+							<iconify-icon [icon]="ICONS.friends" class="text-5xl text-green-300"></iconify-icon>
 						}
 					</div>
 					<div class="text-center">
-						<h2 class="text-base font-black text-white mb-1">Duo en ligne</h2>
-						<p class="text-xs text-slate-400">Affronte un ami en construisant une équipe de Pokémon meilleure en tout point que la sienne.</p>
+						<h2 class="text-lg font-black text-white mb-2">Duo en ligne</h2>
+						<p class="text-sm text-slate-400">Affronte un ami en construisant une équipe de Pokémon meilleure en tout point que la sienne.</p>
 					</div>
 				</button>
 			</div>
