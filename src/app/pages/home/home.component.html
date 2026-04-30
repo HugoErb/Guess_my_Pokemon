@@ -16,7 +16,7 @@
 
 				<div class="space-y-4 my-2">
 					<div>
-						<label class="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5 ml-1">Mot de passe actuel</label>
+						<label class="text-xs font-bold text-slate-500 uppercase  block mb-1.5 ml-1">Mot de passe actuel</label>
 						<div class="relative flex items-center">
 							<iconify-icon [icon]="ICONS.password" class="absolute left-3 text-slate-400"></iconify-icon>
 							<input [type]="showCurrentPassword() ? 'text' : 'password'" [(ngModel)]="currentPassword" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-12 py-2.5 text-sm text-white focus:outline-none focus:border-red-500 transition-colors" />
@@ -27,7 +27,7 @@
 					</div>
 
 					<div>
-						<label class="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5 ml-1">Nouveau mot de passe</label>
+						<label class="text-xs font-bold text-slate-500 uppercase  block mb-1.5 ml-1">Nouveau mot de passe</label>
 						<div class="relative flex items-center">
 							<iconify-icon [icon]="ICONS.password" class="absolute left-3 text-slate-400"></iconify-icon>
 							<input [type]="showNewPassword() ? 'text' : 'password'" [(ngModel)]="newPassword" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-12 py-2.5 text-sm text-white focus:outline-none focus:border-red-500 transition-colors" />
@@ -38,7 +38,7 @@
 					</div>
 
 					<div>
-						<label class="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5 ml-1">Confirmation</label>
+						<label class="text-xs font-bold text-slate-500 uppercase  block mb-1.5 ml-1">Confirmation</label>
 						<div class="relative flex items-center">
 							<iconify-icon [icon]="ICONS.password" class="absolute left-3 text-slate-400"></iconify-icon>
 							<input [type]="showConfirmPassword() ? 'text' : 'password'" [(ngModel)]="confirmPassword" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-12 py-2.5 text-sm text-white focus:outline-none focus:border-red-500 transition-colors" />
@@ -72,7 +72,7 @@
 
 				<div class="space-y-4 my-2">
 					<div>
-						<label class="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5 ml-1">Nouveau pseudo</label>
+						<label class="text-xs font-bold text-slate-500 uppercase  block mb-1.5 ml-1">Nouveau pseudo</label>
 						<div class="relative">
 							<iconify-icon [icon]="ICONS.user" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></iconify-icon>
 							<input type="text" [(ngModel)]="newUsernameInput" placeholder="Ton pseudo" (keyup.enter)="changeUsername()" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500 transition-colors" />
@@ -128,8 +128,8 @@
 							}
 						</div>
 						<div class="flex flex-col items-start">
-							<span class="text-base font-black text-white">Guess my Pokémon</span>
-							<span class="text-xs font-bold text-slate-400 tracking-widest">{{ isCreating ? 'En cours…' : 'Trouve le Pokémon' }}</span>
+							<span class="text-base font-bold text-white">Guess my Pokémon</span>
+							<span class="text-xs font-medium text-slate-400">{{ isCreating ? 'En cours…' : 'Trouve le Pokémon' }}</span>
 						</div>
 					</button>
 					@if (createError) {
@@ -145,8 +145,8 @@
 							<iconify-icon [icon]="ICONS.draft" class="text-3xl text-purple-200"></iconify-icon>
 						</div>
 						<div class="flex flex-col items-start">
-							<span class="text-base font-black text-white">Team Builder</span>
-							<span class="text-xs font-bold text-slate-400 tracking-widest">Créé la meilleure équipe</span>
+							<span class="text-base font-bold text-white">Team Builder</span>
+							<span class="text-xs font-bold text-slate-400 ">Créé la meilleure équipe</span>
 						</div>
 					</button>
 
@@ -159,8 +159,8 @@
 							<iconify-icon [icon]="ICONS.statDuel" class="text-xl text-yellow-400"></iconify-icon>
 						</div>
 						<div class="flex flex-col items-start">
-							<span class="text-base font-black text-white">Duel de Base Stats</span>
-							<span class="text-xs font-bold text-slate-400 tracking-widest">Créé le meilleur Pokémon</span>
+							<span class="text-base font-bold text-white">Duel de Base Stats</span>
+							<span class="text-xs font-bold text-slate-400 ">Créé le meilleur Pokémon</span>
 						</div>
 					</button>
 				</div>
@@ -170,7 +170,7 @@
 			<div class="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-xl flex flex-col">
 				<div class="h-24 avatar-gradient flex items-end px-8">
 					<div
-						class="group relative w-20 h-20 rounded-full border-4 border-slate-800 bg-slate-700 flex items-center justify-center text-3xl font-black text-white translate-y-8 shadow-xl overflow-hidden cursor-pointer"
+						class="group relative w-20 h-20 rounded-full border-4 border-slate-800 bg-slate-700 flex items-center justify-center text-3xl font-bold text-white translate-y-8 shadow-xl overflow-hidden cursor-pointer"
 						(click)="avatarInput.click()"
 					>
 						@if (avatarUrl()) {
@@ -197,7 +197,7 @@
 
 				<div class="pt-12 px-8 pb-8 flex flex-col flex-1">
 					<div class="flex flex-col gap-1 mb-6">
-						<h3 class="text-xl font-black text-white capitalize">{{ username || 'Utilisateur' }}</h3>
+						<h3 class="text-xl font-bold text-white capitalize">{{ username || 'Utilisateur' }}</h3>
 					</div>
 
 					<div class="mt-auto space-y-3">
