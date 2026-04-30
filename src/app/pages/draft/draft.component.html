@@ -26,25 +26,27 @@
 				<span class="hidden sm:inline">Quitter</span>
 			</button>
 		</div>
-		<main class="flex-1 flex flex-col items-center justify-center">
-			<app-mode-select title="Team Builder" [icon]="ICONS.draft" iconColor="text-purple-300">
-				<app-mode-select-card
-					title="Un joueur"
-					description="Construis la meilleure équipe de Pokémon et vise la meilleure note de base stats."
-					[icon]="ICONS.user"
-					accent="purple"
-					(selected)="startSolo()"
-				/>
-				<app-mode-select-card
-					title="Deux joueurs"
-					description="Affronte un ami en construisant une équipe de Pokémon meilleure en tout point que la sienne."
-					[icon]="ICONS.friends"
-					accent="green"
-					[isLoading]="isCreatingRoom()"
-					[disabled]="isCreatingRoom()"
-					(selected)="startDuo()"
-				/>
-			</app-mode-select>
+		<main class="flex-1 min-h-0 overflow-y-auto">
+			<div class="min-h-full flex flex-col items-center justify-center py-8 px-4">
+				<app-mode-select title="Team Builder" [icon]="ICONS.draft" iconColor="text-purple-300">
+					<app-mode-select-card
+						title="Un joueur"
+						description="Construis la meilleure équipe de Pokémon et vise la meilleure note de base stats."
+						[icon]="ICONS.user"
+						accent="purple"
+						(selected)="startSolo()"
+					/>
+					<app-mode-select-card
+						title="Deux joueurs"
+						description="Affronte un ami en construisant une équipe de Pokémon meilleure en tout point que la sienne."
+						[icon]="ICONS.friends"
+						accent="green"
+						[isLoading]="isCreatingRoom()"
+						[disabled]="isCreatingRoom()"
+						(selected)="startDuo()"
+					/>
+				</app-mode-select>
+			</div>
 		</main>
 	}
 
