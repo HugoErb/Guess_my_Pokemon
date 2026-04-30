@@ -156,6 +156,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   };
 
   ngOnInit(): void {
+    this.supabaseService.trackPresence('in_game');
     this.roomId = this.route.snapshot.paramMap.get('roomId');
     if (this.route.snapshot.queryParams['dev'] === '1') {
       this.isDevMode.set(true);
@@ -168,6 +169,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.supabaseService.untrackPresence();
     this.stopClock();
     this.roomSub?.unsubscribe();
     this.stopWaitingPoll();

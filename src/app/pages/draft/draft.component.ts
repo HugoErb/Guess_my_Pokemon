@@ -1,6 +1,8 @@
 import {
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
+  OnInit,
+  OnDestroy,
   computed,
   effect,
   inject,
@@ -36,7 +38,7 @@ type SlotState = 'idle' | 'leaving' | 'entering';
   animations: [slotsGridAnimation, slotStateAnimation, lockAnimation, scoreRevealAnimation],
   templateUrl: './draft.component.html',
 })
-export class DraftComponent {
+export class DraftComponent implements OnInit, OnDestroy {
   protected readonly ICONS = ICONS;
   protected readonly TYPE_COLORS = TYPE_COLORS;
   protected readonly TYPE_ICONS = TYPE_ICONS;
@@ -408,6 +410,14 @@ export class DraftComponent {
   }
 
   // ─── Confetti ────────────────────────────────────────────────────────────────
+
+  ngOnInit(): void {
+    this.supabaseService.trackPresence('in_game');
+  }
+
+  ngOnDestroy(): void {
+    this.supabaseService.untrackPresence();
+  }
 
   private launchConfetti(): void {
     const colors = ['#ef4444', '#facc15', '#a855f7', '#3b82f6', '#ffffff'];
