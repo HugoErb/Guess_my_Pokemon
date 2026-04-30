@@ -24,22 +24,25 @@ const ACCENT_CLASSES: Record<Accent, {
     <button
       (click)="selected.emit()"
       [disabled]="disabled"
-      class="w-full h-full group bg-slate-800 border border-slate-700 rounded-2xl p-10 flex flex-col items-center gap-6 transition-all hover:scale-105 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+      class="w-full h-full group bg-slate-800 border border-slate-700 rounded-2xl transition-all hover:scale-105 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed
+             flex flex-row items-center gap-4 px-5 py-4
+             sm:flex-col sm:gap-6 sm:p-10"
       [ngClass]="[accentClasses.border, accentClasses.shadow]"
     >
       <div
-        class="w-20 h-20 rounded-xl border flex items-center justify-center transition-colors"
+        class="w-12 h-12 rounded-xl border flex items-center justify-center transition-colors flex-shrink-0
+               sm:w-20 sm:h-20"
         [ngClass]="[accentClasses.bg, accentClasses.iconBorder, accentClasses.iconBgHover]"
       >
         @if (isLoading) {
-          <iconify-icon [icon]="ICONS.loading" class="text-5xl animate-spin" [ngClass]="accentClasses.text"></iconify-icon>
+          <iconify-icon [icon]="ICONS.loading" class="text-2xl sm:text-5xl animate-spin" [ngClass]="accentClasses.text"></iconify-icon>
         } @else {
-          <iconify-icon [icon]="icon" class="text-5xl" [ngClass]="accentClasses.text"></iconify-icon>
+          <iconify-icon [icon]="icon" class="text-2xl sm:text-5xl" [ngClass]="accentClasses.text"></iconify-icon>
         }
       </div>
-      <div class="text-center">
-        <h2 class="text-lg font-black text-white mb-2">{{ title }}</h2>
-        <p class="text-sm text-slate-400">{{ description }}</p>
+      <div class="text-left sm:text-center">
+        <h2 class="text-base font-black text-white sm:text-lg sm:mb-2">{{ title }}</h2>
+        <p class="hidden sm:block text-sm text-slate-400">{{ description }}</p>
       </div>
     </button>
   `,
