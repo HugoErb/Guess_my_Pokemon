@@ -116,9 +116,7 @@ export class GameComponent implements OnInit, OnDestroy {
 	private devOpponentSub?: Subscription;
 	private broadcastSub?: Subscription;
 
-	turnCounter = signal(0);
 	private lastTurnId: string | null = null;
-	gameTurn = computed(() => Math.max(1, Math.ceil(this.turnCounter() / 2)));
 
 	constructor() {
 		// Watch room signal for 'finished' status
@@ -128,9 +126,7 @@ export class GameComponent implements OnInit, OnDestroy {
 				void this.handleGameFinished(r);
 			}
 
-			// Incrémenter le compteur de tours (Accepte null pour le bot)
 			if (r?.status === 'playing' && r.current_turn !== this.lastTurnId) {
-				this.turnCounter.update(c => c + 1);
 				this.lastTurnId = r.current_turn;
 
 				// Déclencher la pop-up "À toi de jouer" depuis le signal DB (fiable même si broadcast manqué)

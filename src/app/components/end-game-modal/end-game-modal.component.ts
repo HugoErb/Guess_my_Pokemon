@@ -37,11 +37,6 @@ import { Pokemon } from '../../models/pokemon.model';
 					</div>
 				}
 
-				<div class="bg-slate-900/30 border border-slate-700/50 rounded-xl py-2 px-6 w-fit">
-					<p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Partie terminée en</p>
-					<p class="text-lg font-mono font-bold text-white">{{ gameTurn() }} tours</p>
-				</div>
-
 				<div class="w-full flex flex-col gap-2">
 					<button
 						(click)="replay.emit()"
@@ -74,7 +69,6 @@ import { Pokemon } from '../../models/pokemon.model';
 export class EndGameModalComponent {
 	isWinner = input<boolean>(false);
 	opponentPokemon = input<Pokemon | null>(null);
-	gameTurn = input<number>(1);
 	iWantReplay = input<boolean>(false);
 	opponentWantsReplay = input<boolean>(false);
 	opponentLeft = input<boolean>(false);
