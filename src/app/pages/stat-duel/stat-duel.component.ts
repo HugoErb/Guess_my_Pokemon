@@ -46,6 +46,13 @@ const ROUND_DURATION_MS = 11_000; // 10s pick + 1s transition
       100% { transform: scale(1); }
     }
     .stat-pop { animation: statPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+    @keyframes pokemonAppear {
+      0%   { opacity: 0; transform: scale(0.75) translateY(14px); }
+      65%  { transform: scale(1.04) translateY(-2px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .pokemon-appear { animation: pokemonAppear 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
   `],
 })
 export class StatDuelComponent implements OnInit, OnDestroy {
@@ -103,6 +110,11 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   // ─── Dev mode bot ────────────────────────────────────────────────────────────
   private botPickedRounds = new Set<number>();
 
+  // ─── Animation Pokémon ───────────────────────────────────────────────────────
+  pokemonVisible = signal(false);
+  pokemonAnimating = signal(false);
+  private readonly ANIMATION_DURATION_MS = 450;
+
   // ─── Duel intro ──────────────────────────────────────────────────────────────
   showDuelIntro = signal(false);
   duelPlayer1 = signal<{ username: string; avatar_url?: string } | null>(null);
@@ -150,11 +162,13 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   async startSolo(): Promise<void> {
     this.isSolo.set(true);
     const allPokemon = await this.loadAll();
-    this.pokemonList.set(this.shuffle(allPokemon).slice(0, ROUND_COUNT));
+    const list = this.shuffle(allPokemon).slice(0, ROUND_COUNT);
+    this.pokemonList.set(list);
+    this.preloadImages(list);
     this.myPicks.set([]);
     this.currentRound.set(0);
     this.phase.set('playing');
-    this.startSoloClock();
+    this.startPokemonAnimation(() => this.startSoloClock());
   }
 
   async createMultiRoom(): Promise<void> {
@@ -252,6 +266,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     const pokemonMap = new Map(allPokemon.map(p => [p.id, p]));
     const list = room.pokemon_ids.map(id => pokemonMap.get(id)).filter((p): p is Pokemon => !!p);
     this.pokemonList.set(list);
+    this.preloadImages(list);
 
     const me = this.supabaseService.getCurrentUser();
     if (!me) return;
@@ -341,9 +356,11 @@ export class StatDuelComponent implements OnInit, OnDestroy {
       const remainingFloat = Math.max(0, 10 - elapsedInRound / 1000);
       const remaining = Math.ceil(remainingFloat);
 
-      // Transition de manche : révéler si on attendait
-      if (round !== prevRound && prevRound >= 0 && this.waitingForReveal()) {
-        this.triggerReveal();
+      if (round !== prevRound) {
+        if (prevRound >= 0 && this.waitingForReveal()) {
+          this.triggerReveal();
+        }
+        this.startPokemonAnimation();
       }
       prevRound = round;
 
@@ -433,7 +450,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
       this.phase.set('result');
     } else {
       this.currentRound.set(next);
-      this.startSoloClock();
+      this.startPokemonAnimation(() => this.startSoloClock());
     }
   }
 
@@ -526,6 +543,8 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     this.waitingForReveal.set(false);
     this.pendingMyPickStat.set(null);
     this.justRevealedOpponentPick.set(null);
+    this.pokemonVisible.set(false);
+    this.pokemonAnimating.set(false);
     this.botPickedRounds.clear();
     this.roomSub?.unsubscribe();
     this.phase.set('mode-select');
@@ -557,6 +576,25 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   }
 
   // ─── Utilitaires ─────────────────────────────────────────────────────────────
+
+  private preloadImages(pokemons: Pokemon[]): void {
+    pokemons.forEach(p => {
+      const img = new Image();
+      img.src = p.sprite;
+    });
+  }
+
+  private startPokemonAnimation(callback?: () => void): void {
+    this.pokemonVisible.set(false);
+    this.pokemonAnimating.set(true);
+    setTimeout(() => {
+      this.pokemonVisible.set(true);
+      setTimeout(() => {
+        this.pokemonAnimating.set(false);
+        callback?.();
+      }, this.ANIMATION_DURATION_MS);
+    }, 50);
+  }
 
   private loadAll(): Promise<Pokemon[]> {
     return new Promise(resolve => {
@@ -596,7 +634,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     if (!this.isSolo() && this.pendingMyPickStat() === statKey) return `${base} bg-blue-500/15 border-blue-500/50 cursor-not-allowed`;
     if (this.justPickedStat()?.stat === statKey) return `${base} bg-yellow-500/15 border-yellow-500 cursor-not-allowed`;
     if (alreadyPicked) return `${base} bg-slate-700/30 border-slate-700/30 opacity-30 cursor-not-allowed`;
-    if (this.hasPickedThisRound()) return `${base} bg-slate-700/50 border-slate-700/50 opacity-50 cursor-not-allowed`;
+    if (this.hasPickedThisRound() || this.pokemonAnimating()) return `${base} bg-slate-700/50 border-slate-700/50 opacity-50 cursor-not-allowed`;
     return `${base} bg-slate-700 border-slate-600 hover:border-yellow-500/60 hover:bg-slate-600 cursor-pointer active:scale-95`;
   }
 

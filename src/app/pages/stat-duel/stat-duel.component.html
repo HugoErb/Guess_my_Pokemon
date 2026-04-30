@@ -202,10 +202,10 @@
 				<!-- Timer -->
 				<div class="flex items-center justify-between">
 					<span class="text-sm font-bold text-slate-400">Manche {{ currentRound() + 1 }} / {{ ROUND_COUNT }}</span>
-					<div class="flex items-center gap-2">
-						<iconify-icon [icon]="ICONS.timer" class="text-lg animate-pulse" [ngClass]="getTimerColor()"></iconify-icon>
+					<div class="flex items-center gap-1">
+						<iconify-icon [icon]="ICONS.timer" class="text-xl animate-pulse translate-y-0.5" [ngClass]="getTimerColor()"></iconify-icon>
 						<span class="text-2xl font-black tabular-nums" [ngClass]="getTimerColor()">{{ timerValue() }}</span>
-						<span class="text-sm text-slate-500">s</span>
+						<span class="text-base text-slate-500 translate-y-1">s</span>
 					</div>
 				</div>
 
@@ -219,10 +219,18 @@
 				@if (currentPokemon()) {
 					<div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 flex flex-col items-center gap-4">
 
-						<img [src]="currentPokemon()!.sprite" [alt]="currentPokemon()!.name"
-							class="w-32 h-32 object-contain drop-shadow-lg" loading="eager" />
+						<div class="w-32 h-32 flex items-center justify-center">
+							@if (pokemonVisible()) {
+								<img [src]="currentPokemon()!.sprite" [alt]="currentPokemon()!.name"
+									class="w-32 h-32 object-contain drop-shadow-lg pokemon-appear" loading="eager" />
+							}
+						</div>
 
-						<h3 class="text-xl font-black text-white capitalize text-center">{{ currentPokemon()!.name }}</h3>
+						@if (pokemonVisible()) {
+							<h3 class="text-xl font-black text-white capitalize text-center pokemon-appear">{{ currentPokemon()!.name }}</h3>
+						} @else {
+							<h3 class="text-xl font-black capitalize text-center invisible">{{ currentPokemon()!.name }}</h3>
+						}
 
 						<!-- Boutons de stats -->
 						<div class="grid grid-cols-2 gap-2 w-full mt-2 sm:grid-cols-3">
@@ -232,7 +240,7 @@
 								@let isPending = !isSolo() && pendingMyPickStat() === stat.key;
 								<button
 									(click)="pickStat(stat.key)"
-									[disabled]="alreadyPicked || hasPickedThisRound()"
+									[disabled]="alreadyPicked || hasPickedThisRound() || pokemonAnimating()"
 									[class]="getStatButtonClass(stat.key, alreadyPicked)">
 									<span class="text-xs font-black uppercase tracking-wider"
 										[ngClass]="(alreadyPicked && !justPicked && !isPending) ? 'text-slate-600' : stat.colorClass">
