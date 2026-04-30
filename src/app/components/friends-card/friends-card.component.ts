@@ -53,7 +53,7 @@ export class FriendsCardComponent implements OnInit, OnDestroy {
 	async ngOnInit(): Promise<void> {
 		await this.reload();
 		this.friendshipsSub = this.supabaseService.subscribeToFriendships().subscribe(() => {
-			void this.reload();
+			void this.reload(false);
 		});
 	}
 
@@ -62,15 +62,15 @@ export class FriendsCardComponent implements OnInit, OnDestroy {
 		this.friendshipsSub?.unsubscribe();
 	}
 
-	private async reload(): Promise<void> {
-		this.isLoadingFriends.set(true);
+	private async reload(showSpinner = true): Promise<void> {
+		if (showSpinner) this.isLoadingFriends.set(true);
 		const [friends, requests] = await Promise.all([
 			this.supabaseService.getFriendsWithStatus(),
 			this.supabaseService.getPendingRequests(),
 		]);
 		this.friends.set(friends);
 		this.pendingRequests.set(requests);
-		this.isLoadingFriends.set(false);
+		if (showSpinner) this.isLoadingFriends.set(false);
 
 		this.presenceSub?.unsubscribe();
 		const friendIds = friends.map((f) => f.friendId);

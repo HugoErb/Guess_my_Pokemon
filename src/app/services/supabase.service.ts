@@ -682,8 +682,11 @@ export class SupabaseService implements OnDestroy {
 
             const channel = this.supabase
                 .channel(`friendships-${userId}`)
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'friendships' }, () => {
-                    observer.next();
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'friendships' }, (payload: any) => {
+                    const record = payload.new ?? payload.old;
+                    if (record?.requester_id === userId || record?.recipient_id === userId) {
+                        observer.next();
+                    }
                 })
                 .subscribe();
 

@@ -79,7 +79,7 @@
 		<!-- ─────────────────────────────────── Phase : mode-select ─── -->
 		@if (phase() === 'mode-select') {
 			<div class="flex-1 min-h-0 overflow-y-auto">
-				<div class="min-h-full flex flex-col items-center justify-center gap-6 py-8 px-4">
+				<div class="min-h-full flex flex-col items-center justify-center pt-8 pb-20 px-4 relative">
 					<app-mode-select title="Duel de Base Stats" [icon]="ICONS.statDuel" iconColor="text-yellow-300" iconSize="text-4xl">
 						<app-mode-select-card
 							title="Un joueur"
@@ -98,11 +98,13 @@
 					</app-mode-select>
 
 					@if (isDevEnv) {
-						<button (click)="startDevMode()"
-							class="bg-slate-800 border border-dashed border-slate-600 hover:border-slate-500 rounded-2xl p-4 flex items-center gap-3 transition-all">
-							<iconify-icon [icon]="ICONS.robot" class="text-xl text-slate-500"></iconify-icon>
-							<span class="text-sm font-bold text-slate-500">Mode Dev — 2J vs Bot</span>
-						</button>
+						<div class="absolute bottom-6">
+							<button (click)="startDevMode()"
+								class="bg-slate-800 border border-dashed border-slate-600 hover:border-slate-500 rounded-2xl p-4 flex items-center gap-3 transition-all">
+								<iconify-icon [icon]="ICONS.robot" class="text-xl text-slate-500"></iconify-icon>
+								<span class="text-sm font-bold text-slate-500">Mode Dev — 2J vs Bot</span>
+							</button>
+						</div>
 					}
 				</div>
 			</div>
