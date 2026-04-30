@@ -335,22 +335,23 @@
 
 				<!-- Mon équipe -->
 				<div class="flex flex-col gap-3">
-					<h3 class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-						<iconify-icon [icon]="ICONS.pokeball" class="text-yellow-400"></iconify-icon>
+					<h3 class="text-sm font-black uppercase tracking-wider flex items-center gap-2" [ngClass]="winner() === 'opponent' ? 'text-slate-400' : 'text-white'">
+						<iconify-icon [icon]="ICONS.pokeball" [ngClass]="winner() === 'opponent' ? 'text-slate-500' : 'text-yellow-400'"></iconify-icon>
 						Mon équipe
 					</h3>
 					<div class="grid grid-cols-3 gap-2">
 						@for (p of myTeamPokemons(); track p.id) {
 							<div class="relative">
 								<div
-									class="bg-slate-800 border border-slate-700 rounded-xl p-2 flex flex-col items-center gap-1 cursor-pointer hover:border-slate-500 transition-colors"
+									class="rounded-xl p-2 flex flex-col items-center gap-1 cursor-pointer hover:border-slate-500 transition-colors border"
+									[ngClass]="winner() === 'opponent' ? 'bg-slate-800/60 border-slate-700/50' : 'bg-slate-800 border-slate-700'"
 									(click)="openPokemonDetails(p)"
 								>
-									<img [src]="p.sprite" [alt]="p.name" class="w-14 h-14 object-contain" />
-									<p class="text-[9px] font-bold text-white capitalize text-center w-full truncate">{{ p.name }}</p>
+									<img [src]="p.sprite" [alt]="p.name" class="w-14 h-14 object-contain" [ngClass]="winner() === 'opponent' ? 'opacity-80' : ''" />
+									<p class="text-[9px] font-bold capitalize text-center w-full truncate" [ngClass]="winner() === 'opponent' ? 'text-slate-400' : 'text-white'">{{ p.name }}</p>
 									<div class="flex gap-0.5">
 										@for (type of p.types; track type) {
-											<span class="text-[7px] font-bold px-1 py-0.5 rounded text-white" [ngClass]="getTypeColor(type)">{{ type }}</span>
+											<span class="text-[7px] font-bold px-1 py-0.5 rounded text-white" [ngClass]="[getTypeColor(type), winner() === 'opponent' ? 'opacity-70' : '']">{{ type }}</span>
 										}
 									</div>
 								</div>
@@ -361,22 +362,23 @@
 
 				<!-- Équipe adverse -->
 				<div class="flex flex-col gap-3">
-					<h3 class="text-sm font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
-						<iconify-icon [icon]="ICONS.friends" class="text-slate-500"></iconify-icon>
+					<h3 class="text-sm font-black uppercase tracking-wider flex items-center gap-2" [ngClass]="winner() === 'me' ? 'text-slate-400' : 'text-white'">
+						<iconify-icon [icon]="ICONS.friends" [ngClass]="winner() === 'me' ? 'text-slate-500' : 'text-yellow-400'"></iconify-icon>
 						Équipe adverse
 					</h3>
 					<div class="grid grid-cols-3 gap-2">
 						@for (p of opponentTeamPokemons(); track p.id) {
 							<div class="relative">
 								<div
-									class="bg-slate-800/60 border border-slate-700/50 rounded-xl p-2 flex flex-col items-center gap-1 cursor-pointer hover:border-slate-500 transition-colors"
+									class="rounded-xl p-2 flex flex-col items-center gap-1 cursor-pointer hover:border-slate-500 transition-colors border"
+									[ngClass]="winner() === 'me' ? 'bg-slate-800/60 border-slate-700/50' : 'bg-slate-800 border-slate-700'"
 									(click)="openPokemonDetails(p)"
 								>
-									<img [src]="p.sprite" [alt]="p.name" class="w-14 h-14 object-contain opacity-80" />
-									<p class="text-[9px] font-bold text-slate-400 capitalize text-center w-full truncate">{{ p.name }}</p>
+									<img [src]="p.sprite" [alt]="p.name" class="w-14 h-14 object-contain" [ngClass]="winner() === 'me' ? 'opacity-80' : ''" />
+									<p class="text-[9px] font-bold capitalize text-center w-full truncate" [ngClass]="winner() === 'me' ? 'text-slate-400' : 'text-white'">{{ p.name }}</p>
 									<div class="flex gap-0.5">
 										@for (type of p.types; track type) {
-											<span class="text-[7px] font-bold px-1 py-0.5 rounded text-white opacity-70" [ngClass]="getTypeColor(type)">{{ type }}</span>
+											<span class="text-[7px] font-bold px-1 py-0.5 rounded text-white" [ngClass]="[getTypeColor(type), winner() === 'me' ? 'opacity-70' : '']">{{ type }}</span>
 										}
 									</div>
 								</div>
