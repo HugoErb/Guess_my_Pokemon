@@ -774,6 +774,22 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     return `${base} bg-slate-700 border-slate-600 hover:border-yellow-500/60 hover:bg-slate-600 cursor-pointer active:scale-95`;
   }
 
+  getStatRowClass(alreadyPicked: boolean, justPicked: boolean, canPick: boolean): string {
+    const base = 'flex items-center gap-3 rounded-xl px-2 py-2 transition-all border';
+    if (justPicked) return `${base} border-yellow-500/30 bg-yellow-500/5`;
+    if (canPick) return `${base} border-transparent hover:border-slate-600/50 hover:bg-slate-700/40 cursor-pointer active:scale-[0.99]`;
+    if (alreadyPicked) return `${base} border-transparent`;
+    return `${base} border-transparent`;
+  }
+
+  isMultiWinner(): boolean | null {
+    const me = this.supabaseService.getCurrentUser();
+    const room = this.room();
+    if (!me || !room?.winner || room.winner === 'draw') return null;
+    const isMeP1 = room.player1_id === me.id;
+    return (room.winner === 'player1' && isMeP1) || (room.winner === 'player2' && !isMeP1);
+  }
+
   getResultLabel(): string {
     const me = this.supabaseService.getCurrentUser();
     const room = this.room();
@@ -781,7 +797,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     if (room.winner === 'draw') return 'Égalité !';
     const isMeP1 = room.player1_id === me.id;
     const iWon = (room.winner === 'player1' && isMeP1) || (room.winner === 'player2' && !isMeP1);
-    return iWon ? 'Victoire !' : 'Défaite !';
+    return iWon ? 'Victoire !' : 'Défaite';
   }
 
   getResultColor(): string {

@@ -241,11 +241,11 @@
 
 			<!-- ══ SOLO : layout colonne unique ══ -->
 			@if (isSolo()) {
-				<div class="flex-1 flex flex-col items-center overflow-y-auto px-4 py-6">
+				<div class="flex-1 flex flex-col items-center justify-center overflow-y-auto px-4 py-6">
 					<div class="w-full max-w-lg flex flex-col gap-5">
-						<!-- Pokémon -->
 						@if (currentPokemon()) {
-							<div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 flex flex-col items-center gap-4">
+							<div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 sm:p-6 flex flex-col items-center gap-4">
+								<!-- Image -->
 								<div class="w-20 h-20 sm:w-32 sm:h-32 flex items-center justify-center">
 									@if (pokemonVisible()) {
 										<img
@@ -257,76 +257,82 @@
 									}
 								</div>
 
-								@if (pokemonVisible()) {
-									<h3 class="text-xl font-black text-white capitalize text-center pokemon-appear">{{ currentPokemon()!.name }}</h3>
-								} @else {
-									<h3 class="text-xl font-black capitalize text-center invisible">{{ currentPokemon()!.name }}</h3>
-								}
+								<!-- Nom + progression -->
+								<div class="flex items-center justify-between w-full">
+									@if (pokemonVisible()) {
+										<h3 class="text-xl font-black text-white capitalize pokemon-appear">{{ currentPokemon()!.name }}</h3>
+									} @else {
+										<h3 class="text-xl font-black capitalize invisible">{{ currentPokemon()!.name }}</h3>
+									}
+									<div class="flex items-center gap-1">
+										@for (i of INDICES; track i) {
+											<div
+												class="w-2 h-2 rounded-full"
+												[ngClass]="i < myPicks().length ? 'bg-yellow-400' : 'bg-slate-700'"
+											></div>
+										}
+										<span class="text-xs text-slate-500 ml-1">{{ myPicks().length }}/6</span>
+									</div>
+								</div>
 
-								<!-- Boutons de stats -->
-								<div class="grid grid-cols-2 gap-2 w-full mt-2 sm:grid-cols-3">
+								<!-- Lignes de stats cliquables -->
+								<div class="flex flex-col gap-1 w-full">
 									@for (stat of STAT_DEFS; track stat.key) {
 										@let alreadyPicked = pickedStatKeys().has(stat.key);
 										@let justPicked = justPickedStat()?.stat === stat.key;
-										<button
-											(click)="pickStat(stat.key)"
-											[disabled]="alreadyPicked || hasPickedThisRound() || pokemonAnimating()"
-											[class]="getStatButtonClass(stat.key, alreadyPicked)"
+										@let pick = getMyPickForStat(stat.key);
+										@let canPick = !alreadyPicked && !hasPickedThisRound() && !pokemonAnimating() && pokemonVisible();
+
+										<div
+											[class]="getStatRowClass(alreadyPicked, justPicked, canPick)"
+											(click)="canPick ? pickStat(stat.key) : null"
 										>
 											<span
-												class="text-xs font-black uppercase tracking-wider"
-												[ngClass]="alreadyPicked && !justPicked ? 'text-slate-600' : stat.colorClass"
-											>
-												{{ stat.label }}
+												class="text-xs font-black uppercase w-10 text-right flex-shrink-0"
+												[ngClass]="pick ? stat.colorClass : canPick ? stat.colorClass : 'text-slate-600'"
+											>{{ stat.label }}</span>
+
+											<div class="flex-1 h-2 bg-slate-700/80 rounded-full overflow-hidden relative">
+												<!-- Barre preview : stat du pokémon actuel (semi-transparente, révélée après le choix) -->
+												@if (!pendingMyPickStat() && hasPickedThisRound() && currentPokemon() && !alreadyPicked) {
+													<div
+														class="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
+														[ngClass]="(justPicked || alreadyPicked) ? stat.bgClass : 'bg-slate-400'"
+														[style.opacity]="alreadyPicked ? '0.12' : justPicked ? '0.6' : '0.3'"
+														[style.width]="getStatBarWidth(currentPokemon()!.stats[stat.key])"
+													></div>
+												}
+												<!-- Barre principale : valeur choisie -->
+												<div
+													class="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
+													[ngClass]="pick ? stat.bgClass : ''"
+													[style.width]="pick ? getStatBarWidth(pick.value) : '0%'"
+												></div>
+											</div>
+
+											<span class="text-xs font-black w-8 text-right flex-shrink-0">
+												@if (justPicked) {
+													<span [ngClass]="stat.colorClass" class="stat-pop">{{ pick!.value }}</span>
+												} @else if (pick) {
+													<span class="text-white">{{ pick.value }}</span>
+												} @else if (!pendingMyPickStat() && hasPickedThisRound() && currentPokemon()) {
+													<span class="text-slate-400">{{ currentPokemon()!.stats[stat.key] }}</span>
+												} @else {
+													<span class="text-slate-600">—</span>
+												}
 											</span>
-											@if (justPicked) {
-												<span class="text-2xl font-black stat-pop" [ngClass]="stat.colorClass">
-													{{ currentPokemon()!.stats[stat.key] }}
-												</span>
-											} @else if (alreadyPicked) {
-												<iconify-icon [icon]="ICONS.check" class="text-base text-slate-600"></iconify-icon>
-											} @else {
-												<span class="text-lg font-black text-slate-500">—</span>
-											}
-										</button>
+										</div>
 									}
 								</div>
-							</div>
-						}
 
-						<!-- Mon Pokémon en cours (solo) -->
-						<div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4">
-							<p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Mon Pokémon</p>
-							<div class="flex flex-col gap-2">
-								@for (stat of STAT_DEFS; track stat.key) {
-									@let pick = getMyPickForStat(stat.key);
-									<div class="flex items-center gap-3">
-										<span
-											class="text-xs font-black uppercase w-10 text-right flex-shrink-0"
-											[ngClass]="pick ? stat.colorClass : 'text-slate-600'"
-										>
-											{{ stat.label }}
-										</span>
-										<div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-											<div
-												class="h-full rounded-full transition-all duration-500"
-												[ngClass]="pick ? stat.bgClass : ''"
-												[style.width]="pick ? getStatBarWidth(pick.value) : '0%'"
-											></div>
-										</div>
-										<span class="text-xs font-black w-7 text-right flex-shrink-0" [ngClass]="pick ? 'text-white' : 'text-slate-600'">
-											{{ pick ? pick.value : "—" }}
-										</span>
+								@if (myPicks().length > 0) {
+									<div class="w-full pt-3 border-t border-slate-700/50 flex justify-between items-center">
+										<span class="text-xs text-slate-500">Total actuel</span>
+										<span class="text-sm font-black text-yellow-400">{{ myTotal() }}</span>
 									</div>
 								}
 							</div>
-							@if (myPicks().length > 0) {
-								<div class="mt-3 pt-3 border-t border-slate-700/50 flex justify-between items-center">
-									<span class="text-xs text-slate-500">Total actuel</span>
-									<span class="text-sm font-black text-yellow-400">{{ myTotal() }}</span>
-								</div>
-							}
-						</div>
+						}
 					</div>
 				</div>
 
@@ -361,71 +367,78 @@
 						<!-- GAUCHE : Ma fenêtre — 2e sur mobile, colonne gauche desktop -->
 						<div class="order-2 lg:order-1 flex flex-col gap-3">
 							<div class="bg-slate-800 border border-slate-700 rounded-2xl p-4">
-								<p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Mes choix</p>
-								<div class="grid grid-cols-3 lg:grid-cols-2 gap-2 w-full">
+								<div class="flex items-center justify-between mb-3">
+									<p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Mon Pokémon</p>
+									<div class="flex items-center gap-1">
+										@for (i of INDICES; track i) {
+											<div
+												class="w-2 h-2 rounded-full"
+												[ngClass]="i < myRevealedPicks().length ? 'bg-yellow-400' : 'bg-slate-700'"
+											></div>
+										}
+										<span class="text-xs text-slate-500 ml-1">{{ myRevealedPicks().length }}/6</span>
+									</div>
+								</div>
+
+								<div class="flex flex-col gap-1">
 									@for (stat of STAT_DEFS; track stat.key) {
 										@let alreadyPicked = pickedStatKeys().has(stat.key);
 										@let justPicked = justPickedStat()?.stat === stat.key;
 										@let isPending = pendingMyPickStat() === stat.key;
-										<button
-											(click)="pickStat(stat.key)"
-											[disabled]="alreadyPicked || hasPickedThisRound() || pokemonAnimating()"
-											[class]="getStatButtonClass(stat.key, alreadyPicked)"
+										@let revealedPick = getMyRevealedPickForStat(stat.key);
+										@let canPick = !alreadyPicked && !hasPickedThisRound() && !pokemonAnimating() && pokemonVisible();
+
+										<div
+											[class]="getStatRowClass(alreadyPicked, justPicked, canPick)"
+											(click)="canPick ? pickStat(stat.key) : null"
 										>
 											<span
-												class="text-xs font-black uppercase tracking-wider"
-												[ngClass]="alreadyPicked && !justPicked && !isPending ? 'text-slate-600' : stat.colorClass"
-											>
-												{{ stat.label }}
+												class="text-xs font-black uppercase w-10 text-right flex-shrink-0"
+												[ngClass]="revealedPick || isPending ? stat.colorClass : canPick ? stat.colorClass : 'text-slate-600'"
+											>{{ stat.label }}</span>
+
+											<div class="flex-1 h-2 bg-slate-700/80 rounded-full overflow-hidden relative">
+												<!-- Barre preview : stat du pokémon actuel (semi-transparente, révélée après le choix) -->
+												@if (!pendingMyPickStat() && hasPickedThisRound() && currentPokemon() && !alreadyPicked) {
+													<div
+														class="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
+														[ngClass]="(justPicked || alreadyPicked) ? stat.bgClass : 'bg-slate-400'"
+														[style.opacity]="alreadyPicked ? '0.12' : justPicked ? '0.6' : '0.3'"
+														[style.width]="getStatBarWidth(currentPokemon()!.stats[stat.key])"
+													></div>
+												}
+												<!-- Barre principale : valeur révélée -->
+												<div
+													class="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
+													[ngClass]="revealedPick ? stat.bgClass : ''"
+													[style.width]="revealedPick ? getStatBarWidth(revealedPick.value) : '0%'"
+												></div>
+											</div>
+
+											<span class="text-xs font-black w-8 text-right flex-shrink-0">
+												@if (isPending) {
+													<iconify-icon [icon]="ICONS.loading" class="text-sm animate-spin text-blue-400"></iconify-icon>
+												} @else if (justPicked) {
+													<span [ngClass]="stat.colorClass" class="stat-pop">{{ revealedPick?.value }}</span>
+												} @else if (revealedPick) {
+													<span class="text-white">{{ revealedPick.value }}</span>
+												} @else if (!pendingMyPickStat() && hasPickedThisRound() && currentPokemon()) {
+													<span class="text-slate-400">{{ currentPokemon()!.stats[stat.key] }}</span>
+												} @else {
+													<span class="text-slate-600">—</span>
+												}
 											</span>
-											@if (isPending) {
-												<iconify-icon [icon]="ICONS.loading" class="text-base animate-spin text-blue-400"></iconify-icon>
-											} @else if (justPicked) {
-												<span class="text-2xl font-black stat-pop" [ngClass]="stat.colorClass">
-													{{ currentPokemon()!.stats[stat.key] }}
-												</span>
-											} @else if (alreadyPicked) {
-												<iconify-icon [icon]="ICONS.check" class="text-base text-slate-600"></iconify-icon>
-											} @else {
-												<span class="text-lg font-black text-slate-500">—</span>
-											}
-										</button>
+										</div>
 									}
 								</div>
+
 								@if (waitingForReveal()) {
 									<div class="flex items-center justify-center gap-2 text-sm text-slate-400 mt-3">
 										<iconify-icon [icon]="ICONS.loading" class="text-base animate-spin text-blue-400"></iconify-icon>
 										<span>En attente de l'adversaire…</span>
 									</div>
 								}
-							</div>
 
-							<!-- Mes stats en cours -->
-							<div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4">
-								<p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Mon Pokémon</p>
-								<div class="flex flex-col gap-2">
-									@for (stat of STAT_DEFS; track stat.key) {
-										@let pick = getMyRevealedPickForStat(stat.key);
-										<div class="flex items-center gap-3">
-											<span
-												class="text-xs font-black uppercase w-10 text-right flex-shrink-0"
-												[ngClass]="pick ? stat.colorClass : 'text-slate-600'"
-											>
-												{{ stat.label }}
-											</span>
-											<div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-												<div
-													class="h-full rounded-full transition-all duration-500"
-													[ngClass]="pick ? stat.bgClass : ''"
-													[style.width]="pick ? getStatBarWidth(pick.value) : '0%'"
-												></div>
-											</div>
-											<span class="text-xs font-black w-7 text-right flex-shrink-0" [ngClass]="pick ? 'text-white' : 'text-slate-600'">
-												{{ pick ? pick.value : "—" }}
-											</span>
-										</div>
-									}
-								</div>
 								@if (myRevealedPicks().length > 0) {
 									<div class="mt-3 pt-3 border-t border-slate-700/50 flex justify-between items-center">
 										<span class="text-xs text-slate-500">Total actuel</span>
@@ -437,13 +450,13 @@
 
 						<!-- DROITE : Adversaire (lecture seule) — 3e sur mobile et desktop -->
 						<div class="order-3 flex flex-col gap-3">
-							<div class="bg-slate-800/30 border border-slate-700/30 rounded-2xl p-4">
+							<div class="bg-slate-800 border border-slate-700 rounded-2xl p-4">
 								<div class="flex items-center justify-between mb-3">
-									<p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Adversaire</p>
+									<p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Adversaire</p>
 									<div class="flex items-center gap-1">
 										@for (i of INDICES; track i) {
 											<div
-												class="w-2.5 h-2.5 rounded-full"
+												class="w-2 h-2 rounded-full"
 												[ngClass]="i < opponentRevealedPicks().length ? 'bg-blue-400' : 'bg-slate-700'"
 											></div>
 										}
@@ -451,35 +464,49 @@
 									</div>
 								</div>
 
-								@if (justRevealedOpponentPick()) {
-									<div class="flex items-center justify-center gap-2 text-sm border-b border-slate-700/30 pb-3 mb-3">
-										<span class="text-slate-400">A choisi</span>
-										<span class="font-black text-blue-300 stat-pop uppercase">{{ justRevealedOpponentPick()!.stat }}</span>
-										<span class="text-slate-400">→</span>
-										<span class="font-black text-blue-400 stat-pop">{{ justRevealedOpponentPick()!.value }}</span>
-									</div>
-								}
-
-								<!-- Barres de stats adversaire (lecture seule) -->
-								<div class="flex flex-col gap-2">
+								<div class="flex flex-col gap-1">
 									@for (stat of STAT_DEFS; track stat.key) {
-										@let pick = getOpponentRevealedPickForStat(stat.key);
-										<div class="flex items-center gap-3">
+										@let revealedPick = getOpponentRevealedPickForStat(stat.key);
+										@let justRevealedThis = justRevealedOpponentPick()?.stat === stat.key;
+										@let opponentRevealedThisRound = opponentRevealedPicks().length > currentRound();
+
+										<div
+											class="flex items-center gap-3 rounded-xl px-2 py-2 border transition-all"
+											[ngClass]="justRevealedThis ? 'border-blue-500/30 bg-blue-500/5' : 'border-transparent'"
+										>
 											<span
 												class="text-xs font-black uppercase w-10 text-right flex-shrink-0"
-												[ngClass]="pick ? stat.colorClass : 'text-slate-600'"
-											>
-												{{ stat.label }}
-											</span>
-											<div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+												[ngClass]="revealedPick ? stat.colorClass : 'text-slate-600'"
+											>{{ stat.label }}</span>
+
+											<div class="flex-1 h-2 bg-slate-700/80 rounded-full overflow-hidden relative">
+												<!-- Barre preview : stat du pokémon actuel (révélée après le choix de l'adversaire) -->
+												@if (opponentRevealedThisRound && currentPokemon() && (!revealedPick || justRevealedThis)) {
+													<div
+														class="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
+														[ngClass]="(justRevealedThis || (revealedPick && !justRevealedOpponentPick())) ? stat.bgClass : 'bg-slate-400'"
+														[style.opacity]="(revealedPick && !justRevealedThis) ? '0.12' : justRevealedThis ? '0.6' : '0.3'"
+														[style.width]="getStatBarWidth(currentPokemon()!.stats[stat.key])"
+													></div>
+												}
+												<!-- Barre principale : valeur révélée -->
 												<div
-													class="h-full rounded-full transition-all duration-500"
-													[ngClass]="pick ? stat.bgClass : ''"
-													[style.width]="pick ? getStatBarWidth(pick.value) : '0%'"
+													class="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
+													[ngClass]="revealedPick ? stat.bgClass : ''"
+													[style.width]="revealedPick ? getStatBarWidth(revealedPick.value) : '0%'"
 												></div>
 											</div>
-											<span class="text-xs font-black w-7 text-right flex-shrink-0" [ngClass]="pick ? 'text-blue-300' : 'text-slate-600'">
-												{{ pick ? pick.value : "—" }}
+
+											<span class="text-xs font-black w-8 text-right flex-shrink-0">
+												@if (justRevealedThis) {
+													<span [ngClass]="stat.colorClass" class="stat-pop">{{ revealedPick?.value }}</span>
+												} @else if (revealedPick) {
+													<span class="text-blue-300">{{ revealedPick.value }}</span>
+												} @else if (opponentRevealedThisRound && currentPokemon()) {
+													<span class="text-slate-400">{{ currentPokemon()!.stats[stat.key] }}</span>
+												} @else {
+													<span class="text-slate-600">—</span>
+												}
 											</span>
 										</div>
 									}
@@ -504,11 +531,18 @@
 			<div class="flex-1 overflow-y-auto flex flex-col items-center justify-center px-4 py-6">
 				<div class="w-full max-w-lg md:max-w-3xl flex flex-col gap-6">
 					<!-- Titre -->
-					<div class="text-center">
+					<div class="text-center flex flex-col items-center gap-2">
 						@if (isSolo()) {
-							<h2 class="text-3xl font-black text-white">Ton Pokémon final !</h2>
+							<iconify-icon [icon]="ICONS.trophy" class="text-6xl text-yellow-400 animate-bounce"></iconify-icon>
+							<h2 class="text-3xl font-black text-yellow-400 uppercase tracking-tight">Victoire !</h2>
 						} @else {
-							<h2 class="text-3xl font-black" [ngClass]="getResultColor()">{{ getResultLabel() }}</h2>
+							@let winner = isMultiWinner();
+							@if (winner === true) {
+								<iconify-icon [icon]="ICONS.trophy" class="text-6xl text-yellow-400 animate-bounce"></iconify-icon>
+							} @else if (winner === false) {
+								<iconify-icon [icon]="ICONS.skull" class="text-6xl text-red-500 animate-pulse"></iconify-icon>
+							}
+							<h2 class="text-3xl font-black uppercase tracking-tight" [ngClass]="getResultColor()">{{ getResultLabel() }}</h2>
 						}
 					</div>
 
