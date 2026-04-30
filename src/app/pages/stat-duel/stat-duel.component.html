@@ -1,12 +1,7 @@
 <div class="h-dvh bg-slate-900 text-white flex flex-col overflow-hidden">
-
-@if (showDuelIntro() && duelPlayer1() && duelPlayer2()) {
-  <app-duel-intro
-    [player1]="duelPlayer1()!"
-    [player2]="duelPlayer2()!"
-    (closed)="showDuelIntro.set(false)"
-  />
-}
+	@if (showDuelIntro() && duelPlayer1() && duelPlayer2()) {
+		<app-duel-intro [player1]="duelPlayer1()!" [player2]="duelPlayer2()!" (closed)="showDuelIntro.set(false)" />
+	}
 
 	<!-- Header -->
 	<header class="flex items-center justify-between px-6 py-4 border-b border-slate-700 flex-shrink-0">
@@ -19,14 +14,11 @@
 	<!-- Barre d'actions -->
 	<div class="relative bg-slate-800/50 border-b border-slate-700 px-3 py-2 flex items-center justify-between gap-2 shrink-0">
 		<!-- Timer (phase playing uniquement) -->
-		@if (phase() === 'playing') {
-			<div class="flex items-center gap-2.5">
-				<span class="text-[11px] font-bold text-slate-400">Manche {{ currentRound() + 1 }}/{{ ROUND_COUNT }}</span>
-				<div class="flex items-center gap-1">
-					<iconify-icon [icon]="ICONS.timer" class="text-base animate-pulse translate-y-0.5" [ngClass]="getTimerColor()"></iconify-icon>
-					<span class="text-lg font-black tabular-nums" [ngClass]="getTimerColor()">{{ timerValue() }}</span>
-					<span class="text-[11px] text-slate-500 translate-y-0.5">s</span>
-				</div>
+		@if (phase() === "playing") {
+			<div class="flex items-center gap-1">
+				<iconify-icon [icon]="ICONS.timer" class="text-xl animate-pulse" [ngClass]="getTimerColor()"></iconify-icon>
+				<span class="text-xl font-black tabular-nums" [ngClass]="getTimerColor()">{{ timerValue() }}</span>
+				<span class="text-xl text-slate-500">s</span>
 			</div>
 		} @else {
 			<div></div>
@@ -40,7 +32,7 @@
 				<iconify-icon [icon]="ICONS.help" class="text-sm"></iconify-icon>
 				<span class="hidden sm:inline">Aide</span>
 			</button>
-			@if (isSolo() && phase() === 'playing') {
+			@if (isSolo() && phase() === "playing") {
 				<button
 					(click)="replay()"
 					class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-red-900/50 border border-slate-600/50 hover:border-red-800 rounded-lg text-[10px] font-black text-slate-400 hover:text-red-300 uppercase tracking-wider transition-all"
@@ -58,20 +50,20 @@
 			</button>
 		</div>
 		<!-- Barre de progression -->
-		@if (phase() === 'playing') {
+		@if (phase() === "playing") {
 			<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-700">
-				<div class="h-full transition-[width] duration-200 ease-linear" [ngClass]="getTimerBg()"
-					[style.width]="(timerProgress() / 10 * 100) + '%'"></div>
+				<div
+					class="h-full transition-[width] duration-200 ease-linear"
+					[ngClass]="getTimerBg()"
+					[style.width]="(timerProgress() / 10) * 100 + '%'"
+				></div>
 			</div>
 		}
 	</div>
 
 	<!-- Modal d'aide -->
 	@if (showHelpModal()) {
-		<div
-			class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-			(click)="showHelpModal.set(false)"
-		>
+		<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="showHelpModal.set(false)">
 			<div
 				class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4"
 				(click)="$event.stopPropagation()"
@@ -81,19 +73,35 @@
 				<ol class="space-y-3 text-sm text-slate-300 list-none text-justify">
 					<li class="flex gap-3">
 						<span class="text-yellow-400 font-bold text-base leading-snug">1.</span>
-						<span>Chaque manche, un Pokémon est révélé. Tu dois <strong class="text-white">choisir une de ses stats</strong> avant la fin du chrono (10 secondes).</span>
+						<span>
+							Chaque manche, un Pokémon est révélé. Tu dois
+							<strong class="text-white">choisir une de ses stats</strong>
+							avant la fin du chrono (10 secondes).
+						</span>
 					</li>
 					<li class="flex gap-3">
 						<span class="text-yellow-400 font-bold text-base leading-snug">2.</span>
-						<span>La <strong class="text-white">valeur de la stat choisie</strong> est ajoutée à ton score. Chaque stat ne peut être choisie qu'une seule fois sur l'ensemble des 6 manches.</span>
+						<span>
+							La
+							<strong class="text-white">valeur de la stat choisie</strong>
+							est ajoutée à ton score. Chaque stat ne peut être choisie qu'une seule fois sur l'ensemble de la partie.
+						</span>
 					</li>
 					<li class="flex gap-3">
 						<span class="text-yellow-400 font-bold text-base leading-snug">3.</span>
-						<span>Si tu ne choisis pas à temps, une stat est sélectionnée <strong class="text-white">aléatoirement</strong> pour toi.</span>
+						<span>
+							Si tu ne choisis pas à temps, une stat est sélectionnée
+							<strong class="text-white">aléatoirement</strong>
+							pour toi.
+						</span>
 					</li>
 					<li class="flex gap-3">
 						<span class="text-yellow-400 font-bold text-base leading-snug">4.</span>
-						<span>Après 6 manches, le joueur avec le <strong class="text-white">total le plus élevé</strong> remporte la partie !</span>
+						<span>
+							À la fin de la partie, le joueur avec le
+							<strong class="text-white">total le plus élevé</strong>
+							remporte la partie !
+						</span>
 					</li>
 				</ol>
 				<button
@@ -107,9 +115,8 @@
 	}
 
 	<main class="flex-1 flex flex-col overflow-hidden">
-
 		<!-- ─────────────────────────────────── Phase : mode-select ─── -->
-		@if (phase() === 'mode-select') {
+		@if (phase() === "mode-select") {
 			<div class="flex-1 min-h-0 overflow-y-auto">
 				<div class="min-h-full flex flex-col items-center justify-center pt-8 pb-20 px-4 relative">
 					<app-mode-select title="Duel de Base Stats" [icon]="ICONS.statDuel" iconColor="text-yellow-300" iconSize="text-4xl">
@@ -131,8 +138,10 @@
 
 					@if (isDevEnv) {
 						<div class="absolute bottom-6">
-							<button (click)="startDevMode()"
-								class="bg-slate-800 border border-dashed border-slate-600 hover:border-slate-500 rounded-2xl p-4 flex items-center gap-3 transition-all">
+							<button
+								(click)="startDevMode()"
+								class="bg-slate-800 border border-dashed border-slate-600 hover:border-slate-500 rounded-2xl p-4 flex items-center gap-3 transition-all"
+							>
 								<iconify-icon [icon]="ICONS.robot" class="text-xl text-slate-500"></iconify-icon>
 								<span class="text-sm font-bold text-slate-500">Mode Dev — 2J vs Bot</span>
 							</button>
@@ -143,10 +152,9 @@
 		}
 
 		<!-- ─────────────────────────────────────── Phase : waiting ─── -->
-		@if (phase() === 'waiting') {
+		@if (phase() === "waiting") {
 			<div class="flex-1 flex flex-col items-center justify-center overflow-y-auto p-4 md:p-6 w-full">
 				<div class="bg-slate-800 rounded-2xl p-4 md:p-6 max-w-md w-full text-center shadow-xl border border-slate-700">
-
 					@if (room()?.player2_id) {
 						<iconify-icon [icon]="ICONS.checkCircle" class="text-5xl mb-1 text-green-400"></iconify-icon>
 					} @else {
@@ -189,7 +197,9 @@
 									<iconify-icon [icon]="ICONS.copy" class="text-lg"></iconify-icon>
 								</button>
 								@if (linkCopied()) {
-									<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none">
+									<div
+										class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none"
+									>
 										Lien copié
 									</div>
 								}
@@ -227,231 +237,266 @@
 		}
 
 		<!-- ─────────────────────────────────────── Phase : playing ─── -->
-		@if (phase() === 'playing') {
+		@if (phase() === "playing") {
 			<div class="flex-1 flex flex-col items-center overflow-y-auto px-4 py-6">
-			<div class="w-full max-w-lg flex flex-col gap-5">
-
-				<!-- Pokémon -->
-				@if (currentPokemon()) {
-					<div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 flex flex-col items-center gap-4">
-
-						<div class="w-20 h-20 sm:w-32 sm:h-32 flex items-center justify-center">
-							@if (pokemonVisible()) {
-								<img [src]="currentPokemon()!.sprite" [alt]="currentPokemon()!.name"
-									class="w-20 h-20 sm:w-32 sm:h-32 object-contain drop-shadow-lg pokemon-appear" loading="eager" />
-							}
-						</div>
-
-						@if (pokemonVisible()) {
-							<h3 class="text-xl font-black text-white capitalize text-center pokemon-appear">{{ currentPokemon()!.name }}</h3>
-						} @else {
-							<h3 class="text-xl font-black capitalize text-center invisible">{{ currentPokemon()!.name }}</h3>
-						}
-
-						<!-- Boutons de stats -->
-						<div class="grid grid-cols-2 gap-2 w-full mt-2 sm:grid-cols-3">
-							@for (stat of STAT_DEFS; track stat.key) {
-								@let alreadyPicked = pickedStatKeys().has(stat.key);
-								@let justPicked = justPickedStat()?.stat === stat.key;
-								@let isPending = !isSolo() && pendingMyPickStat() === stat.key;
-								<button
-									(click)="pickStat(stat.key)"
-									[disabled]="alreadyPicked || hasPickedThisRound() || pokemonAnimating()"
-									[class]="getStatButtonClass(stat.key, alreadyPicked)">
-									<span class="text-xs font-black uppercase tracking-wider"
-										[ngClass]="(alreadyPicked && !justPicked && !isPending) ? 'text-slate-600' : stat.colorClass">
-										{{ stat.label }}
-									</span>
-									@if (isPending) {
-										<iconify-icon [icon]="ICONS.loading" class="text-base animate-spin text-blue-400"></iconify-icon>
-									} @else if (justPicked) {
-										<span class="text-2xl font-black stat-pop" [ngClass]="stat.colorClass">
-											{{ currentPokemon()!.stats[stat.key] }}
-										</span>
-									} @else if (alreadyPicked) {
-										<iconify-icon [icon]="ICONS.check" class="text-base text-slate-600"></iconify-icon>
-									} @else {
-										<span class="text-lg font-black text-slate-500">—</span>
-									}
-								</button>
-							}
-						</div>
-
-						@if (!isSolo() && waitingForReveal()) {
-							<div class="flex items-center justify-center gap-2 text-sm text-slate-400 mt-1">
-								<iconify-icon [icon]="ICONS.loading" class="text-base animate-spin text-blue-400"></iconify-icon>
-								<span>En attente de l'adversaire…</span>
-							</div>
-						}
-					</div>
-				}
-
-				<!-- Mon Pokémon en cours -->
-				<div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4">
-					<p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Mon Pokémon en cours</p>
-					<div class="flex flex-col gap-2">
-						@for (stat of STAT_DEFS; track stat.key) {
-							@let pick = isSolo() ? getMyPickForStat(stat.key) : getMyRevealedPickForStat(stat.key);
-							<div class="flex items-center gap-3">
-								<span class="text-xs font-black uppercase w-10 text-right flex-shrink-0"
-									[ngClass]="pick ? stat.colorClass : 'text-slate-600'">{{ stat.label }}</span>
-								<div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-									<div class="h-full rounded-full transition-all duration-500"
-										[ngClass]="pick ? stat.bgClass : ''"
-										[style.width]="pick ? getStatBarWidth(pick.value) : '0%'"></div>
-								</div>
-								<span class="text-xs font-black w-7 text-right flex-shrink-0"
-									[ngClass]="pick ? 'text-white' : 'text-slate-600'">
-									{{ pick ? pick.value : '—' }}
-								</span>
-							</div>
-						}
-					</div>
-					@if ((isSolo() ? myPicks() : myRevealedPicks()).length > 0) {
-						<div class="mt-3 pt-3 border-t border-slate-700/50 flex justify-between items-center">
-							<span class="text-xs text-slate-500">Total actuel</span>
-							<span class="text-sm font-black text-yellow-400">{{ isSolo() ? myTotal() : myRevealedTotal() }}</span>
-						</div>
-					}
-				</div>
-
-				<!-- Adversaire (multi) -->
-				@if (!isSolo()) {
-					<div class="bg-slate-800/30 border border-slate-700/30 rounded-xl px-4 py-3 flex flex-col gap-2">
-						<div class="flex items-center justify-between gap-4">
-							<span class="text-xs font-bold text-slate-500 flex-shrink-0">Adversaire</span>
-							<div class="flex gap-1">
-								@for (i of INDICES; track i) {
-									<div class="w-2.5 h-2.5 rounded-full" [ngClass]="i < opponentRevealedPicks().length ? 'bg-blue-400' : 'bg-slate-700'"></div>
+				<div class="w-full max-w-lg flex flex-col gap-5">
+					<!-- Pokémon -->
+					@if (currentPokemon()) {
+						<div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 flex flex-col items-center gap-4">
+							<div class="w-20 h-20 sm:w-32 sm:h-32 flex items-center justify-center">
+								@if (pokemonVisible()) {
+									<img
+										[src]="currentPokemon()!.sprite"
+										[alt]="currentPokemon()!.name"
+										class="w-20 h-20 sm:w-32 sm:h-32 object-contain drop-shadow-lg pokemon-appear"
+										loading="eager"
+									/>
 								}
 							</div>
-							<span class="text-xs text-slate-500 flex-shrink-0">{{ opponentRevealedPicks().length }}/6</span>
-						</div>
-						@if (justRevealedOpponentPick()) {
-							<div class="flex items-center justify-center gap-2 text-sm border-t border-slate-700/30 pt-2">
-								<span class="text-slate-400">A choisi</span>
-								<span class="font-black text-blue-300 stat-pop uppercase">{{ justRevealedOpponentPick()!.stat }}</span>
-								<span class="text-slate-400">→</span>
-								<span class="font-black text-blue-400 stat-pop">{{ justRevealedOpponentPick()!.value }}</span>
+
+							@if (pokemonVisible()) {
+								<h3 class="text-xl font-black text-white capitalize text-center pokemon-appear">{{ currentPokemon()!.name }}</h3>
+							} @else {
+								<h3 class="text-xl font-black capitalize text-center invisible">{{ currentPokemon()!.name }}</h3>
+							}
+
+							<!-- Boutons de stats -->
+							<div class="grid grid-cols-2 gap-2 w-full mt-2 sm:grid-cols-3">
+								@for (stat of STAT_DEFS; track stat.key) {
+									@let alreadyPicked = pickedStatKeys().has(stat.key);
+									@let justPicked = justPickedStat()?.stat === stat.key;
+									@let isPending = !isSolo() && pendingMyPickStat() === stat.key;
+									<button
+										(click)="pickStat(stat.key)"
+										[disabled]="alreadyPicked || hasPickedThisRound() || pokemonAnimating()"
+										[class]="getStatButtonClass(stat.key, alreadyPicked)"
+									>
+										<span
+											class="text-xs font-black uppercase tracking-wider"
+											[ngClass]="alreadyPicked && !justPicked && !isPending ? 'text-slate-600' : stat.colorClass"
+										>
+											{{ stat.label }}
+										</span>
+										@if (isPending) {
+											<iconify-icon [icon]="ICONS.loading" class="text-base animate-spin text-blue-400"></iconify-icon>
+										} @else if (justPicked) {
+											<span class="text-2xl font-black stat-pop" [ngClass]="stat.colorClass">
+												{{ currentPokemon()!.stats[stat.key] }}
+											</span>
+										} @else if (alreadyPicked) {
+											<iconify-icon [icon]="ICONS.check" class="text-base text-slate-600"></iconify-icon>
+										} @else {
+											<span class="text-lg font-black text-slate-500">—</span>
+										}
+									</button>
+								}
 							</div>
-						}
-					</div>
-				}
-			</div>
-			</div>
-		}
 
-		<!-- ──────────────────────────────────────── Phase : result ─── -->
-		@if (phase() === 'result') {
-			<div class="flex-1 overflow-y-auto flex flex-col items-center justify-center px-4 py-6">
-			<div class="w-full max-w-lg md:max-w-3xl flex flex-col gap-6">
-
-				<!-- Titre -->
-				<div class="text-center">
-					@if (isSolo()) {
-						<h2 class="text-3xl font-black text-white">Ton Pokémon final !</h2>
-					} @else {
-						<h2 class="text-3xl font-black" [ngClass]="getResultColor()">{{ getResultLabel() }}</h2>
-					}
-				</div>
-
-				<!-- Cards : empilées sur mobile, côte à côte sur bureau -->
-				<div class="flex flex-col md:flex-row md:items-stretch gap-6 w-full" [class.max-w-md]="isSolo()" [class.mx-auto]="isSolo()">
-
-					<!-- Mes stats finales -->
-					<div class="flex-1 bg-slate-800 border border-yellow-500/30 rounded-2xl p-4">
-						<div class="flex items-center justify-between mb-1">
-							<p class="text-xs font-bold text-yellow-400/80 uppercase tracking-widest">Mon Pokémon</p>
-							@if (!isSolo()) {
-							<button
-								class="md:hidden flex items-center gap-1 text-xs font-bold text-slate-400 uppercase tracking-wide"
-								(click)="statsExpanded.set(!statsExpanded())"
-							>
-								Détails
-								<iconify-icon [icon]="statsExpanded() ? 'mdi:chevron-up' : 'mdi:chevron-down'" class="text-base"></iconify-icon>
-							</button>
-						}
-						</div>
-						<div [class]="(isSolo() || statsExpanded()) ? 'flex flex-col gap-3 mt-3' : 'hidden md:flex md:flex-col md:gap-3 md:mt-3'">
-							@for (stat of STAT_DEFS; track stat.key) {
-								@let pick = getMyPickForStat(stat.key);
-								<div class="flex items-center gap-3">
-									<span class="text-xs font-black uppercase w-10 text-right flex-shrink-0" [ngClass]="stat.colorClass">{{ stat.label }}</span>
-									<div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-										<div class="h-full rounded-full transition-all duration-500" [ngClass]="stat.bgClass"
-											[style.width]="pick ? getStatBarWidth(pick.value) : '0%'"></div>
-									</div>
-									<span class="text-sm font-black text-white w-8 text-right flex-shrink-0">{{ pick ? pick.value : '—' }}</span>
+							@if (!isSolo() && waitingForReveal()) {
+								<div class="flex items-center justify-center gap-2 text-sm text-slate-400 mt-1">
+									<iconify-icon [icon]="ICONS.loading" class="text-base animate-spin text-blue-400"></iconify-icon>
+									<span>En attente de l'adversaire…</span>
 								</div>
 							}
 						</div>
-						<div class="mt-4 pt-4 border-t border-slate-700 flex justify-between items-center">
-							<span class="text-sm font-bold text-slate-400">Total</span>
-							<span class="text-2xl font-black text-yellow-400">{{ myTotal() }}</span>
+					}
+
+					<!-- Mon Pokémon en cours -->
+					<div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4">
+						<p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Mon Pokémon en cours</p>
+						<div class="flex flex-col gap-2">
+							@for (stat of STAT_DEFS; track stat.key) {
+								@let pick = isSolo() ? getMyPickForStat(stat.key) : getMyRevealedPickForStat(stat.key);
+								<div class="flex items-center gap-3">
+									<span
+										class="text-xs font-black uppercase w-10 text-right flex-shrink-0"
+										[ngClass]="pick ? stat.colorClass : 'text-slate-600'"
+									>
+										{{ stat.label }}
+									</span>
+									<div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+										<div
+											class="h-full rounded-full transition-all duration-500"
+											[ngClass]="pick ? stat.bgClass : ''"
+											[style.width]="pick ? getStatBarWidth(pick.value) : '0%'"
+										></div>
+									</div>
+									<span class="text-xs font-black w-7 text-right flex-shrink-0" [ngClass]="pick ? 'text-white' : 'text-slate-600'">
+										{{ pick ? pick.value : "—" }}
+									</span>
+								</div>
+							}
 						</div>
+						@if ((isSolo() ? myPicks() : myRevealedPicks()).length > 0) {
+							<div class="mt-3 pt-3 border-t border-slate-700/50 flex justify-between items-center">
+								<span class="text-xs text-slate-500">Total actuel</span>
+								<span class="text-sm font-black text-yellow-400">{{ isSolo() ? myTotal() : myRevealedTotal() }}</span>
+							</div>
+						}
 					</div>
 
 					<!-- Adversaire (multi) -->
 					@if (!isSolo()) {
-						<div class="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4">
-							<div class="flex items-center justify-between mb-1">
-								<p class="text-xs font-bold text-blue-400/80 uppercase tracking-widest">Adversaire</p>
-								<button
-									class="md:hidden flex items-center gap-1 text-xs font-bold text-slate-400 uppercase tracking-wide"
-									(click)="statsExpanded.set(!statsExpanded())"
-								>
-									Détails
-									<iconify-icon [icon]="statsExpanded() ? 'mdi:chevron-up' : 'mdi:chevron-down'" class="text-base"></iconify-icon>
-								</button>
+						<div class="bg-slate-800/30 border border-slate-700/30 rounded-xl px-4 py-3 flex flex-col gap-2">
+							<div class="flex items-center justify-between gap-4">
+								<span class="text-xs font-bold text-slate-500 flex-shrink-0">Adversaire</span>
+								<div class="flex gap-1">
+									@for (i of INDICES; track i) {
+										<div
+											class="w-2.5 h-2.5 rounded-full"
+											[ngClass]="i < opponentRevealedPicks().length ? 'bg-blue-400' : 'bg-slate-700'"
+										></div>
+									}
+								</div>
+								<span class="text-xs text-slate-500 flex-shrink-0">{{ opponentRevealedPicks().length }}/6</span>
 							</div>
-							<div [class]="statsExpanded() ? 'flex flex-col gap-3 mt-3' : 'hidden md:flex md:flex-col md:gap-3 md:mt-3'">
+							@if (justRevealedOpponentPick()) {
+								<div class="flex items-center justify-center gap-2 text-sm border-t border-slate-700/30 pt-2">
+									<span class="text-slate-400">A choisi</span>
+									<span class="font-black text-blue-300 stat-pop uppercase">{{ justRevealedOpponentPick()!.stat }}</span>
+									<span class="text-slate-400">→</span>
+									<span class="font-black text-blue-400 stat-pop">{{ justRevealedOpponentPick()!.value }}</span>
+								</div>
+							}
+						</div>
+					}
+				</div>
+			</div>
+		}
+
+		<!-- ──────────────────────────────────────── Phase : result ─── -->
+		@if (phase() === "result") {
+			<div class="flex-1 overflow-y-auto flex flex-col items-center justify-center px-4 py-6">
+				<div class="w-full max-w-lg md:max-w-3xl flex flex-col gap-6">
+					<!-- Titre -->
+					<div class="text-center">
+						@if (isSolo()) {
+							<h2 class="text-3xl font-black text-white">Ton Pokémon final !</h2>
+						} @else {
+							<h2 class="text-3xl font-black" [ngClass]="getResultColor()">{{ getResultLabel() }}</h2>
+						}
+					</div>
+
+					<!-- Cards : empilées sur mobile, côte à côte sur bureau -->
+					<div class="flex flex-col md:flex-row md:items-stretch gap-6 w-full" [class.max-w-md]="isSolo()" [class.mx-auto]="isSolo()">
+						<!-- Mes stats finales -->
+						<div class="flex-1 bg-slate-800 border border-yellow-500/30 rounded-2xl p-4">
+							<div class="flex items-center justify-between mb-1">
+								<p class="text-xs font-bold text-yellow-400/80 uppercase tracking-widest">Mon Pokémon</p>
+								@if (!isSolo()) {
+									<button
+										class="md:hidden flex items-center gap-1 text-xs font-bold text-slate-400 uppercase tracking-wide"
+										(click)="statsExpanded.set(!statsExpanded())"
+									>
+										Détails
+										<iconify-icon
+											[icon]="statsExpanded() ? 'mdi:chevron-up' : 'mdi:chevron-down'"
+											class="text-base"
+										></iconify-icon>
+									</button>
+								}
+							</div>
+							<div [class]="isSolo() || statsExpanded() ? 'flex flex-col gap-3 mt-3' : 'hidden md:flex md:flex-col md:gap-3 md:mt-3'">
 								@for (stat of STAT_DEFS; track stat.key) {
-									@let pick = getOpponentPickForStat(stat.key);
+									@let pick = getMyPickForStat(stat.key);
 									<div class="flex items-center gap-3">
-										<span class="text-xs font-black uppercase w-10 text-right flex-shrink-0" [ngClass]="stat.colorClass">{{ stat.label }}</span>
+										<span class="text-xs font-black uppercase w-10 text-right flex-shrink-0" [ngClass]="stat.colorClass">
+											{{ stat.label }}
+										</span>
 										<div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-											<div class="h-full rounded-full transition-all duration-500" [ngClass]="stat.bgClass"
-												[style.width]="pick ? getStatBarWidth(pick.value) : '0%'"></div>
+											<div
+												class="h-full rounded-full transition-all duration-500"
+												[ngClass]="stat.bgClass"
+												[style.width]="pick ? getStatBarWidth(pick.value) : '0%'"
+											></div>
 										</div>
-										<span class="text-sm font-black text-slate-300 w-8 text-right flex-shrink-0">{{ pick ? pick.value : '—' }}</span>
+										<span class="text-sm font-black text-white w-8 text-right flex-shrink-0">{{ pick ? pick.value : "—" }}</span>
 									</div>
 								}
 							</div>
 							<div class="mt-4 pt-4 border-t border-slate-700 flex justify-between items-center">
 								<span class="text-sm font-bold text-slate-400">Total</span>
-								<span class="text-2xl font-black text-blue-400">{{ opponentTotal() }}</span>
+								<span class="text-2xl font-black text-yellow-400">{{ myTotal() }}</span>
 							</div>
 						</div>
-					}
-				</div>
 
-				<!-- Actions -->
-				<div class="flex flex-col gap-2 w-full max-w-sm mx-auto shrink-0">
-					@if (!isSolo() && iWantReplay() && !opponentWantsReplay()) {
-						<div class="w-full py-3 bg-blue-600/40 border border-blue-500/40 rounded-xl font-bold text-blue-300 flex items-center justify-center gap-2 cursor-not-allowed">
-							<iconify-icon icon="mdi:clock-outline" class="text-lg"></iconify-icon>
-							En attente de l'adversaire…
-						</div>
-					} @else {
-						<button (click)="replay()" [disabled]="!isSolo() && iWantReplay()"
-							class="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-							<iconify-icon [icon]="ICONS.dice" class="text-lg"></iconify-icon>
-							@if (!isSolo() && opponentWantsReplay()) {
-								L'adversaire veut rejouer !
-							} @else {
-								Rejouer
-							}
+						<!-- Adversaire (multi) -->
+						@if (!isSolo()) {
+							<div class="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4">
+								<div class="flex items-center justify-between mb-1">
+									<p class="text-xs font-bold text-blue-400/80 uppercase tracking-widest">Adversaire</p>
+									<button
+										class="md:hidden flex items-center gap-1 text-xs font-bold text-slate-400 uppercase tracking-wide"
+										(click)="statsExpanded.set(!statsExpanded())"
+									>
+										Détails
+										<iconify-icon
+											[icon]="statsExpanded() ? 'mdi:chevron-up' : 'mdi:chevron-down'"
+											class="text-base"
+										></iconify-icon>
+									</button>
+								</div>
+								<div [class]="statsExpanded() ? 'flex flex-col gap-3 mt-3' : 'hidden md:flex md:flex-col md:gap-3 md:mt-3'">
+									@for (stat of STAT_DEFS; track stat.key) {
+										@let pick = getOpponentPickForStat(stat.key);
+										<div class="flex items-center gap-3">
+											<span class="text-xs font-black uppercase w-10 text-right flex-shrink-0" [ngClass]="stat.colorClass">
+												{{ stat.label }}
+											</span>
+											<div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+												<div
+													class="h-full rounded-full transition-all duration-500"
+													[ngClass]="stat.bgClass"
+													[style.width]="pick ? getStatBarWidth(pick.value) : '0%'"
+												></div>
+											</div>
+											<span class="text-sm font-black text-slate-300 w-8 text-right flex-shrink-0">
+												{{ pick ? pick.value : "—" }}
+											</span>
+										</div>
+									}
+								</div>
+								<div class="mt-4 pt-4 border-t border-slate-700 flex justify-between items-center">
+									<span class="text-sm font-bold text-slate-400">Total</span>
+									<span class="text-2xl font-black text-blue-400">{{ opponentTotal() }}</span>
+								</div>
+							</div>
+						}
+					</div>
+
+					<!-- Actions -->
+					<div class="flex flex-col gap-2 w-full max-w-sm mx-auto shrink-0">
+						@if (!isSolo() && iWantReplay() && !opponentWantsReplay()) {
+							<div
+								class="w-full py-3 bg-blue-600/40 border border-blue-500/40 rounded-xl font-bold text-blue-300 flex items-center justify-center gap-2 cursor-not-allowed"
+							>
+								<iconify-icon icon="mdi:clock-outline" class="text-lg"></iconify-icon>
+								En attente de l'adversaire…
+							</div>
+						} @else {
+							<button
+								(click)="replay()"
+								[disabled]="!isSolo() && iWantReplay()"
+								class="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+							>
+								<iconify-icon [icon]="ICONS.dice" class="text-lg"></iconify-icon>
+								@if (!isSolo() && opponentWantsReplay()) {
+									L'adversaire veut rejouer !
+								} @else {
+									Rejouer
+								}
+							</button>
+						}
+						<button
+							(click)="goHome()"
+							class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2"
+						>
+							<iconify-icon [icon]="ICONS.home" class="text-lg"></iconify-icon>
+							Retour à l'accueil
 						</button>
-					}
-					<button (click)="goHome()"
-						class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2">
-						<iconify-icon [icon]="ICONS.home" class="text-lg"></iconify-icon>
-						Retour à l'accueil
-					</button>
+					</div>
 				</div>
-			</div>
 			</div>
 		}
-
 	</main>
 </div>
