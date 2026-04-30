@@ -42,7 +42,7 @@ const ACCENT_CLASSES: Record<Accent, {
       </div>
       <div class="text-left sm:text-center">
         <h2 class="text-base font-black text-white sm:text-lg sm:mb-2">{{ title }}</h2>
-        <p class="hidden sm:block text-sm text-slate-400">{{ description }}</p>
+        <p class="text-xs sm:text-sm text-slate-400 mt-0.5 sm:mt-0">{{ description }}</p>
       </div>
     </button>
   `,
