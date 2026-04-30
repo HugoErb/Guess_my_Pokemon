@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA, inject, signal, computed } from '@angular/core';
+import confetti from 'canvas-confetti';
 import { NgClass } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -67,6 +68,8 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   private readonly pokemonService = inject(PokemonService);
   private readonly supabaseService = inject(SupabaseService);
 
+  private confettiInterval: ReturnType<typeof setInterval> | null = null;
+
   // ─── Phase & mode ────────────────────────────────────────────────────────────
   phase = signal<Phase>('mode-select');
   isSolo = signal(true);
@@ -121,6 +124,18 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   duelPlayer2 = signal<{ username: string; avatar_url?: string } | null>(null);
   private duelShown = false;
 
+  // ─── Replay state ────────────────────────────────────────────────────────────
+  iWantReplay = computed(() => {
+    const r = this.room();
+    if (!r) return false;
+    return this.isPlayer1() ? r.p1_ready : r.p2_ready;
+  });
+  opponentWantsReplay = computed(() => {
+    const r = this.room();
+    if (!r) return false;
+    return this.isPlayer1() ? r.p2_ready : r.p1_ready;
+  });
+
   // ─── UI state ────────────────────────────────────────────────────────────────
   showHelpModal = signal(false);
   statsExpanded = signal(false);
@@ -155,6 +170,40 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     this.stopClock();
     this.roomSub?.unsubscribe();
     this.stopWaitingPoll();
+    if (this.confettiInterval !== null) {
+      clearInterval(this.confettiInterval);
+      this.confettiInterval = null;
+    }
+  }
+
+  private launchConfetti(): void {
+    const colors = ['#ef4444', '#facc15', '#3b82f6', '#ffffff'];
+
+    if (window.innerWidth < 768) {
+      confetti({ particleCount: 120, spread: 90, origin: { x: 0.5, y: 0.6 }, colors });
+      return;
+    }
+
+    const duration = 3000;
+    const end = Date.now() + duration;
+
+    const fire = (originX: number) => {
+      confetti({ particleCount: 6, angle: originX === 0.1 ? 60 : 120, spread: 55, origin: { x: originX, y: 1 }, colors });
+    };
+
+    if (this.confettiInterval !== null) {
+      clearInterval(this.confettiInterval);
+      this.confettiInterval = null;
+    }
+    this.confettiInterval = setInterval(() => {
+      if (Date.now() > end) {
+        clearInterval(this.confettiInterval!);
+        this.confettiInterval = null;
+        return;
+      }
+      fire(0.1);
+      fire(0.9);
+    }, 50);
   }
 
   // ─── Mode select ─────────────────────────────────────────────────────────────
@@ -209,8 +258,13 @@ export class StatDuelComponent implements OnInit, OnDestroy {
       this.room.set(updated);
       if (updated.player2_id) this.stopWaitingPoll();
 
-      if (updated.status === 'playing' && this.phase() === 'waiting') {
+      if (updated.status === 'playing' && (this.phase() === 'waiting' || this.phase() === 'result')) {
+        this.resetGameState();
         await this.loadPokemonAndStartMulti(updated);
+      }
+
+      if (this.phase() === 'result' && updated.status === 'finished' && updated.p1_ready && updated.p2_ready && this.isPlayer1()) {
+        await this.launchReplayGame();
       }
 
       if (updated.status === 'playing' && this.phase() === 'playing') {
@@ -448,6 +502,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     const next = this.currentRound() + 1;
     if (next >= ROUND_COUNT) {
       this.phase.set('result');
+      this.launchConfetti();
     } else {
       this.currentRound.set(next);
       this.startPokemonAnimation(() => this.startSoloClock());
@@ -460,6 +515,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     this.stopClock();
     if (!this.isPlayer1() || !this.roomId || room.status === 'finished') {
       this.phase.set('result');
+      this.maybeFireMultiConfetti(room);
       return;
     }
     const p1Total = room.p1_picks.reduce((s, p) => s + p.value, 0);
@@ -467,6 +523,18 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     const winner = p1Total > p2Total ? 'player1' : p2Total > p1Total ? 'player2' : 'draw';
     void this.supabaseService.updateStatDuelRoom(this.roomId, { status: 'finished', winner });
     this.phase.set('result');
+    const me = this.supabaseService.getCurrentUser();
+    const isMeP1 = me && room.player1_id === me.id;
+    const iWon = (winner === 'player1' && isMeP1) || (winner === 'player2' && !isMeP1);
+    if (iWon) this.launchConfetti();
+  }
+
+  private maybeFireMultiConfetti(room: StatDuelRoom): void {
+    const me = this.supabaseService.getCurrentUser();
+    if (!me || !room?.winner || room.winner === 'draw') return;
+    const isMeP1 = room.player1_id === me.id;
+    const iWon = (room.winner === 'player1' && isMeP1) || (room.winner === 'player2' && !isMeP1);
+    if (iWon) this.launchConfetti();
   }
 
   // ─── Bot (dev mode) ──────────────────────────────────────────────────────────
@@ -534,23 +602,72 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   // ─── Rejouer / Navigation ────────────────────────────────────────────────────
 
   replay(): void {
+    if (this.isSolo()) {
+      this.resetGameState();
+      void this.startSolo();
+      return;
+    }
+    void this.requestStatDuelReplay();
+  }
+
+  private resetGameState(): void {
     this.myPicks.set([]);
     this.opponentPicks.set([]);
     this.pokemonList.set([]);
     this.currentRound.set(0);
     this.timerValue.set(10);
+    this.timerProgress.set(10);
     this.revealedRound.set(-1);
     this.waitingForReveal.set(false);
     this.pendingMyPickStat.set(null);
+    this.justPickedStat.set(null);
     this.justRevealedOpponentPick.set(null);
     this.pokemonVisible.set(false);
     this.pokemonAnimating.set(false);
     this.botPickedRounds.clear();
-    this.roomSub?.unsubscribe();
-    this.phase.set('mode-select');
-    if (!this.isSolo()) {
-      void this.router.navigate(['/stat-duel']);
+    this.stopClock();
+  }
+
+  private async requestStatDuelReplay(): Promise<void> {
+    if (!this.roomId) return;
+    const isP1 = this.isPlayer1();
+    await this.supabaseService.updateStatDuelRoom(this.roomId, isP1 ? { p1_ready: true } : { p2_ready: true });
+    const refreshed = await this.supabaseService.getStatDuelRoom(this.roomId);
+    this.room.set(refreshed);
+    if (refreshed.p1_ready && refreshed.p2_ready && refreshed.status === 'finished' && isP1) {
+      await this.launchReplayGame();
     }
+  }
+
+  private async launchReplayGame(): Promise<void> {
+    if (!this.roomId) return;
+    const currentRoom = this.room();
+    if (!currentRoom) return;
+    const allPokemon = await this.loadAll();
+    const pokemonIds = this.shuffle(allPokemon).slice(0, ROUND_COUNT).map(p => p.id);
+    const roundStartAt = new Date().toISOString();
+    await this.supabaseService.updateStatDuelRoom(this.roomId, {
+      status: 'playing',
+      pokemon_ids: pokemonIds,
+      p1_picks: [],
+      p2_picks: [],
+      winner: null,
+      round_start_at: roundStartAt,
+      p1_ready: false,
+      p2_ready: false,
+    });
+    this.resetGameState();
+    await this.loadPokemonAndStartMulti({
+      ...currentRoom,
+      status: 'playing',
+      pokemon_ids: pokemonIds,
+      p1_picks: [],
+      p2_picks: [],
+      winner: null,
+      round_start_at: roundStartAt,
+      p1_ready: false,
+      p2_ready: false,
+    });
   }
 
   goHome(): void {
