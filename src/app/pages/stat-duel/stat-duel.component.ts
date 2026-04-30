@@ -101,6 +101,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   opponentRevealedPicks = computed(() => this.opponentPicks().slice(0, this.revealedRound() + 1));
   isCurrentRoundRevealed = computed(() => this.revealedRound() >= this.currentRound());
   myRevealedTotal = computed(() => this.myRevealedPicks().reduce((s, p) => s + p.value, 0));
+  opponentRevealedTotal = computed(() => this.opponentRevealedPicks().reduce((s, p) => s + p.value, 0));
 
   // ─── Timer ───────────────────────────────────────────────────────────────────
   private clockInterval: ReturnType<typeof setInterval> | null = null;
@@ -357,7 +358,8 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     try {
       const allPokemon = await this.loadAll();
       const pokemonIds = this.shuffle(allPokemon).slice(0, ROUND_COUNT).map(p => p.id);
-      const roundStartAt = new Date().toISOString();
+      // Décale le départ de la durée de l'animation VS pour que le timer ne commence qu'après
+      const roundStartAt = new Date(Date.now() + 3000).toISOString();
 
       await this.supabaseService.updateStatDuelRoom(this.roomId, {
         status: 'playing',
@@ -405,6 +407,11 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     let prevRound = -1;
     this.clockInterval = setInterval(() => {
       const elapsed = Date.now() - startMs;
+      if (elapsed < 0) {
+        this.timerValue.set(10);
+        this.timerProgress.set(10);
+        return;
+      }
       const round = Math.min(Math.floor(elapsed / ROUND_DURATION_MS), ROUND_COUNT - 1);
       const elapsedInRound = elapsed % ROUND_DURATION_MS;
       const remainingFloat = Math.max(0, 10 - elapsedInRound / 1000);
@@ -456,6 +463,18 @@ export class StatDuelComponent implements OnInit, OnDestroy {
       this.justPickedStat.set(null);
       this.justRevealedOpponentPick.set(null);
     }, 2000);
+
+    // Les deux joueurs ont choisi → avance au prochain round sans attendre la fin des 10s
+    const bothPicked = this.myPicks().length > round && this.opponentPicks().length > round;
+    if (bothPicked && round < ROUND_COUNT - 1) {
+      this.stopClock();
+      setTimeout(() => {
+        const nextRound = round + 1;
+        // Ajuste le point de départ pour que le clock démarre à la manche suivante
+        const adjustedStartMs = Date.now() - nextRound * ROUND_DURATION_MS;
+        this.startMultiClock(new Date(adjustedStartMs).toISOString());
+      }, 1500);
+    }
   }
 
   // ─── Pick stat ───────────────────────────────────────────────────────────────
@@ -502,7 +521,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     const next = this.currentRound() + 1;
     if (next >= ROUND_COUNT) {
       this.phase.set('result');
-      this.launchConfetti();
+      setTimeout(() => this.launchConfetti(), 300);
     } else {
       this.currentRound.set(next);
       this.startPokemonAnimation(() => this.startSoloClock());
@@ -526,7 +545,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     const me = this.supabaseService.getCurrentUser();
     const isMeP1 = me && room.player1_id === me.id;
     const iWon = (winner === 'player1' && isMeP1) || (winner === 'player2' && !isMeP1);
-    if (iWon) this.launchConfetti();
+    if (iWon) setTimeout(() => this.launchConfetti(), 300);
   }
 
   private maybeFireMultiConfetti(room: StatDuelRoom): void {
@@ -534,7 +553,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     if (!me || !room?.winner || room.winner === 'draw') return;
     const isMeP1 = room.player1_id === me.id;
     const iWon = (room.winner === 'player1' && isMeP1) || (room.winner === 'player2' && !isMeP1);
-    if (iWon) this.launchConfetti();
+    if (iWon) setTimeout(() => this.launchConfetti(), 300);
   }
 
   // ─── Bot (dev mode) ──────────────────────────────────────────────────────────
@@ -750,7 +769,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     const base = 'flex flex-col items-center gap-1 px-4 py-3 rounded-xl border transition-all font-bold relative';
     if (!this.isSolo() && this.pendingMyPickStat() === statKey) return `${base} bg-blue-500/15 border-blue-500/50 cursor-not-allowed`;
     if (this.justPickedStat()?.stat === statKey) return `${base} bg-yellow-500/15 border-yellow-500 cursor-not-allowed`;
-    if (alreadyPicked) return `${base} bg-slate-700/30 border-slate-700/30 opacity-30 cursor-not-allowed`;
+    if (alreadyPicked) return `${base} bg-slate-700/30 border-slate-700/30 opacity-50 cursor-not-allowed`;
     if (this.hasPickedThisRound() || this.pokemonAnimating()) return `${base} bg-slate-700/50 border-slate-700/50 opacity-50 cursor-not-allowed`;
     return `${base} bg-slate-700 border-slate-600 hover:border-yellow-500/60 hover:bg-slate-600 cursor-pointer active:scale-95`;
   }
@@ -785,5 +804,9 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
   getOpponentPickForStat(statKey: string): StatPick | undefined {
     return this.opponentPicks().find(p => p.stat === statKey);
+  }
+
+  getOpponentRevealedPickForStat(statKey: string): StatPick | undefined {
+    return this.opponentRevealedPicks().find(p => p.stat === statKey);
   }
 }
