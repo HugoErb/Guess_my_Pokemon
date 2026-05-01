@@ -202,7 +202,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
 	/** Lifecycle Angular — arrête le watch de la room et les abonnements. */
 	ngOnDestroy(): void {
-		this.supabaseService.untrackPresence();
 		this.gameService.stopWatching();
 		this.pokemonsSub?.unsubscribe();
 		this.inviteResponseSub?.unsubscribe();

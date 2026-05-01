@@ -431,9 +431,8 @@ export class GameComponent implements OnInit, OnDestroy {
 		void this.router.navigate(['/home']);
 	}
 
-	/** Lifecycle Angular — nettoie la présence, les confettis et les abonnements. */
+	/** Lifecycle Angular — nettoie les confettis et les abonnements. */
 	ngOnDestroy(): void {
-		this.supabaseService.untrackPresence();
 		if (this.confettiInterval !== null) {
 			clearInterval(this.confettiInterval);
 			this.confettiInterval = null;

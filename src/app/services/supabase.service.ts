@@ -107,6 +107,10 @@ export class SupabaseService implements OnDestroy {
 
     /** Déconnecte l'utilisateur courant. */
     async signOut(): Promise<void> {
+        if (this.presenceChannel) {
+            this.supabase.removeChannel(this.presenceChannel);
+            this.presenceChannel = null;
+        }
         const { error } = await this.supabase.auth.signOut();
         if (error) throw error;
     }
@@ -532,8 +536,9 @@ export class SupabaseService implements OnDestroy {
         if (!user) return;
 
         if (this.presenceChannel) {
-            this.supabase.removeChannel(this.presenceChannel);
-            this.presenceChannel = null;
+            // Canal déjà ouvert : mise à jour du statut sans recréer (évite la race condition removeChannel → nouveau canal)
+            this.presenceChannel.track({ user_id: user.id, status }).catch(() => undefined);
+            return;
         }
 
         const channel = this.supabase.channel('presence-home', {
@@ -553,11 +558,10 @@ export class SupabaseService implements OnDestroy {
         this.presenceChannel = channel;
     }
 
-    /** Quitte le canal de présence et remet l'état à vide. */
+    /** Retire la présence de l'utilisateur du canal sans le fermer (préserve l'abonnement pour la prochaine navigation). */
     untrackPresence(): void {
         if (this.presenceChannel) {
-            this.supabase.removeChannel(this.presenceChannel);
-            this.presenceChannel = null;
+            this.presenceChannel.untrack().catch(() => undefined);
         }
         this.presenceStateSubject.next({});
     }

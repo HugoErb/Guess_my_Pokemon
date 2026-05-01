@@ -180,7 +180,6 @@ export class StatDuelComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.supabaseService.untrackPresence();
     this.stopClock();
     this.roomSub?.unsubscribe();
     this.inviteResponseSub?.unsubscribe();

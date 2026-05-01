@@ -157,6 +157,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
   // ─── Cycle de vie ────────────────────────────────────────────────────────────
 
   async ngOnInit(): Promise<void> {
+    this.supabaseService.trackPresence('in_game');
     try {
       const room = await this.supabaseService.getDraftDuoRoom(this.roomId());
       this.room.set(room);

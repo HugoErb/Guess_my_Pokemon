@@ -116,7 +116,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.supabaseService.untrackPresence();
     this.invitesSub?.unsubscribe();
     this.clearInviteToast();
   }
