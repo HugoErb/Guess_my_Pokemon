@@ -94,6 +94,8 @@ export interface DraftDuoRoom {
   p1_team: number[];
   p2_team: number[];
   winner: 'player1' | 'player2' | 'draw' | null;
+  p1_ready: boolean;
+  p2_ready: boolean;
   created_at: string;
 }
 

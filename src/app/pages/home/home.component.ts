@@ -216,13 +216,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.isCreating = true;
     this.createError = '';
     try {
-      const { roomId } = await this.supabaseService.sendGameInvite(event.friendId, event.gameMode);
+      const { roomId, inviteId } = await this.supabaseService.sendGameInvite(event.friendId, event.gameMode);
       if (event.gameMode === 'stat_duel') {
-        this.router.navigate(['/stat-duel', roomId]);
+        this.router.navigate(['/stat-duel', roomId], { queryParams: { inviteId, friendName: event.username } });
       } else if (event.gameMode === 'draft_duo') {
-        this.router.navigate(['/draft-duo', roomId]);
+        this.router.navigate(['/draft-duo', roomId], { queryParams: { inviteId, friendName: event.username } });
       } else {
-        this.router.navigate(['/lobby', roomId], { queryParams: { friendName: event.username } });
+        this.router.navigate(['/lobby', roomId], { queryParams: { inviteId, friendName: event.username } });
       }
     } catch (err) {
       console.error('[onInviteRequested] erreur:', err);

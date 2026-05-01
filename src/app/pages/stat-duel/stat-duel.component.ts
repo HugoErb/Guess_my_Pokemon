@@ -109,6 +109,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
   // ─── Abonnements ─────────────────────────────────────────────────────────────
   private roomSub?: Subscription;
+  private inviteResponseSub?: Subscription;
   private waitingPollInterval: ReturnType<typeof setInterval> | null = null;
 
   // ─── Dev mode bot ────────────────────────────────────────────────────────────
@@ -165,6 +166,16 @@ export class StatDuelComponent implements OnInit, OnDestroy {
       this.isSolo.set(false);
       this.phase.set('waiting');
       void this.initMulti(this.roomId);
+
+      const inviteId = this.route.snapshot.queryParamMap.get('inviteId');
+      const friendName = this.route.snapshot.queryParamMap.get('friendName') ?? 'Ton ami';
+      if (inviteId) {
+        this.inviteResponseSub = this.supabaseService.subscribeToGameInviteResponse(inviteId).subscribe((invite) => {
+          if (invite.status === 'declined') {
+            void this.router.navigate(['/home'], { queryParams: { declined: friendName } });
+          }
+        });
+      }
     }
   }
 
@@ -172,6 +183,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     this.supabaseService.untrackPresence();
     this.stopClock();
     this.roomSub?.unsubscribe();
+    this.inviteResponseSub?.unsubscribe();
     this.stopWaitingPoll();
     if (this.confettiInterval !== null) {
       clearInterval(this.confettiInterval);

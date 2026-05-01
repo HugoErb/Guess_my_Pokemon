@@ -115,20 +115,20 @@
 
 	<!-- ═══ BANDEAU TIMER + PROGRESSION (PLAYING) ══════════════════════════════ -->
 	@if (phase() === 'playing') {
-		<div class="bg-slate-800/70 border-b border-slate-700 px-3 py-2 flex items-center justify-between gap-3 shrink-0">
+		<div class="relative bg-slate-800/70 border-b border-slate-700 px-3 py-2 flex items-center justify-between gap-3 shrink-0">
 			<!-- Timer -->
-			<div class="flex items-center gap-2">
-				<span class="text-[10px] font-black text-slate-500 uppercase tracking-wider hidden sm:block">Timer</span>
-				<div class="flex items-center gap-1.5">
-					<span class="font-black font-mono text-xl w-6 text-center" [ngClass]="timerColor()">{{ timerValue() }}</span>
-					<div class="w-20 h-2 bg-slate-700 rounded-full overflow-hidden">
-						<div
-							class="h-full rounded-full transition-none"
-							[ngClass]="timerBarColor()"
-							[style.width.%]="timerProgress() * 100"
-						></div>
-					</div>
-				</div>
+			<div class="flex items-center gap-1">
+				<iconify-icon [icon]="ICONS.timer" class="text-xl animate-pulse" [ngClass]="timerColor()"></iconify-icon>
+				<span class="text-xl font-black tabular-nums" [ngClass]="timerColor()">{{ timerValue() }}</span>
+				<span class="text-xl text-slate-500">s</span>
+			</div>
+			<!-- Barre de progression -->
+			<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-700">
+				<div
+					class="h-full transition-[width] duration-200 ease-linear"
+					[ngClass]="timerBarColor()"
+					[style.width.%]="timerProgress() * 100"
+				></div>
 			</div>
 
 			<!-- Mon équipe -->
@@ -141,6 +141,9 @@
 			<div class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg">
 				<iconify-icon [icon]="ICONS.friends" class="text-sm text-slate-400"></iconify-icon>
 				<span class="text-[11px] font-bold text-slate-400 font-mono">{{ opponentPickCount() }} / 6</span>
+				@for (p of opponentLockedPokemons(); track p.id) {
+					<img [src]="p.sprite" [alt]="p.name" class="w-6 h-6 object-contain" [title]="p.name" />
+				}
 			</div>
 		</div>
 
@@ -248,6 +251,20 @@
 					}
 				}
 			</div>
+
+			<!-- Aperçu équipe adverse -->
+			@if (opponentLockedPokemons().length > 0) {
+				<div class="flex flex-col items-center gap-2 mt-2">
+					<p class="text-slate-500 text-xs uppercase tracking-wider font-bold">Adversaire</p>
+					<div class="flex gap-2 flex-wrap justify-center">
+						@for (p of opponentLockedPokemons(); track p.id) {
+							<div class="w-12 h-12 bg-slate-800 border border-slate-600 rounded-xl flex items-center justify-center">
+								<img [src]="p.sprite" [alt]="p.name" class="w-10 h-10 object-contain" />
+							</div>
+						}
+					</div>
+				</div>
+			}
 		</main>
 	}
 
@@ -392,11 +409,27 @@
 			<div class="flex flex-col gap-2 w-full max-w-xs shrink-0">
 				<button
 					(click)="replay()"
-					class="w-full py-3 bg-green-600 hover:bg-green-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2"
+					[disabled]="iWantReplay()"
+					class="w-full py-3 bg-green-600 hover:bg-green-500 disabled:opacity-60 disabled:cursor-not-allowed rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2"
 				>
 					<iconify-icon [icon]="ICONS.dice" class="text-lg"></iconify-icon>
-					Nouvelle partie
+					@if (iWantReplay()) {
+						En attente de l'adversaire…
+					} @else {
+						Rejouer
+					}
 				</button>
+				@if (iWantReplay() && !opponentWantsReplay()) {
+					<p class="text-center text-xs text-slate-400">
+						<iconify-icon [icon]="ICONS.timer" class="text-sm text-yellow-400 animate-pulse"></iconify-icon>
+						L'adversaire n'a pas encore accepté
+					</p>
+				}
+				@if (opponentWantsReplay() && !iWantReplay()) {
+					<p class="text-center text-xs text-green-400 font-bold">
+						L'adversaire veut rejouer !
+					</p>
+				}
 				<button
 					(click)="goHome()"
 					class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2"

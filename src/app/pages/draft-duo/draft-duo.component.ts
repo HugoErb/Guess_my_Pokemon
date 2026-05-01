@@ -9,7 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { PokemonService } from '../../services/pokemon.service';
@@ -45,6 +45,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
 
   readonly roomId = input.required<string>();
 
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly pokemonService = inject(PokemonService);
   private readonly supabaseService = inject(SupabaseService);
@@ -100,6 +101,18 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
   readonly opponentPickCount = signal(0);
   readonly opponentLockedPokemons = signal<Pokemon[]>([]);
 
+  // ─── Rejouer ─────────────────────────────────────────────────────────────────
+  readonly iWantReplay = computed(() => {
+    const r = this.room();
+    if (!r) return false;
+    return this.isPlayer1() ? r.p1_ready : r.p2_ready;
+  });
+  readonly opponentWantsReplay = computed(() => {
+    const r = this.room();
+    if (!r) return false;
+    return this.isPlayer1() ? r.p2_ready : r.p1_ready;
+  });
+
   // ─── Scores (phase complete) ─────────────────────────────────────────────────
   readonly myTeamPokemons = signal<Pokemon[]>([]);
   readonly opponentTeamPokemons = signal<Pokemon[]>([]);
@@ -137,7 +150,9 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
   });
 
   private roomSub?: Subscription;
+  private inviteResponseSub?: Subscription;
   private pollInterval: ReturnType<typeof setInterval> | null = null;
+  private enteringComplete = false;
 
   // ─── Cycle de vie ────────────────────────────────────────────────────────────
 
@@ -171,6 +186,16 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
           await this.loadPlayer2Username(room.player2_id);
         }
       }
+
+      const inviteId = this.route.snapshot.queryParamMap.get('inviteId');
+      const friendName = this.route.snapshot.queryParamMap.get('friendName') ?? 'Ton ami';
+      if (inviteId) {
+        this.inviteResponseSub = this.supabaseService.subscribeToGameInviteResponse(inviteId).subscribe((invite) => {
+          if (invite.status === 'declined') {
+            void this.router.navigate(['/home'], { queryParams: { declined: friendName } });
+          }
+        });
+      }
     } catch {
       this.router.navigate(['/home']);
     }
@@ -179,6 +204,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.stopTimer();
     this.roomSub?.unsubscribe();
+    this.inviteResponseSub?.unsubscribe();
     if (this.pollInterval) clearInterval(this.pollInterval);
   }
 
@@ -199,13 +225,28 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Rejouer : la room a été réinitialisée pour une nouvelle partie
+    if (prev?.status === 'finished' && updated.status === 'playing' && this.phase() === 'complete') {
+      this.resetForReplay();
+      await this.enterPlayingPhase(updated);
+      return;
+    }
+
     // Mettre à jour la progression de l'adversaire en cours de partie
     if (this.phase() === 'playing' || this.phase() === 'waiting-opponent') {
-      const opponentTeam = this.isPlayer1() ? updated.p2_team : updated.p1_team;
-      this.opponentPickCount.set(opponentTeam.length);
+      const opponentTeamIds = this.isPlayer1() ? updated.p2_team : updated.p1_team;
+      this.opponentPickCount.set(opponentTeamIds.length);
+
+      const all = this.allPokemon();
+      if (all.length > 0) {
+        const byId = new Map(all.map(p => [p.id, p]));
+        this.opponentLockedPokemons.set(
+          opponentTeamIds.map(id => byId.get(id)).filter((p): p is Pokemon => !!p)
+        );
+      }
 
       // L'adversaire a terminé → phase complete
-      if (opponentTeam.length === 6 && this.lockedCount() === 6) {
+      if (opponentTeamIds.length === 6 && this.lockedCount() === 6) {
         await this.enterCompletePhase(updated);
       }
     }
@@ -244,8 +285,16 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
     }
 
     // Mettre à jour progression adversaire
-    const opponentTeam = this.isPlayer1() ? room.p2_team : room.p1_team;
-    this.opponentPickCount.set(opponentTeam.length);
+    const opponentTeamIds = this.isPlayer1() ? room.p2_team : room.p1_team;
+    this.opponentPickCount.set(opponentTeamIds.length);
+
+    const all = this.allPokemon();
+    if (all.length > 0) {
+      const byId = new Map(all.map(p => [p.id, p]));
+      this.opponentLockedPokemons.set(
+        opponentTeamIds.map(id => byId.get(id)).filter((p): p is Pokemon => !!p)
+      );
+    }
 
     // Si Pokémon pas encore chargés, attendre
     if (this.allPokemon().length === 0) {
@@ -429,6 +478,8 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
   // ─── Phase complète ──────────────────────────────────────────────────────────
 
   private async enterCompletePhase(room: DraftDuoRoom): Promise<void> {
+    if (this.enteringComplete || this.phase() === 'complete') return;
+    this.enteringComplete = true;
     this.stopTimer();
     const all = this.allPokemon().length > 0
       ? this.allPokemon()
@@ -495,9 +546,32 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
 
   async replay(): Promise<void> {
     try {
-      const roomId = await this.supabaseService.createDraftDuoRoom();
-      void this.router.navigate(['/draft-duo', roomId]);
+      const patch = this.isPlayer1() ? { p1_ready: true } : { p2_ready: true };
+      await this.supabaseService.updateDraftDuoRoom(this.roomId(), patch);
+
+      const refreshed = await this.supabaseService.getDraftDuoRoom(this.roomId());
+      this.room.set(refreshed);
+
+      if (refreshed.p1_ready && refreshed.p2_ready && refreshed.status === 'finished') {
+        await this.supabaseService.updateDraftDuoRoom(this.roomId(), {
+          status: 'playing',
+          p1_team: [],
+          p2_team: [],
+          winner: null,
+          p1_ready: false,
+          p2_ready: false,
+        });
+      }
     } catch { /* silencieux */ }
+  }
+
+  private resetForReplay(): void {
+    this.enteringComplete = false;
+    this.showScores.set(false);
+    this.myTeamPokemons.set([]);
+    this.opponentTeamPokemons.set([]);
+    this.opponentPickCount.set(0);
+    this.opponentLockedPokemons.set([]);
   }
 
   // ─── Calculs scores ──────────────────────────────────────────────────────────
