@@ -98,6 +98,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
 
   // ─── Progression adversaire ─────────────────────────────────────────────────
   readonly opponentPickCount = signal(0);
+  readonly opponentLockedPokemons = signal<Pokemon[]>([]);
 
   // ─── Scores (phase complete) ─────────────────────────────────────────────────
   readonly myTeamPokemons = signal<Pokemon[]>([]);
