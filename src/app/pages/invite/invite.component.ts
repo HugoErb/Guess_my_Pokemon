@@ -1,4 +1,4 @@
-import { Component, input, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, input, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { SupabaseService } from '../../services/supabase.service';
@@ -10,7 +10,7 @@ import { ICONS } from '../../constants/icons';
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
 	templateUrl: './invite.component.html',
 })
-export class InviteComponent implements OnInit {
+export class InviteComponent implements OnInit, OnDestroy {
 	protected readonly ICONS = ICONS;
 	readonly roomId = input.required<string>();
 
@@ -24,12 +24,17 @@ export class InviteComponent implements OnInit {
 	) {}
 
 	ngOnInit(): void {
+		this.supabaseService.trackPresence('online');
 		const mode = this.route.snapshot.queryParamMap.get('mode');
 		if (mode === 'draft_duo') {
 			this.loadDraftDuoRoom();
 		} else {
 			this.loadRoom();
 		}
+	}
+
+	ngOnDestroy(): void {
+		this.supabaseService.untrackPresence();
 	}
 
 	private async loadDraftDuoRoom(): Promise<void> {
