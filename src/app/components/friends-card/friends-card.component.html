@@ -178,8 +178,15 @@
 				(click)="inviteFriend(openMenuFriend()!, 'guess_my_pokemon'); closeMenu()"
 				class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-white hover:bg-slate-700 transition-colors text-left"
 			>
-				<iconify-icon [icon]="ICONS.sword" class="text-red-400 text-base flex-shrink-0"></iconify-icon>
+				<iconify-icon [icon]="ICONS.guess" class="text-red-400 text-base flex-shrink-0"></iconify-icon>
 				Guess my Pokémon
+			</button>
+            <button
+				(click)="inviteFriend(openMenuFriend()!, 'draft_duo'); closeMenu()"
+				class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-white hover:bg-slate-700 transition-colors text-left"
+			>
+				<iconify-icon [icon]="ICONS.draft" class="text-green-400 text-base flex-shrink-0"></iconify-icon>
+				Duel de team builder
 			</button>
 			<button
 				(click)="inviteFriend(openMenuFriend()!, 'stat_duel'); closeMenu()"
@@ -187,13 +194,6 @@
 			>
 				<iconify-icon [icon]="ICONS.statDuel" class="text-yellow-400 text-base flex-shrink-0"></iconify-icon>
 				Duel de base stats
-			</button>
-			<button
-				(click)="inviteFriend(openMenuFriend()!, 'draft_duo'); closeMenu()"
-				class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-white hover:bg-slate-700 transition-colors text-left"
-			>
-				<iconify-icon [icon]="ICONS.draft" class="text-green-400 text-base flex-shrink-0"></iconify-icon>
-				Duel de team builder
 			</button>
 			<div class="border-t border-slate-700 my-1"></div>
 			<button
