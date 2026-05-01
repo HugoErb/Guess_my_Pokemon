@@ -545,10 +545,12 @@ export class SupabaseService implements OnDestroy {
             config: { presence: { key: user.id } },
         });
 
+        const updateState = () => this.presenceStateSubject.next(channel.presenceState());
+
         channel
-            .on('presence', { event: 'sync' }, () => {
-                this.presenceStateSubject.next(channel.presenceState());
-            })
+            .on('presence', { event: 'sync' }, updateState)
+            .on('presence', { event: 'join' }, updateState)
+            .on('presence', { event: 'leave' }, updateState)
             .subscribe(async (s: string) => {
                 if (s === 'SUBSCRIBED') {
                     await channel.track({ user_id: user.id, status });
