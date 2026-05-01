@@ -285,7 +285,11 @@ export class StatDuelComponent implements OnInit, OnDestroy {
                 const me2 = this.supabaseService.getCurrentUser();
                 if (!me2) return;
                 const isP1 = updated.player1_id === me2.id;
-                this.myPicks.set(isP1 ? updated.p1_picks : updated.p2_picks);
+                // Ne pas écraser l'état local si la DB est en retard (race condition appendStatPick)
+                const dbMyPicks = isP1 ? updated.p1_picks : updated.p2_picks;
+                if (dbMyPicks.length >= this.myPicks().length) {
+                    this.myPicks.set(dbMyPicks);
+                }
                 this.opponentPicks.set(isP1 ? updated.p2_picks : updated.p1_picks);
 
                 // Reveal simultané : dès que les deux ont choisi, on révèle
