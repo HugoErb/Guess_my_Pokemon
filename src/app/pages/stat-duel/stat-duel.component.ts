@@ -246,10 +246,6 @@ export class StatDuelComponent implements OnInit, OnDestroy {
                 await this.loadPokemonAndStartMulti(updated);
             }
 
-            if (this.phase() === 'result' && updated.status === 'finished' && updated.p1_ready && updated.p2_ready && this.isPlayer1()) {
-                await this.launchReplayGame();
-            }
-
             if (updated.status === 'playing' && this.phase() === 'playing') {
                 const me2 = this.supabaseService.getCurrentUser();
                 if (!me2) return;
@@ -672,15 +668,37 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         this.pokemonAnimating.set(false);
         this.botPickedRounds.clear();
         this.stopClock();
+        
+        this.duelShown = false;
+        if (this.roomId) {
+            sessionStorage.removeItem(`stat-duel-intro-shown-${this.roomId}`);
+        }
     }
 
     private async requestStatDuelReplay(): Promise<void> {
         if (!this.roomId) return;
         const isP1 = this.isPlayer1();
         await this.supabaseService.updateStatDuelRoom(this.roomId, isP1 ? { p1_ready: true } : { p2_ready: true });
+        
+        if (this.isDevMode()) {
+            setTimeout(async () => {
+                if (!this.roomId) return;
+                await this.supabaseService.updateStatDuelRoom(this.roomId, { p2_ready: true });
+                const r = await this.supabaseService.getStatDuelRoom(this.roomId);
+                this.room.set(r);
+                if (r.p1_ready && r.p2_ready && r.status === 'finished') {
+                    await this.launchReplayGame();
+                }
+            }, 2000);
+            
+            const refreshed = await this.supabaseService.getStatDuelRoom(this.roomId);
+            this.room.set(refreshed);
+            return;
+        }
+
         const refreshed = await this.supabaseService.getStatDuelRoom(this.roomId);
         this.room.set(refreshed);
-        if (refreshed.p1_ready && refreshed.p2_ready && refreshed.status === 'finished' && isP1) {
+        if (refreshed.p1_ready && refreshed.p2_ready && refreshed.status === 'finished') {
             await this.launchReplayGame();
         }
     }
@@ -691,7 +709,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         if (!currentRoom) return;
         const allPokemon = await this.loadAll();
         const pokemonIds = this.shuffle(allPokemon).slice(0, ROUND_COUNT).map(p => p.id);
-        const roundStartAt = new Date().toISOString();
+        const roundStartAt = new Date(Date.now() + 3000).toISOString();
         await this.supabaseService.updateStatDuelRoom(this.roomId, {
             status: 'playing',
             pokemon_ids: pokemonIds,
