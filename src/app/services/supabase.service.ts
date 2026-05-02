@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy, signal } from '@angular/core';
+import { Injectable, OnDestroy, signal, inject, NgZone } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { filter, map, skipUntil } from 'rxjs/operators';
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
@@ -12,6 +12,7 @@ export class SupabaseService implements OnDestroy {
     private authSubscription: { unsubscribe: () => void } | null = null;
     private readonly isInitializedSubject = new BehaviorSubject<boolean>(false);
     private broadcastSubject = new Subject<{ event: string; payload: any }>();
+    private readonly ngZone = inject(NgZone);
 
     broadcastEvents$ = this.broadcastSubject.asObservable();
     private activeRoomChannel: any = null;
@@ -545,7 +546,7 @@ export class SupabaseService implements OnDestroy {
             config: { presence: { key: user.id } },
         });
 
-        const updateState = () => this.presenceStateSubject.next(channel.presenceState());
+        const updateState = () => this.ngZone.run(() => this.presenceStateSubject.next(channel.presenceState()));
 
         channel
             .on('presence', { event: 'sync' }, updateState)
@@ -565,7 +566,7 @@ export class SupabaseService implements OnDestroy {
         if (this.presenceChannel) {
             this.presenceChannel.untrack().catch(() => undefined);
         }
-        this.presenceStateSubject.next({});
+        this.ngZone.run(() => this.presenceStateSubject.next({}));
     }
 
     /** Retourne un Observable du statut de présence de chaque ami. */
