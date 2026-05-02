@@ -68,8 +68,6 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     private readonly pokemonService = inject(PokemonService);
     private readonly supabaseService = inject(SupabaseService);
 
-    private confettiInterval: ReturnType<typeof setInterval> | null = null;
-
     // ─── Phase & mode ────────────────────────────────────────────────────────────
     phase = signal<Phase>('mode-select');
     isSolo = signal(true);
@@ -184,40 +182,11 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         this.roomSub?.unsubscribe();
         this.inviteResponseSub?.unsubscribe();
         this.stopWaitingPoll();
-        if (this.confettiInterval !== null) {
-            clearInterval(this.confettiInterval);
-            this.confettiInterval = null;
-        }
     }
 
     private launchConfetti(): void {
-        const colors = ['#ef4444', '#facc15', '#3b82f6', '#ffffff'];
-
-        if (window.innerWidth < 768) {
-            confetti({ particleCount: 120, spread: 90, origin: { x: 0.5, y: 0.6 }, colors });
-            return;
-        }
-
-        const duration = 3000;
-        const end = Date.now() + duration;
-
-        const fire = (originX: number) => {
-            confetti({ particleCount: 6, angle: originX === 0.1 ? 60 : 120, spread: 55, origin: { x: originX, y: 1 }, colors });
-        };
-
-        if (this.confettiInterval !== null) {
-            clearInterval(this.confettiInterval);
-            this.confettiInterval = null;
-        }
-        this.confettiInterval = setInterval(() => {
-            if (Date.now() > end) {
-                clearInterval(this.confettiInterval!);
-                this.confettiInterval = null;
-                return;
-            }
-            fire(0.1);
-            fire(0.9);
-        }, 50);
+        const colors = ['#ef4444', '#facc15', '#a855f7', '#3b82f6', '#ffffff'];
+        confetti({ particleCount: 160, spread: 110, origin: { x: 0.5, y: 0.4 }, colors });
     }
 
     // ─── Mode select ─────────────────────────────────────────────────────────────

@@ -513,7 +513,9 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.showScores.set(true);
       void this.saveWinner(room);
-      this.launchConfetti();
+      if (this.winner() === 'me') {
+        this.launchConfetti();
+      }
     }, 800);
   }
 
