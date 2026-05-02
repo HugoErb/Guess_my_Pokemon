@@ -134,16 +134,12 @@
 			<!-- Mon équipe -->
 			<div class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg">
 				<iconify-icon [icon]="ICONS.pokeball" class="text-sm text-yellow-400"></iconify-icon>
-				<span class="text-[11px] font-bold text-white font-mono">{{ lockedCount() }} / 6</span>
-			</div>
-
-			<!-- Progression adversaire -->
-			<div class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg">
-				<iconify-icon [icon]="ICONS.friends" class="text-sm text-slate-400"></iconify-icon>
-				<span class="text-[11px] font-bold text-slate-400 font-mono">{{ opponentPickCount() }} / 6</span>
-				@for (p of opponentLockedPokemons(); track p.id) {
-					<img [src]="p.sprite" [alt]="p.name" class="w-6 h-6 object-contain" [title]="p.name" />
-				}
+				<div class="flex items-center gap-1">
+					@for (i of [0, 1, 2, 3, 4, 5]; track i) {
+						<div class="w-2 h-2 rounded-full" [ngClass]="i < lockedCount() ? 'bg-yellow-400' : 'bg-slate-700'"></div>
+					}
+					<span class="text-[11px] font-bold text-white font-mono ml-1">{{ lockedCount() }} / 6</span>
+				</div>
 			</div>
 		</div>
 
@@ -226,18 +222,38 @@
 					</div>
 				}
 			</div>
+
+			<!-- Progression adversaire -->
+			<div class="mt-2 md:mt-4 flex flex-col items-center gap-2">
+				<div class="flex items-center gap-2">
+					<p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Adversaire</p>
+					<div class="flex items-center gap-1">
+						@for (i of [0, 1, 2, 3, 4, 5]; track i) {
+							<div class="w-2 md:w-2.5 h-2 md:h-2.5 rounded-full" [ngClass]="i < opponentPickCount() ? 'bg-blue-400' : 'bg-slate-700'"></div>
+						}
+						<span class="text-xs text-slate-500 ml-1">{{ opponentPickCount() }} / 6</span>
+					</div>
+				</div>
+				<div class="flex gap-2 min-h-[2.5rem] md:min-h-[3.5rem]">
+					@for (p of opponentLockedPokemons(); track p.id) {
+						<div class="w-10 h-10 md:w-14 md:h-14 bg-slate-800 border border-slate-600 rounded-xl flex items-center justify-center">
+							<img [src]="p.sprite" [alt]="p.name" class="w-8 h-8 md:w-10 md:h-10 object-contain" [title]="p.name" />
+						</div>
+					}
+				</div>
+			</div>
 		</main>
 	}
 
 	<!-- ═══ PHASE WAITING-OPPONENT ════════════════════════════════════════════ -->
 	@if (phase() === 'waiting-opponent') {
-		<main class="flex-1 flex flex-col items-center justify-center gap-6 px-4 text-center">
-			<div class="w-16 h-16 rounded-full bg-slate-700 flex items-center justify-center">
-				<iconify-icon [icon]="ICONS.timer" class="text-3xl text-yellow-400 animate-pulse"></iconify-icon>
+		<main class="flex-1 flex flex-col items-center justify-center gap-6 md:gap-10 px-4 text-center">
+			<div class="w-16 h-16 md:w-24 md:h-24 rounded-full bg-slate-700 flex items-center justify-center">
+				<iconify-icon [icon]="ICONS.timer" class="text-3xl md:text-5xl text-yellow-400 animate-pulse"></iconify-icon>
 			</div>
 			<div>
-				<p class="text-white font-bold text-lg">Ton équipe est prête !</p>
-				<p class="text-slate-400 text-sm mt-1">
+				<p class="text-white font-bold text-lg md:text-3xl">Ton équipe est prête !</p>
+				<p class="text-slate-400 text-sm md:text-base mt-1">
 					En attente de l'adversaire… <strong class="text-yellow-400">{{ opponentPickCount() }} / 6</strong> Pokémon sélectionnés
 				</p>
 			</div>
@@ -245,8 +261,8 @@
 			<div class="flex gap-2 flex-wrap justify-center">
 				@for (p of lockedPokemon(); track $index) {
 					@if (p) {
-						<div class="w-12 h-12 bg-slate-800 border border-yellow-500 rounded-xl flex items-center justify-center">
-							<img [src]="p.sprite" [alt]="p.name" class="w-10 h-10 object-contain" />
+						<div class="w-12 h-12 md:w-20 md:h-20 bg-slate-800 border border-yellow-500 rounded-xl flex items-center justify-center">
+							<img [src]="p.sprite" [alt]="p.name" class="w-10 h-10 md:w-16 md:h-16 object-contain" />
 						</div>
 					}
 				}
@@ -258,8 +274,8 @@
 					<p class="text-slate-500 text-xs uppercase tracking-wider font-bold">Adversaire</p>
 					<div class="flex gap-2 flex-wrap justify-center">
 						@for (p of opponentLockedPokemons(); track p.id) {
-							<div class="w-12 h-12 bg-slate-800 border border-slate-600 rounded-xl flex items-center justify-center">
-								<img [src]="p.sprite" [alt]="p.name" class="w-10 h-10 object-contain" />
+							<div class="w-12 h-12 md:w-20 md:h-20 bg-slate-800 border border-slate-600 rounded-xl flex items-center justify-center">
+								<img [src]="p.sprite" [alt]="p.name" class="w-10 h-10 md:w-16 md:h-16 object-contain" />
 							</div>
 						}
 					</div>
