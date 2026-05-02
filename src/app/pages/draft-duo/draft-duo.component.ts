@@ -101,6 +101,9 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
   readonly opponentPickCount = signal(0);
   readonly opponentLockedPokemons = signal<Pokemon[]>([]);
 
+  // ─── Statut adversaire ──────────────────────────────────────────────────────
+  readonly opponentLeft = signal(false);
+
   // ─── Rejouer ─────────────────────────────────────────────────────────────────
   readonly iWantReplay = computed(() => {
     const r = this.room();
@@ -151,6 +154,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
 
   private roomSub?: Subscription;
   private inviteResponseSub?: Subscription;
+  private broadcastSub?: Subscription;
   private pollInterval: ReturnType<typeof setInterval> | null = null;
   private enteringComplete = false;
 
@@ -197,6 +201,12 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
           }
         });
       }
+
+      this.broadcastSub = this.supabaseService.broadcastEvents$.subscribe(({ event }) => {
+        if (event === 'player_left') {
+          this.opponentLeft.set(true);
+        }
+      });
     } catch {
       this.router.navigate(['/home']);
     }
@@ -206,6 +216,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
     this.stopTimer();
     this.roomSub?.unsubscribe();
     this.inviteResponseSub?.unsubscribe();
+    this.broadcastSub?.unsubscribe();
     if (this.pollInterval) clearInterval(this.pollInterval);
   }
 
@@ -541,7 +552,8 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
 
   // ─── Navigation ──────────────────────────────────────────────────────────────
 
-  goHome(): void {
+  async goHome(): Promise<void> {
+    await this.supabaseService.broadcastPlayerLeft().catch(() => {});
     void this.router.navigate(['/home']);
   }
 
@@ -562,6 +574,9 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
           p1_ready: false,
           p2_ready: false,
         });
+        
+        const finalRoom = await this.supabaseService.getDraftDuoRoom(this.roomId());
+        await this.onRoomUpdated(finalRoom);
       }
     } catch { /* silencieux */ }
   }

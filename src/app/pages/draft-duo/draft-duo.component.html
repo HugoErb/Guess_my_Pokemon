@@ -409,27 +409,26 @@
 			<div class="flex flex-col gap-2 w-full max-w-xs shrink-0">
 				<button
 					(click)="replay()"
-					[disabled]="iWantReplay()"
-					class="w-full py-3 bg-green-600 hover:bg-green-500 disabled:opacity-60 disabled:cursor-not-allowed rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2"
+					[disabled]="iWantReplay() || opponentLeft()"
+					class="w-full py-3 bg-green-600 hover:bg-green-500 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold text-white transition-colors flex flex-col items-center justify-center gap-0.5"
 				>
-					<iconify-icon [icon]="ICONS.dice" class="text-lg"></iconify-icon>
-					@if (iWantReplay()) {
-						En attente de l'adversaire…
-					} @else {
-						Rejouer
+					<div class="flex items-center gap-2">
+						<iconify-icon [icon]="ICONS.dice" class="text-lg"></iconify-icon>
+						<span>{{ iWantReplay() ? "En attente..." : "Rejouer" }}</span>
+					</div>
+					@if (opponentLeft()) {
+						<span class="text-[9px] font-medium uppercase tracking-wider opacity-80 italic">L'adversaire a quitté la partie</span>
+					} @else if (iWantReplay() && !opponentWantsReplay()) {
+						<span class="text-[9px] font-medium uppercase tracking-wider opacity-80 italic">En attente de l'adversaire</span>
 					}
 				</button>
-				@if (iWantReplay() && !opponentWantsReplay()) {
-					<p class="text-center text-xs text-slate-400">
-						<iconify-icon [icon]="ICONS.timer" class="text-sm text-yellow-400 animate-pulse"></iconify-icon>
-						L'adversaire n'a pas encore accepté
-					</p>
-				}
-				@if (opponentWantsReplay() && !iWantReplay()) {
-					<p class="text-center text-xs text-green-400 font-bold">
+
+				@if (opponentWantsReplay() && !iWantReplay() && !opponentLeft()) {
+					<p class="text-center text-xs text-green-400 font-bold mb-1">
 						L'adversaire veut rejouer !
 					</p>
 				}
+
 				<button
 					(click)="goHome()"
 					class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2"
