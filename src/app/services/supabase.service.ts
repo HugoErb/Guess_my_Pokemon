@@ -530,6 +530,7 @@ export class SupabaseService implements OnDestroy {
 
     private presenceChannel: any = null;
     private readonly presenceStateSubject = new BehaviorSubject<Record<string, any[]>>({});
+    private presenceUpdateState: (() => void) | null = null;
 
     /** Rejoint le canal de présence global et diffuse le statut de l'utilisateur. */
     trackPresence(status: 'online' | 'in_game'): void {
@@ -537,8 +538,10 @@ export class SupabaseService implements OnDestroy {
         if (!user) return;
 
         if (this.presenceChannel) {
-            // Canal déjà ouvert : mise à jour du statut sans recréer (évite la race condition removeChannel → nouveau canal)
-            this.presenceChannel.track({ user_id: user.id, status }).catch(() => undefined);
+            // Canal déjà ouvert : mise à jour du statut et force une ré-émission immédiate
+            this.presenceChannel.track({ user_id: user.id, status })
+                .then(() => this.presenceUpdateState?.())
+                .catch(() => undefined);
             return;
         }
 
@@ -546,7 +549,8 @@ export class SupabaseService implements OnDestroy {
             config: { presence: { key: user.id } },
         });
 
-        const updateState = () => this.ngZone.run(() => this.presenceStateSubject.next(channel.presenceState()));
+        const updateState = () => this.ngZone.run(() => this.presenceStateSubject.next({ ...channel.presenceState() }));
+        this.presenceUpdateState = updateState;
 
         channel
             .on('presence', { event: 'sync' }, updateState)
