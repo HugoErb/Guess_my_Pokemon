@@ -113,48 +113,53 @@ import { modalAnimation } from '../../constants/animations';
 					</div>
 				</div>
 
-				<!-- Note Couverture de types (DUO / TRAINER uniquement) -->
-				@if (mode === 'duo' || mode === 'trainer') {
-					<div class="space-y-3">
-						<div class="flex items-center gap-3">
-							<div class="flex-1 h-px bg-slate-700"></div>
-							<span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Note Couverture de types</span>
-							<div class="flex-1 h-px bg-slate-700"></div>
-						</div>
+				<!-- Note Couverture de types -->
+				<div class="space-y-3">
+					<div class="flex items-center gap-3">
+						<div class="flex-1 h-px bg-slate-700"></div>
+						<span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Note Couverture de types</span>
+						<div class="flex-1 h-px bg-slate-700"></div>
+					</div>
 
-						<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 space-y-3">
-							<p class="text-sm text-slate-300">
-								Évalue l'efficacité offensive de ton équipe <strong class="text-white">contre les types de l'équipe adverse</strong>. Plus tu couvres les types de l'adversaire, meilleure est ta note — et moins bonne sera la sienne.
-							</p>
+					<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 space-y-3">
+						<p class="text-sm text-slate-300">
+							Évalue l'efficacité offensive de ton équipe <strong class="text-white">contre les types de l'équipe adverse</strong>. Plus tu couvres les types de l'adversaire, meilleure est ta note — et moins bonne sera la sienne.
+						</p>
 
-							<div class="space-y-2">
-								<div class="flex items-start gap-3 bg-slate-800/60 rounded-lg p-3">
-									<span class="text-[10px] font-black text-orange-400 uppercase tracking-wider shrink-0 mt-0.5 w-8 text-right">50%</span>
-									<div>
-										<div class="text-xs font-bold text-white mb-0.5">Couverture offensive</div>
-										<p class="text-xs text-slate-400">% des types adverses que tu peux toucher en super-efficace avec les types de ton équipe.</p>
-									</div>
+						<div class="space-y-2">
+							<div class="flex items-start gap-3 bg-slate-800/60 rounded-lg p-3">
+								<span class="text-[10px] font-black text-orange-400 uppercase tracking-wider shrink-0 mt-0.5 w-8 text-right">50%</span>
+								<div>
+									<div class="text-xs font-bold text-white mb-0.5">Couverture offensive</div>
+									<p class="text-xs text-slate-400">% des types adverses que tu peux toucher en super-efficace avec les types de ton équipe.</p>
 								</div>
+							</div>
 
-								<div class="flex items-start gap-3 bg-slate-800/60 rounded-lg p-3">
-									<span class="text-[10px] font-black text-red-400 uppercase tracking-wider shrink-0 mt-0.5 w-8 text-right">30%</span>
-									<div>
-										<div class="text-xs font-bold text-white mb-0.5">Pokémon exploités</div>
-										<p class="text-xs text-slate-400">% des Pokémon adverses que tu peux toucher super-efficacement avec au moins un type de ton équipe.</p>
-									</div>
+							<div class="flex items-start gap-3 bg-slate-800/60 rounded-lg p-3">
+								<span class="text-[10px] font-black text-red-400 uppercase tracking-wider shrink-0 mt-0.5 w-8 text-right">30%</span>
+								<div>
+									<div class="text-xs font-bold text-white mb-0.5">Pokémon exploités</div>
+									<p class="text-xs text-slate-400">% des Pokémon adverses que tu peux toucher super-efficacement avec au moins un type de ton équipe.</p>
 								</div>
+							</div>
 
-								<div class="flex items-start gap-3 bg-slate-800/60 rounded-lg p-3">
-									<span class="text-[10px] font-black text-blue-400 uppercase tracking-wider shrink-0 mt-0.5 w-8 text-right">20%</span>
-									<div>
-										<div class="text-xs font-bold text-white mb-0.5">Résilience défensive</div>
-										<p class="text-xs text-slate-400">% des types de l'adversaire auxquels au moins un de tes Pokémon résiste.</p>
-									</div>
+							<div class="flex items-start gap-3 bg-slate-800/60 rounded-lg p-3">
+								<span class="text-[10px] font-black text-blue-400 uppercase tracking-wider shrink-0 mt-0.5 w-8 text-right">20%</span>
+								<div>
+									<div class="text-xs font-bold text-white mb-0.5">Résilience défensive</div>
+									<p class="text-xs text-slate-400">% des types de l'adversaire auxquels au moins un de tes Pokémon résiste.</p>
 								</div>
 							</div>
 						</div>
+
+						@if (mode === 'solo') {
+							<div class="flex gap-2 items-center bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 mt-1">
+								<iconify-icon [icon]="ICONS.alert" class="text-amber-500 text-sm"></iconify-icon>
+								<p class="text-[10px] font-bold text-amber-500 uppercase tracking-wide">Note : Cette évaluation n'est pas utilisée dans le mode solo</p>
+							</div>
+						}
 					</div>
-				}
+				</div>
 
 				<!-- Note finale -->
 				<div class="bg-amber-900/20 border border-amber-700/40 rounded-xl px-4 py-3 flex gap-2 items-start">
@@ -165,7 +170,7 @@ import { modalAnimation } from '../../constants/animations';
 						</p>
 					} @else {
 						<p class="text-xs text-amber-300">
-							La <strong class="text-white">note finale</strong> correspond directement à ta note de Base Stats.
+							La <strong class="text-white">note finale</strong> correspond uniquement à ta note de Base Stats dans ce mode.
 						</p>
 					}
 				</div>

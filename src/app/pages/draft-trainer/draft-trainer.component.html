@@ -6,16 +6,32 @@
 			<iconify-icon [icon]="ICONS.sword" class="text-4xl text-yellow-400"></iconify-icon>
 			<h1 class="text-lg font-bold text-white">Solo vs Dresseur</h1>
 		</div>
-		@if (phase() === 'playing') {
-			<button
-				(click)="showHelpModal.set(true)"
-				class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all"
-			>
-				<iconify-icon [icon]="ICONS.help" class="text-sm"></iconify-icon>
-				<span class="hidden sm:inline">Aide</span>
-			</button>
-		}
 	</header>
+
+	<!-- Sous-header (Aide et Quitter) -->
+	@if (phase() !== 'loading') {
+		<div class="bg-slate-800/50 border-b border-slate-700 px-3 py-2 flex items-center justify-between gap-2 shrink-0">
+			<div>
+				<!-- Timer ou infos supplémentaires si besoin -->
+			</div>
+			<div class="flex items-center gap-2">
+				<button
+					(click)="showHelpModal.set(true)"
+					class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all"
+				>
+					<iconify-icon [icon]="ICONS.help" class="text-sm"></iconify-icon>
+					<span class="hidden sm:inline">Aide</span>
+				</button>
+				<button
+					(click)="goHome()"
+					class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-red-900/50 border border-slate-600/50 hover:border-red-800 rounded-lg text-[10px] font-black text-slate-400 hover:text-red-300 uppercase tracking-wider transition-all"
+				>
+					<iconify-icon [icon]="ICONS.logout" class="text-sm"></iconify-icon>
+					<span class="hidden sm:inline">Quitter</span>
+				</button>
+			</div>
+		</div>
+	}
 
 	<!-- ═══ PHASE LOADING ══════════════════════════════════════════════════════ -->
 	@if (phase() === 'loading') {
