@@ -68,7 +68,7 @@ import { modalAnimation } from '../../constants/animations';
 							} @else if (mode === 'trainer') {
 								<li class="flex gap-3">
 									<span class="text-yellow-400 font-bold text-base leading-snug shrink-0">4.</span>
-									<span>Le dresseur adverse a déjà son équipe prête. Ton but est de construire une équipe supérieure à la sienne, tant en statistiques qu'en couverture de types.</span>
+									<span>Le dresseur adverse a déjà son équipe prête. Les Pokémon proposés sont aléatoires, mais <strong class="text-white">limités à la génération</strong> du dresseur que tu affrontes. À toi de bâtir l'équipe idéale pour le surpasser !</span>
 								</li>
 							} @else {
 								<li class="flex gap-3">
@@ -151,6 +151,16 @@ import { modalAnimation } from '../../constants/animations';
 								</div>
 							</div>
 						</div>
+
+						@if (mode !== 'solo') {
+							<div class="flex gap-3 items-center bg-indigo-500/10 border border-indigo-500/20 rounded-lg px-3 py-2 mt-2">
+								<iconify-icon [icon]="ICONS.star" class="text-indigo-400 text-sm shrink-0"></iconify-icon>
+								<p class="text-[10px] text-indigo-300 leading-relaxed">
+									<strong class="text-indigo-400 uppercase tracking-wider">Cas spécial : Arceus</strong><br>
+									En tant que Dieu des Pokémon, sa couverture est <strong class="text-white">parfaite et sans faille</strong> grâce à sa capacité à changer de type. Il garantit un score de couverture maximal.
+								</p>
+							</div>
+						}
 
 						@if (mode === 'solo') {
 							<div class="flex gap-2 items-center bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 mt-1">
