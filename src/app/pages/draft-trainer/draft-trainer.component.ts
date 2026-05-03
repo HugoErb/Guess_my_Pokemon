@@ -59,8 +59,51 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     initialValue: [] as Pokemon[],
   });
 
-  private readonly statsRange = computed(() => {
+  private readonly trainerPool = computed(() => {
     const all = this.allPokemon();
+    const trainer = this.trainer();
+    if (!trainer) return all;
+
+    const genValue = trainer.generation;
+
+    // Cas spéciaux (Pato, etc.)
+    if (genValue === 'Toutes' || genValue === 'Toutes régions' || trainer.nom === 'Pato') {
+      return all;
+    }
+
+    // Cas spécial Red (Gen 1 + Gen 2)
+    if (trainer.nom === 'Red') {
+      return all.filter(p => p.generation === 1 || p.generation === 2);
+    }
+
+    // Gestion des nombres
+    if (typeof genValue === 'number') {
+      return all.filter(p => p.generation === genValue);
+    }
+
+    // Gestion des chaînes (ex: "1, 2" ou "1-2")
+    if (typeof genValue === 'string') {
+      if (genValue.includes(',') || genValue.includes('-')) {
+        const parts = genValue.split(/[,\-]/).map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+        if (parts.length > 0) {
+          if (genValue.includes('-') && parts.length === 2) {
+            // Range (ex: "1-3")
+            return all.filter(p => p.generation >= parts[0] && p.generation <= parts[1]);
+          }
+          // Liste (ex: "1, 2")
+          return all.filter(p => parts.includes(p.generation));
+        }
+      }
+      
+      const gen = parseInt(genValue, 10);
+      if (!isNaN(gen)) return all.filter(p => p.generation === gen);
+    }
+
+    return all;
+  });
+
+  private readonly statsRange = computed(() => {
+    const all = this.trainerPool();
     if (all.length === 0) return { min: 0, max: 1 };
     const totals = all.map(p => this.computeTotal(p));
     return { min: Math.min(...totals), max: Math.max(...totals) };
@@ -160,7 +203,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
   }
 
   private initDraft(): void {
-    const pool = this.allPokemon();
+    const pool = this.trainerPool();
     const starter = this.pickOneStarter(pool, new Set());
     const legendary = this.pickOneLegendary(pool, new Set(starter ? [starter.id] : []));
     const excludeForNormal = new Set([
@@ -222,11 +265,11 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     const slot5Unlocked = unlocked.includes(5);
     const unlockedNormal = unlocked.filter(i => i !== 0 && i !== 5);
 
-    const newStarter = slot0Unlocked ? this.pickOneStarter(this.allPokemon(), this.usedIds()) : null;
+    const newStarter = slot0Unlocked ? this.pickOneStarter(this.trainerPool(), this.usedIds()) : null;
     const excludeForNormal = new Set([...this.usedIds(), ...(newStarter ? [newStarter.id] : [])]);
-    const newNormal = this.pickNUnique(this.allPokemon(), excludeForNormal, unlockedNormal.length);
+    const newNormal = this.pickNUnique(this.trainerPool(), excludeForNormal, unlockedNormal.length);
     const excludeForLegend = new Set([...excludeForNormal, ...newNormal.map(p => p.id)]);
-    const newLegendary = slot5Unlocked ? this.pickOneLegendary(this.allPokemon(), excludeForLegend) : null;
+    const newLegendary = slot5Unlocked ? this.pickOneLegendary(this.trainerPool(), excludeForLegend) : null;
 
     const allNew = [
       ...(newStarter ? [newStarter] : []),

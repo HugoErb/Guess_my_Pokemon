@@ -7,9 +7,11 @@ import { SupabaseService } from '../../services/supabase.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NgClass } from '@angular/common';
 
+import { DraftHelpModalComponent } from '../../components/draft-help-modal/draft-help-modal.component';
+
 @Component({
   selector: 'app-trainer-select',
-  imports: [NgClass],
+  imports: [NgClass, DraftHelpModalComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './trainer-select.component.html'
 })
@@ -23,6 +25,7 @@ export class TrainerSelectComponent implements OnInit {
   readonly trainers = signal<Trainer[]>([]);
   readonly defeatedIndices = signal<number[]>([]);
   readonly isLoading = signal(true);
+  readonly showHelpModal = signal(false);
   
   private readonly allPokemon = toSignal(this.pokemonService.loadAll(), {
     initialValue: []
@@ -73,5 +76,9 @@ export class TrainerSelectComponent implements OnInit {
 
   goBack() {
     void this.router.navigate(['/draft']);
+  }
+
+  goHome() {
+    void this.router.navigate(['/home']);
   }
 }
