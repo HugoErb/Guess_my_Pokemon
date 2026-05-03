@@ -1,0 +1,258 @@
+[
+  {
+    "nom": "Blue",
+    "region": "Kanto",
+    "generation": 1,
+    "role": "Maitre de la Ligue",
+    "version": "Rouge Feu / Vert Feuille",
+    "image": "https://play.pokemonshowdown.com/sprites/trainers/blue-gen1champion.png",
+    "pokemons": [
+      18,
+      65,
+      112,
+      130,
+      59,
+      6
+    ]
+  },
+  {
+    "nom": "Blue",
+    "region": "Kanto",
+    "generation": 1,
+    "role": "Maitre de la Ligue",
+    "version": "Jaune",
+    "image": "https://play.pokemonshowdown.com/sprites/trainers/blue-gen1champion.png",
+    "pokemons": [
+      28,
+      65,
+      103,
+      91,
+      82,
+      134
+    ]
+  },
+  {
+    "nom": "Trace",
+    "region": "Kanto",
+    "generation": 7,
+    "role": "Maitre de la Ligue",
+    "version": "Lets Go Pikachu",
+    "image": "https://play.pokemonshowdown.com/sprites/trainers/trace.png",
+    "pokemons": [
+      18,
+      45,
+      105,
+      78,
+      80,
+      26
+    ]
+  },
+  {
+    "nom": "Peter",
+    "region": "Johto",
+    "generation": 4,
+    "role": "Maitre de la Ligue",
+    "version": "HeartGold / SoulSilver",
+    "image": "https://play.pokemonshowdown.com/sprites/trainers/lance.png",
+    "pokemons": [
+      130,
+      149,
+      149,
+      142,
+      6,
+      149
+    ]
+  },
+  {
+    "nom": "Red",
+    "region": "Kanto",
+    "generation": 4,
+    "role": "Dresseur legendaire",
+    "version": "HeartGold / SoulSilver",
+    "image": "https://play.pokemonshowdown.com/sprites/trainers/red.png",
+    "pokemons": [
+      25,
+      131,
+      143,
+      3,
+      6,
+      9
+    ]
+  },
+  {
+    "nom": "Pierre Rochard",
+    "region": "Hoenn",
+    "generation": 6,
+    "role": "Maitre de la Ligue",
+    "version": "Rubis Omega / Saphir Alpha",
+    "image": "https://play.pokemonshowdown.com/sprites/trainers/steven-gen6.png",
+    "pokemons": [
+      227,
+      344,
+      306,
+      346,
+      348,
+      376
+    ]
+  },
+  {
+    "nom": "Marc",
+    "region": "Hoenn",
+    "generation": 3,
+    "role": "Maitre de la Ligue",
+    "version": "Emeraude",
+    "image": "https://play.pokemonshowdown.com/sprites/trainers/wallace-gen3.png",
+    "pokemons": [
+      321,
+      73,
+      272,
+      340,
+      130,
+      350
+    ]
+  },
+  {
+    "nom": "Cynthia",
+    "region": "Sinnoh",
+    "generation": 8,
+    "role": "Maitre de la Ligue",
+    "version": "Diamant / Perle",
+    "image": "https://play.pokemonshowdown.com/sprites/trainers/cynthia.png",
+    "pokemons": [
+      442,
+      423,
+      407,
+      350,
+      448,
+      445
+    ]
+  },
+  {
+    "nom": "Goyah",
+    "region": "Unys",
+    "generation": 5,
+    "role": "Maitre de la Ligue",
+    "version": "Noir / Blanc",
+    "image": "https://play.pokemonshowdown.com/sprites/trainers/alder.png",
+    "pokemons": [
+      617,
+      626,
+      621,
+      584,
+      589,
+      637
+    ]
+  },
+  {
+    "nom": "Iris",
+    "region": "Unys",
+    "generation": 5,
+    "role": "Maitre de la Ligue",
+    "version": "Noir 2 / Blanc 2",
+    "image": "https://play.pokemonshowdown.com/sprites/trainers/iris-gen5bw2.png",
+    "pokemons": [
+      635,
+      621,
+      306,
+      567,
+      131,
+      612
+    ]
+  },
+  {
+    "nom": "Dianthéa",
+    "region": "Kalos",
+    "generation": 6,
+    "role": "Maitre de la Ligue",
+    "version": "X / Y",
+    "image": "https://play.pokemonshowdown.com/sprites/trainers/diantha.png",
+    "pokemons": [
+      701,
+      697,
+      699,
+      711,
+      706,
+      282
+    ]
+  },
+  {
+    "nom": "Tarak",
+    "region": "Galar",
+    "generation": 8,
+    "role": "Maitre de la Ligue",
+    "version": "Epee / Bouclier",
+    "image": "https://play.pokemonshowdown.com/sprites/trainers/leon.png",
+    "pokemons": [
+      681,
+      887,
+      612,
+      537,
+      815,
+      6
+    ]
+  },
+  {
+    "nom": "Alisma",
+    "region": "Paldea",
+    "generation": 9,
+    "role": "Maitre en chef",
+    "version": "Ecarlate / Violet",
+    "image": "https://play.pokemonshowdown.com/sprites/trainers/geeta.png",
+    "pokemons": [
+      956,
+      673,
+      976,
+      713,
+      983,
+      970
+    ]
+  },
+  {
+    "nom": "Menzi",
+    "region": "Paldea",
+    "generation": 9,
+    "role": "Dresseuse de rang Maitre",
+    "version": "Ecarlate / Violet",
+    "image": "https://play.pokemonshowdown.com/sprites/trainers/nemona.png",
+    "pokemons": [
+      745,
+      706,
+      923,
+      982,
+      968,
+      914
+    ]
+  },
+  {
+    "nom": "Kassis",
+    "region": "Institut Myrtille",
+    "generation": 9,
+    "role": "Maitre de la Ligue BB",
+    "version": "Ecarlate Violet Le Disque Indigo Maitre",
+    "image": "https://play.pokemonshowdown.com/sprites/trainers/kieran-champion.png",
+    "pokemons": [
+      149,
+      62,
+      861,
+      474,
+      855,
+      1019
+    ]
+  },
+  {
+    "nom": "Pato",
+    "region": "Toutes",
+    "generation": "Toutes",
+    "role": "Final Boss",
+    "version": "Toutes",
+    "image": "./src/assets/Pato.jpg",
+    "pokemons": [
+      491,
+      149,
+      384,
+      493,
+      890,
+      54
+    ]
+  }
+]
