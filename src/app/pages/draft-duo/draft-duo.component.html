@@ -2,10 +2,11 @@
 
 	<!-- Header -->
 	<header class="bg-slate-800 border-b border-slate-700 px-3 md:px-6 py-3 flex items-center justify-between shrink-0">
-		<div class="flex items-center gap-3">
-			<iconify-icon [icon]="ICONS.draft" class="text-4xl text-green-300"></iconify-icon>
-			<h1 class="text-lg font-bold text-white">Team Builder Duo</h1>
-		</div>
+        <div class="flex items-center gap-3">
+            <iconify-icon [icon]="ICONS.draft" class="text-2xl text-purple-200"></iconify-icon>
+            <h1 class="text-xl font-bold text-white">Team Builder <span class="text-slate-500 font-medium mx-2">-</span> <span
+                    class="text-lg text-slate-300">Deux joueurs en ligne</span></h1>
+        </div>
 	</header>
 
 	<!-- Sous-header (Aide et Quitter) -->
@@ -318,7 +319,7 @@
 				>
 					@if (winner() === 'me') {
 						<p class="text-2xl font-black text-yellow-400">🏆 Victoire !</p>
-						<p class="text-slate-300 text-sm mt-1">Tu as remporté ce Team Builder Duo.</p>
+						<p class="text-slate-300 text-sm mt-1">Tu as remporté ce Team Builder.</p>
 					} @else if (winner() === 'opponent') {
 						<p class="text-2xl font-black text-red-400">Défaite</p>
 						<p class="text-slate-300 text-sm mt-1">L'adversaire avait une meilleure équipe cette fois.</p>
