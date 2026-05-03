@@ -12,12 +12,13 @@ import { Pokemon } from '../../models/pokemon.model';
 import { DEFAULT_SETTINGS, FirstPlayer, GameSettings } from '../../models/room.model';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { CancelModalComponent } from '../../components/cancel-modal/cancel-modal.component';
+import { HelpModalComponent } from '../../components/help-modal/help-modal.component';
 import { ICONS } from '../../constants/icons';
 import { modalAnimation } from '../../constants/animations';
 
 @Component({
 	selector: 'app-lobby',
-	imports: [FormsModule, PokemonCardComponent, CancelModalComponent],
+	imports: [FormsModule, PokemonCardComponent, CancelModalComponent, HelpModalComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
 	animations: [modalAnimation],
 	templateUrl: './lobby.component.html',
@@ -91,6 +92,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
 	// UI état
 	showSettings = signal(false);
+	showHelpModal = signal(false);
 
 	get activeSettingsCount(): number {
 		const s = this.gameSettings;

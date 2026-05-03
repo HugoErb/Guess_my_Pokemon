@@ -63,55 +63,7 @@
 
 	<!-- Modal d'aide -->
 	@if (showHelpModal()) {
-		<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="showHelpModal.set(false)">
-			<div
-				class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4"
-				(click)="$event.stopPropagation()"
-			>
-				<iconify-icon [icon]="ICONS.statDuel" class="text-5xl text-yellow-400 mx-auto"></iconify-icon>
-				<h2 class="text-xl font-bold text-white uppercase tracking-wider text-center">Duel de Base Stats</h2>
-				<ol class="space-y-3 text-sm text-slate-300 list-none text-justify">
-					<li class="flex gap-3">
-						<span class="text-yellow-400 font-bold text-base leading-snug">1.</span>
-						<span>
-							Chaque manche, un Pokémon est révélé. Tu dois
-							<strong class="text-white">choisir une de ses stats</strong>
-							avant la fin du chrono (10 secondes).
-						</span>
-					</li>
-					<li class="flex gap-3">
-						<span class="text-yellow-400 font-bold text-base leading-snug">2.</span>
-						<span>
-							La
-							<strong class="text-white">valeur de la stat choisie</strong>
-							est ajoutée à ton score. Chaque stat ne peut être choisie qu'une seule fois sur l'ensemble de la partie.
-						</span>
-					</li>
-					<li class="flex gap-3">
-						<span class="text-yellow-400 font-bold text-base leading-snug">3.</span>
-						<span>
-							Si tu ne choisis pas à temps, une stat est sélectionnée
-							<strong class="text-white">aléatoirement</strong>
-							pour toi.
-						</span>
-					</li>
-					<li class="flex gap-3">
-						<span class="text-yellow-400 font-bold text-base leading-snug">4.</span>
-						<span>
-							À la fin de la partie, le joueur avec le
-							<strong class="text-white">total le plus élevé</strong>
-							remporte la partie !
-						</span>
-					</li>
-				</ol>
-				<button
-					(click)="showHelpModal.set(false)"
-					class="mt-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium text-white transition-colors"
-				>
-					Fermer
-				</button>
-			</div>
-		</div>
+		<app-help-modal mode="stat-duel" (close)="showHelpModal.set(false)" />
 	}
 
 	<main class="flex-1 flex flex-col overflow-hidden">

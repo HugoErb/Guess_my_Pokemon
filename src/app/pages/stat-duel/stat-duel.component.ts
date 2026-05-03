@@ -11,6 +11,7 @@ import { ICONS } from '../../constants/icons';
 import { DuelIntroComponent } from '../../components/duel-intro/duel-intro.component';
 import { ModeSelectCardComponent } from '../../components/mode-select-card/mode-select-card.component';
 import { ModeSelectComponent } from '../../components/mode-select-card/mode-select.component';
+import { HelpModalComponent } from '../../components/help-modal/help-modal.component';
 import { environment } from '../../../environments/environment';
 
 type Phase = 'mode-select' | 'waiting' | 'playing' | 'result';
@@ -37,7 +38,7 @@ const ROUND_DURATION_MS = 11_000; // 10s pick + 1s transition
 @Component({
     selector: 'app-stat-duel',
     standalone: true,
-    imports: [NgClass, DuelIntroComponent, ModeSelectCardComponent, ModeSelectComponent],
+    imports: [NgClass, DuelIntroComponent, ModeSelectCardComponent, ModeSelectComponent, HelpModalComponent],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     templateUrl: './stat-duel.component.html',
     styles: [`
