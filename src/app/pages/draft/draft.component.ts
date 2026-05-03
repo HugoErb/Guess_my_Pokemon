@@ -388,19 +388,43 @@ export class DraftComponent implements OnInit {
   // ─── Sélection aléatoire sans doublons ───────────────────────────────────────
 
   private pickOneStarter(pool: Pokemon[], exclude: Set<number>): Pokemon {
-    const starters = pool.filter(p => p.category === 'starter' && !exclude.has(p.id));
-    const fallback = pool.filter(p => !exclude.has(p.id));
-    const source = starters.length > 0 ? starters : fallback;
-    return source[Math.floor(Math.random() * source.length)];
+    const starters = pool.filter(p => p.category === 'starter');
+    if (starters.length === 0) {
+      // Fallback total si aucun starter dans le pool (ne devrait pas arriver)
+      const fallback = pool.filter(p => !exclude.has(p.id));
+      return (fallback.length > 0 ? fallback : pool)[0];
+    }
+
+    const available = starters.filter(p => !exclude.has(p.id));
+    if (available.length > 0) {
+      return available[Math.floor(Math.random() * available.length)];
+    }
+
+    // Si épuisé, on pioche dans tous les starters en évitant l'affichage actuel si possible
+    const currentIds = new Set(this.slots().filter(p => p !== null).map(p => p!.id));
+    const secondary = starters.filter(p => !currentIds.has(p.id));
+    const finalSource = secondary.length > 0 ? secondary : starters;
+    return finalSource[Math.floor(Math.random() * finalSource.length)];
   }
 
   private pickOneLegendary(pool: Pokemon[], exclude: Set<number>): Pokemon {
-    const legends = pool.filter(p =>
-      (p.category === 'légendaire' || p.category === 'fabuleux') && !exclude.has(p.id)
-    );
-    const fallback = pool.filter(p => !exclude.has(p.id));
-    const source = legends.length > 0 ? legends : fallback;
-    return source[Math.floor(Math.random() * source.length)];
+    const legends = pool.filter(p => p.category === 'légendaire' || p.category === 'fabuleux');
+    if (legends.length === 0) {
+      // Fallback total si aucune légende dans le pool
+      const fallback = pool.filter(p => !exclude.has(p.id));
+      return (fallback.length > 0 ? fallback : pool)[0];
+    }
+
+    const available = legends.filter(p => !exclude.has(p.id));
+    if (available.length > 0) {
+      return available[Math.floor(Math.random() * available.length)];
+    }
+
+    // Si épuisé, on pioche dans toutes les légendes en évitant l'affichage actuel si possible
+    const currentIds = new Set(this.slots().filter(p => p !== null).map(p => p!.id));
+    const secondary = legends.filter(p => !currentIds.has(p.id));
+    const finalSource = secondary.length > 0 ? secondary : legends;
+    return finalSource[Math.floor(Math.random() * finalSource.length)];
   }
 
   private pickNUnique(pool: Pokemon[], exclude: Set<number>, n: number): Pokemon[] {
