@@ -380,6 +380,22 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     void this.router.navigate(['/home']);
   }
 
+  async restartDraft(): Promise<void> {
+    this.phase.set('loading');
+    this.showScores.set(false);
+    this.myTeamPokemons.set([]);
+    this.opponentTeamPokemons.set([]);
+    
+    // Petit délai pour l'effet visuel
+    setTimeout(() => {
+      this.initDraft();
+    }, 500);
+  }
+
+  async goToTrainerSelect(): Promise<void> {
+    void this.router.navigate(['/trainer-select']);
+  }
+
   private computeTotal(p: Pokemon): number {
     const s = p.stats;
     return s.pv + s.attaque + s.defense + s.atq_spe + s.def_spe + s.vitesse;
