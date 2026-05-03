@@ -7,17 +7,27 @@
 			<h1 class="text-xl font-bold text-white">Team Builder</h1>
 		</div>
 	</header>
-	<!-- Sous-header -->
+
+	<!-- Sous-header (Compteur, Aide et Quitter) -->
 	@if (phase() !== 'loading') {
-		<div class="bg-slate-800/50 border-b border-slate-700 px-3 py-2 flex items-center justify-between gap-2 shrink-0">
-			<div class="flex items-center gap-2">
+		<div class="relative bg-slate-800/50 border-b border-slate-700 px-3 py-2 flex items-center justify-between gap-2 shrink-0">
+			<div class="flex items-center gap-3">
+				<!-- Mon équipe (phase draft uniquement) -->
 				@if (phase() === 'draft') {
-					<div class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg">
-						<iconify-icon [icon]="ICONS.pokeball" class="text-sm text-yellow-400"></iconify-icon>
-						<span class="text-[11px] font-bold text-white font-mono">{{ lockedCount() }} / 6</span>
+					<div class="flex items-center gap-1.5 px-2 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg">
+						<iconify-icon [icon]="ICONS.pokeball" class="text-sm text-yellow-400 hidden sm:block"></iconify-icon>
+						<div class="flex items-center gap-1">
+							<div class="hidden sm:flex items-center gap-1 mr-1">
+								@for (i of [0, 1, 2, 3, 4, 5]; track i) {
+									<div class="w-2 h-2 rounded-full" [ngClass]="i < lockedCount() ? 'bg-yellow-400' : 'bg-slate-700'"></div>
+								}
+							</div>
+							<span class="text-xs sm:text-[11px] font-bold text-white font-mono leading-none">{{ lockedCount() }} / 6</span>
+						</div>
 					</div>
 				}
 			</div>
+
 			<div class="flex items-center gap-2 shrink-0">
 				<button
 					(click)="showHelpModal.set(true)"
@@ -58,8 +68,8 @@
 						accent="purple"
 						(selected)="startSolo()"
 					/>
-                    <app-mode-select-card title="Contre un dresseur" description="Affronte l'équipe d'un dresseur célèbre de la franchise."
-                        [icon]="ICONS.sword" accent="yellow" [disabled]="isCreatingRoom()" (selected)="startTrainer()" />
+					<app-mode-select-card title="Contre un dresseur" description="Affronte l'équipe d'un dresseur célèbre de la franchise."
+						[icon]="ICONS.sword" accent="yellow" [disabled]="isCreatingRoom()" (selected)="startTrainer()" />
 					<app-mode-select-card
 						title="Deux joueurs en ligne"
 						description="Affronte un ami en construisant une équipe de Pokémon meilleure en tout point que la sienne."
@@ -175,15 +185,15 @@
 					</div>
 				}
 			</div>
-		} @else {
-		<div class="w-full max-w-6xl grid grid-cols-2 lg:grid-cols-6 gap-x-2 gap-y-4 md:gap-5">
-			@for (_ of [0,1,2,3,4,5]; track $index) {
-				<div class="bg-slate-800 border border-slate-700 rounded-xl md:rounded-2xl p-2 md:p-5 h-32 md:h-64 flex items-center justify-center animate-pulse">
-					<iconify-icon [icon]="ICONS.pokeball" class="text-2xl md:text-3xl text-slate-700"></iconify-icon>
-				</div>
-			}
-		</div>
-		} <!-- end @if (!isResetting()) -->
+			} @else {
+			<div class="w-full max-w-6xl grid grid-cols-2 lg:grid-cols-6 gap-x-2 gap-y-4 md:gap-5">
+				@for (_ of [0,1,2,3,4,5]; track $index) {
+					<div class="bg-slate-800 border border-slate-700 rounded-xl md:rounded-2xl p-2 md:p-5 h-32 md:h-64 flex items-center justify-center animate-pulse">
+						<iconify-icon [icon]="ICONS.pokeball" class="text-2xl md:text-3xl text-slate-700"></iconify-icon>
+					</div>
+				}
+			</div>
+			} <!-- end @if (!isResetting()) -->
 		</main>
 	}
 

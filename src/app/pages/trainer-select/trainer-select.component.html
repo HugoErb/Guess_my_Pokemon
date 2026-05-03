@@ -66,7 +66,7 @@
               <span class="bg-slate-700 px-2 py-1 rounded-md">{{ trainer.region }}</span>
               <span class="bg-slate-700 px-2 py-1 rounded-md">Gen {{ trainer.generation }}</span>
             </div>
-            <p class="text-[10px] text-slate-500 italic truncate" [class.grayscale]="isLocked($index)">{{ trainer.version }}</p>
+            <p class="text-[12px] text-slate-400 italic truncate" [class.grayscale]="isLocked($index)">{{ trainer.version }}</p>
             
             <div class="mt-auto pt-2 border-t border-slate-700 flex justify-between gap-1" [class.grayscale]="isLocked($index)">
               @for (pid of trainer.pokemons; track pid) {

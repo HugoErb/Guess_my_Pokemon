@@ -9,12 +9,35 @@
         </div>
 	</header>
 
-	<!-- Sous-header (Aide et Quitter) -->
+	<!-- Sous-header (Timer, Compteur, Aide et Quitter) -->
 	@if (phase() !== 'loading') {
-		<div class="bg-slate-800/50 border-b border-slate-700 px-3 py-2 flex items-center justify-between gap-2 shrink-0">
-			<div>
-				<!-- Timer ou infos supplémentaires si besoin -->
+		<div class="relative bg-slate-800/50 border-b border-slate-700 px-3 py-2 flex items-center justify-between gap-2 shrink-0">
+			<div class="flex items-center gap-3">
+				<!-- Timer (phase playing uniquement) -->
+				@if (phase() === 'playing') {
+					<div class="flex items-center gap-1">
+						<iconify-icon [icon]="ICONS.timer" class="text-xl animate-pulse" [ngClass]="timerColor()"></iconify-icon>
+						<span class="text-xl font-black tabular-nums" [ngClass]="timerColor()">{{ timerValue() }}</span>
+						<span class="text-xl text-slate-500">s</span>
+					</div>
+				}
+
+				<!-- Mon équipe (phase playing uniquement) -->
+				@if (phase() === 'playing') {
+					<div class="flex items-center gap-1.5 px-2 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg">
+						<iconify-icon [icon]="ICONS.pokeball" class="text-sm text-yellow-400 hidden sm:block"></iconify-icon>
+						<div class="flex items-center gap-1">
+							<div class="hidden sm:flex items-center gap-1 mr-1">
+								@for (i of [0, 1, 2, 3, 4, 5]; track i) {
+									<div class="w-2 h-2 rounded-full" [ngClass]="i < lockedCount() ? 'bg-yellow-400' : 'bg-slate-700'"></div>
+								}
+							</div>
+							<span class="text-xs sm:text-[11px] font-bold text-white font-mono leading-none">{{ lockedCount() }} / 6</span>
+						</div>
+					</div>
+				}
 			</div>
+
 			<div class="flex items-center gap-2">
 				<button
 					(click)="showHelpModal.set(true)"
@@ -31,6 +54,17 @@
 					<span class="hidden sm:inline">Quitter</span>
 				</button>
 			</div>
+
+			<!-- Barre de progression (playing uniquement) -->
+			@if (phase() === 'playing') {
+				<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-700">
+					<div
+						class="h-full transition-[width] duration-200 ease-linear"
+						[ngClass]="timerBarColor()"
+						[style.width.%]="timerProgress() * 100"
+					></div>
+				</div>
+			}
 		</div>
 	}
 
@@ -41,36 +75,8 @@
 		</div>
 	}
 
-	<!-- ═══ BANDEAU TIMER + PROGRESSION (PLAYING) ══════════════════════════════ -->
+	<!-- ═══ PHASE PLAYING ══════════════════════════════════════════════════════ -->
 	@if (phase() === 'playing') {
-		<div class="relative bg-slate-800/70 border-b border-slate-700 px-3 py-2 flex items-center justify-between gap-3 shrink-0">
-			<!-- Timer -->
-			<div class="flex items-center gap-1">
-				<iconify-icon [icon]="ICONS.timer" class="text-xl animate-pulse" [ngClass]="timerColor()"></iconify-icon>
-				<span class="text-xl font-black tabular-nums" [ngClass]="timerColor()">{{ timerValue() }}</span>
-				<span class="text-xl text-slate-500">s</span>
-			</div>
-			<!-- Barre de progression -->
-			<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-700">
-				<div
-					class="h-full transition-[width] duration-200 ease-linear"
-					[ngClass]="timerBarColor()"
-					[style.width.%]="timerProgress() * 100"
-				></div>
-			</div>
-
-			<!-- Mon équipe -->
-			<div class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg">
-				<iconify-icon [icon]="ICONS.pokeball" class="text-sm text-yellow-400"></iconify-icon>
-				<div class="flex items-center gap-1">
-					@for (i of [0, 1, 2, 3, 4, 5]; track i) {
-						<div class="w-2 h-2 rounded-full" [ngClass]="i < lockedCount() ? 'bg-yellow-400' : 'bg-slate-700'"></div>
-					}
-					<span class="text-[11px] font-bold text-white font-mono ml-1">{{ lockedCount() }} / 6</span>
-				</div>
-			</div>
-		</div>
-
 		<!-- Grille de draft -->
 		<main class="flex-1 flex flex-col items-center justify-center px-3 py-2 md:py-6 gap-2 md:gap-5 min-h-0">
 			<p class="text-slate-400 text-xs md:text-sm text-center max-w-md mb-1">
