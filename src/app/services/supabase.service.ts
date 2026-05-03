@@ -814,4 +814,26 @@ export class SupabaseService implements OnDestroy {
             };
         });
     }
+
+    // ─── Dresseurs battus ────────────────────────────────────────────────────────
+
+    /** Récupère les index des dresseurs battus par l'utilisateur. */
+    async getDefeatedTrainers(userId: string): Promise<number[]> {
+        const { data, error } = await this.supabase
+            .from('defeated_trainers')
+            .select('trainer_index')
+            .eq('user_id', userId);
+
+        if (error) throw error;
+        return (data as { trainer_index: number }[]).map(d => d.trainer_index);
+    }
+
+    /** Enregistre la victoire contre un dresseur. */
+    async recordTrainerDefeat(userId: string, trainerIndex: number): Promise<void> {
+        const { error } = await this.supabase
+            .from('defeated_trainers')
+            .upsert({ user_id: userId, trainer_index: trainerIndex }, { onConflict: 'user_id,trainer_index' });
+
+        if (error) throw error;
+    }
 }

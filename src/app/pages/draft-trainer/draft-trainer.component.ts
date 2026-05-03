@@ -11,6 +11,7 @@ import { NgClass } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { PokemonService } from '../../services/pokemon.service';
+import { SupabaseService } from '../../services/supabase.service';
 import { Pokemon } from '../../models/pokemon.model';
 import { ICONS } from '../../constants/icons';
 import { TYPE_COLORS, TYPE_ICONS, TYPE_OFFENSIVE, effectiveMultiplier } from '../../constants/type-chart';
@@ -52,6 +53,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly pokemonService = inject(PokemonService);
+  private readonly supabaseService = inject(SupabaseService);
 
   private readonly allPokemon = toSignal(this.pokemonService.loadAll(), {
     initialValue: [] as Pokemon[],
@@ -319,6 +321,14 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
       this.showScores.set(true);
       if (this.winner() === 'me') {
         this.launchConfetti();
+        
+        // Enregistrer la victoire
+        const user = this.supabaseService.getCurrentUser();
+        const idParam = this.route.snapshot.paramMap.get('id');
+        if (user && idParam) {
+          const trainerIndex = parseInt(idParam, 10);
+          this.supabaseService.recordTrainerDefeat(user.id, trainerIndex).catch(console.error);
+        }
       }
     }, 800);
   }
@@ -379,7 +389,9 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
       ? (resistedTypes / opponentTypes.size) * 10
       : 0;
 
-    const raw = 0.5 * offensiveScore + 0.3 * pokemonScore + 0.2 * defensiveScore;
+    // Special case for Arceus (id 493): perfect coverage
+    const hasArceus = myTeam.some(p => p.id === 493);
+    const raw = hasArceus ? 10 : (0.5 * offensiveScore + 0.3 * pokemonScore + 0.2 * defensiveScore);
     return Math.round(raw * 10) / 10;
   }
 

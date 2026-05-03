@@ -19,9 +19,28 @@
         @for (trainer of trainers(); track $index) {
           <div 
             (click)="selectTrainer($index)"
-            class="bg-slate-800 border border-slate-700 hover:border-yellow-500 rounded-2xl p-4 cursor-pointer transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-yellow-900/20 group flex flex-col gap-3"
+            class="relative bg-slate-800 border border-slate-700 rounded-2xl p-4 transition-all group flex flex-col gap-3 overflow-hidden"
+            [ngClass]="{
+              'cursor-pointer hover:border-yellow-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-yellow-900/20': !isLocked($index),
+              'cursor-not-allowed': isLocked($index)
+            }"
           >
-            <div class="flex items-center gap-3">
+            <!-- Overlay de verrouillage -->
+            @if (isLocked($index)) {
+              <div class="absolute inset-0 z-20 bg-slate-900 flex flex-col items-center justify-center gap-2">
+                <iconify-icon [icon]="ICONS.lock" class="text-3xl text-slate-500"></iconify-icon>
+                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Verrouillé</span>
+              </div>
+            }
+
+            <!-- Badge Victoire -->
+            @if (isDefeated($index)) {
+              <div class="absolute -top-1 -right-1 z-10 bg-green-500 text-white px-3 py-1 rounded-bl-xl shadow-lg flex items-center gap-1.5 animate-in fade-in zoom-in duration-300">
+                <iconify-icon [icon]="ICONS.check" class="text-md mr-1 font-bold"></iconify-icon>
+              </div>
+            }
+
+            <div class="flex items-center gap-3" [class.grayscale]="isLocked($index)">
               <img [src]="trainer.image" [alt]="trainer.nom" class="w-16 h-16 object-cover rounded-full bg-slate-700 border-2 border-slate-600 group-hover:border-yellow-400 transition-colors" />
               <div>
                 <h2 class="text-lg font-bold text-white group-hover:text-yellow-400 transition-colors">{{ trainer.nom }}</h2>
@@ -29,13 +48,13 @@
               </div>
             </div>
             
-            <div class="flex flex-wrap gap-2 text-[10px] uppercase tracking-wider font-bold text-slate-300">
+            <div class="flex flex-wrap gap-2 text-[10px] uppercase tracking-wider font-bold text-slate-300" [class.grayscale]="isLocked($index)">
               <span class="bg-slate-700 px-2 py-1 rounded-md">{{ trainer.region }}</span>
               <span class="bg-slate-700 px-2 py-1 rounded-md">Gen {{ trainer.generation }}</span>
             </div>
-            <p class="text-[10px] text-slate-500 italic truncate">{{ trainer.version }}</p>
+            <p class="text-[10px] text-slate-500 italic truncate" [class.grayscale]="isLocked($index)">{{ trainer.version }}</p>
             
-            <div class="mt-auto pt-2 border-t border-slate-700 flex justify-between gap-1">
+            <div class="mt-auto pt-2 border-t border-slate-700 flex justify-between gap-1" [class.grayscale]="isLocked($index)">
               @for (pid of trainer.pokemons; track pid) {
                 <div class="w-8 h-8 md:w-10 md:h-10 bg-slate-900 rounded-lg flex items-center justify-center border border-slate-700 group-hover:border-slate-600 p-0.5" [title]="getPokemonName(pid)">
                   @if (getPokemonSprite(pid)) {

@@ -32,22 +32,6 @@
     ]
   },
   {
-    "nom": "Red",
-    "region": "Kanto",
-    "generation": 2,
-    "role": "Dresseur legendaire",
-    "version": "HeartGold / SoulSilver",
-    "image": "https://play.pokemonshowdown.com/sprites/trainers/red.png",
-    "pokemons": [
-      25,
-      131,
-      143,
-      3,
-      6,
-      9
-    ]
-  },
-  {
     "nom": "Pierre Rochard",
     "region": "Hoenn",
     "generation": 3,
@@ -221,6 +205,22 @@
       474,
       855,
       1019
+    ]
+  },
+  {
+    "nom": "Red",
+    "region": "Kanto",
+    "generation": 2,
+    "role": "Dresseur legendaire",
+    "version": "HeartGold / SoulSilver",
+    "image": "https://play.pokemonshowdown.com/sprites/trainers/red.png",
+    "pokemons": [
+      25,
+      131,
+      143,
+      3,
+      6,
+      9
     ]
   },
   {

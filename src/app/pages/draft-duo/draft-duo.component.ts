@@ -649,7 +649,9 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
       ? (resistedTypes / opponentTypes.size) * 10
       : 0;
 
-    const raw = 0.5 * offensiveScore + 0.3 * pokemonScore + 0.2 * defensiveScore;
+    // Special case for Arceus (id 493): perfect coverage
+    const hasArceus = myTeam.some(p => p.id === 493);
+    const raw = hasArceus ? 10 : (0.5 * offensiveScore + 0.3 * pokemonScore + 0.2 * defensiveScore);
     return Math.round(raw * 10) / 10;
   }
 
