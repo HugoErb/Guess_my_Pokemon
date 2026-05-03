@@ -209,17 +209,17 @@
 
 					<!-- Bouton lancer (P1 ou dev) -->
 					@if (isPlayer1() || isDevMode()) {
-						<div class="mt-2 flex flex-col gap-2">
+						<div class="mt-6 flex flex-col gap-2">
 							<button
 								(click)="launchMultiGame()"
 								[disabled]="!isDevMode() && !room()?.player2_id"
-								class="w-full bg-yellow-500 hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-3 rounded-lg font-black text-slate-900 transition-colors flex items-center justify-center gap-2"
+								class="w-full bg-yellow-500 hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-sm font-medium text-slate-900 transition-colors flex items-center justify-center gap-2"
 							>
 								@if (!isDevMode() && !room()?.player2_id) {
 									<iconify-icon [icon]="ICONS.loading" class="text-lg animate-spin"></iconify-icon>
 									En attente de ton adversaire…
 								} @else {
-									<iconify-icon [icon]="ICONS.statDuel" class="text-lg"></iconify-icon>
+									<iconify-icon [icon]="ICONS.statDuel" class="text-xl"></iconify-icon>
 									Lancer la partie !
 								}
 							</button>
