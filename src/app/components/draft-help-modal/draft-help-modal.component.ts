@@ -29,7 +29,7 @@ import { modalAnimation } from '../../constants/animations';
 					<div>
 						<h2 class="text-lg font-bold text-white uppercase tracking-wider">Aide</h2>
 						<p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.1em]">
-							Team Builder {{ mode === 'duo' ? 'Duo' : 'Solo' }} — règles et calcul des notes
+							Team Builder {{ mode === 'duo' ? 'Duo' : mode === 'trainer' ? 'vs Dresseur' : 'Solo' }} — règles et calcul des notes
 						</p>
 					</div>
 				</div>
@@ -50,7 +50,7 @@ import { modalAnimation } from '../../constants/animations';
 							</li>
 							<li class="flex gap-3">
 								<span class="text-yellow-400 font-bold text-base leading-snug shrink-0">2.</span>
-								@if (mode === 'duo') {
+								@if (mode === 'duo' || mode === 'trainer') {
 									<span>Tu as <strong class="text-white">10 secondes</strong> pour cliquer sur un Pokémon et le garder dans ton équipe. Sans action, un Pokémon est automatiquement sélectionné pour toi.</span>
 								} @else {
 									<span><strong class="text-white">Clique sur un Pokémon</strong> pour le garder dans ton équipe. Les cinq autres sont remplacés par de nouveaux tirages.</span>
@@ -64,6 +64,11 @@ import { modalAnimation } from '../../constants/animations';
 								<li class="flex gap-3">
 									<span class="text-yellow-400 font-bold text-base leading-snug shrink-0">4.</span>
 									<span>Tu n'as <strong class="text-white">pas besoin d'attendre</strong> ton adversaire pour sélectionner tes Pokémon. Tu vois sa progression en temps réel. Les résultats s'affichent quand les deux joueurs ont terminé.</span>
+								</li>
+							} @else if (mode === 'trainer') {
+								<li class="flex gap-3">
+									<span class="text-yellow-400 font-bold text-base leading-snug shrink-0">4.</span>
+									<span>Le dresseur adverse a déjà son équipe prête. Ton but est de construire une équipe supérieure à la sienne, tant en statistiques qu'en couverture de types.</span>
 								</li>
 							} @else {
 								<li class="flex gap-3">
@@ -108,8 +113,8 @@ import { modalAnimation } from '../../constants/animations';
 					</div>
 				</div>
 
-				<!-- Note Couverture de types (DUO uniquement) -->
-				@if (mode === 'duo') {
+				<!-- Note Couverture de types (DUO / TRAINER uniquement) -->
+				@if (mode === 'duo' || mode === 'trainer') {
 					<div class="space-y-3">
 						<div class="flex items-center gap-3">
 							<div class="flex-1 h-px bg-slate-700"></div>
@@ -154,7 +159,7 @@ import { modalAnimation } from '../../constants/animations';
 				<!-- Note finale -->
 				<div class="bg-amber-900/20 border border-amber-700/40 rounded-xl px-4 py-3 flex gap-2 items-start">
 					<iconify-icon [icon]="ICONS.alert" class="text-amber-400 text-base shrink-0 mt-0.5"></iconify-icon>
-					@if (mode === 'duo') {
+					@if (mode === 'duo' || mode === 'trainer') {
 						<p class="text-xs text-amber-300">
 							La <strong class="text-white">note finale</strong> est la moyenne de la note Base Stats et de la note Couverture de types. Le joueur avec la meilleure note finale remporte la partie.
 						</p>
@@ -176,7 +181,7 @@ import { modalAnimation } from '../../constants/animations';
 	`,
 })
 export class DraftHelpModalComponent {
-	@Input() mode: 'solo' | 'duo' = 'solo';
+	@Input() mode: 'solo' | 'duo' | 'trainer' = 'solo';
 	close = output<void>();
 
 	protected readonly ICONS = ICONS;

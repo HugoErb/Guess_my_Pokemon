@@ -28,7 +28,7 @@
 		</div>
 		<main class="flex-1 min-h-0 overflow-y-auto">
 			<div class="min-h-full flex flex-col items-center justify-center pt-8 pb-20 px-4">
-				<app-mode-select title="Team Builder" [icon]="ICONS.draft" iconColor="text-purple-300">
+				<app-mode-select title="Team Builder" [icon]="ICONS.draft" iconColor="text-purple-300" maxWidth="max-w-5xl">
 					<app-mode-select-card
 						title="Un joueur"
 						description="Construis la meilleure équipe de Pokémon et vise la meilleure note de base stats."
@@ -36,8 +36,10 @@
 						accent="purple"
 						(selected)="startSolo()"
 					/>
+                    <app-mode-select-card title="Contre un dresseur" description="Affronte l'équipe d'un dresseur célèbre de la franchise."
+                        [icon]="ICONS.sword" accent="yellow" [disabled]="isCreatingRoom()" (selected)="startTrainer()" />
 					<app-mode-select-card
-						title="Deux joueurs"
+						title="Deux joueurs en ligne"
 						description="Affronte un ami en construisant une équipe de Pokémon meilleure en tout point que la sienne."
 						[icon]="ICONS.friends"
 						accent="green"

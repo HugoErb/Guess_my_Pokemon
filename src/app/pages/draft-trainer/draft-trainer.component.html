@@ -1,0 +1,318 @@
+<div class="h-dvh bg-slate-900 text-white flex flex-col overflow-hidden">
+
+	<!-- Header -->
+	<header class="bg-slate-800 border-b border-slate-700 px-3 md:px-6 py-3 flex items-center justify-between shrink-0">
+		<div class="flex items-center gap-3">
+			<iconify-icon [icon]="ICONS.sword" class="text-4xl text-yellow-400"></iconify-icon>
+			<h1 class="text-lg font-bold text-white">Solo vs Dresseur</h1>
+		</div>
+		@if (phase() === 'playing') {
+			<button
+				(click)="showHelpModal.set(true)"
+				class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 rounded-lg text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-wider transition-all"
+			>
+				<iconify-icon [icon]="ICONS.help" class="text-sm"></iconify-icon>
+				<span class="hidden sm:inline">Aide</span>
+			</button>
+		}
+	</header>
+
+	<!-- ═══ PHASE LOADING ══════════════════════════════════════════════════════ -->
+	@if (phase() === 'loading') {
+		<div class="flex-1 flex items-center justify-center">
+			<iconify-icon [icon]="ICONS.loading" class="text-5xl text-yellow-400 animate-spin"></iconify-icon>
+		</div>
+	}
+
+	<!-- ═══ BANDEAU TIMER + PROGRESSION (PLAYING) ══════════════════════════════ -->
+	@if (phase() === 'playing') {
+		<div class="relative bg-slate-800/70 border-b border-slate-700 px-3 py-2 flex items-center justify-between gap-3 shrink-0">
+			<!-- Timer -->
+			<div class="flex items-center gap-1">
+				<iconify-icon [icon]="ICONS.timer" class="text-xl animate-pulse" [ngClass]="timerColor()"></iconify-icon>
+				<span class="text-xl font-black tabular-nums" [ngClass]="timerColor()">{{ timerValue() }}</span>
+				<span class="text-xl text-slate-500">s</span>
+			</div>
+			<!-- Barre de progression -->
+			<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-700">
+				<div
+					class="h-full transition-[width] duration-200 ease-linear"
+					[ngClass]="timerBarColor()"
+					[style.width.%]="timerProgress() * 100"
+				></div>
+			</div>
+
+			<!-- Mon équipe -->
+			<div class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg">
+				<iconify-icon [icon]="ICONS.pokeball" class="text-sm text-yellow-400"></iconify-icon>
+				<div class="flex items-center gap-1">
+					@for (i of [0, 1, 2, 3, 4, 5]; track i) {
+						<div class="w-2 h-2 rounded-full" [ngClass]="i < lockedCount() ? 'bg-yellow-400' : 'bg-slate-700'"></div>
+					}
+					<span class="text-[11px] font-bold text-white font-mono ml-1">{{ lockedCount() }} / 6</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Grille de draft -->
+		<main class="flex-1 flex flex-col items-center justify-center px-3 py-2 md:py-6 gap-2 md:gap-5 min-h-0">
+			<p class="text-slate-400 text-xs md:text-sm text-center max-w-md mb-1">
+				Clique sur un Pokémon pour le garder. Tu as <strong class="text-white">10 secondes</strong> par pick.
+			</p>
+
+			<div
+				class="w-full max-w-6xl grid grid-cols-2 lg:grid-cols-6 gap-x-2 gap-y-4 md:gap-5"
+				[@slotsGrid]
+			>
+				@for (slot of slots(); track $index) {
+					<div
+						[@slotState]="slotStates()[$index]"
+						(click)="onSlotClick($index)"
+						class="relative"
+						[class.cursor-pointer]="!lockedIndices().has($index)"
+						[class.cursor-default]="lockedIndices().has($index)"
+					>
+						@if (slot) {
+							@if ($index === 0) {
+								<span class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 whitespace-nowrap text-[8px] md:text-[9px] font-bold uppercase tracking-wider text-green-400 bg-slate-900 px-1.5 md:px-2 py-0.5 rounded-full border border-green-700/60 leading-none">Starter</span>
+							}
+							@if ($index === 5) {
+								<span class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 whitespace-nowrap text-[8px] md:text-[9px] font-bold uppercase tracking-wider text-yellow-400 bg-slate-900 px-1.5 md:px-2 py-0.5 rounded-full border border-yellow-700/60 leading-none">Légendaire</span>
+							}
+							<div
+								class="group bg-slate-800 border rounded-xl md:rounded-2xl p-2 md:p-5 flex flex-col items-center gap-1 md:gap-3 transition-all duration-200 select-none h-full"
+								[class.border-yellow-500]="lockedIndices().has($index)"
+								[class.ring-2]="lockedIndices().has($index)"
+								[class.ring-yellow-500]="lockedIndices().has($index)"
+								[class.ring-offset-2]="lockedIndices().has($index)"
+								[class.ring-offset-slate-900]="lockedIndices().has($index)"
+								[class.border-slate-700]="!lockedIndices().has($index)"
+								[class.hover:border-green-500]="!lockedIndices().has($index)"
+								[class.hover:scale-105]="!lockedIndices().has($index)"
+							>
+								@if (lockedIndices().has($index)) {
+									<button
+										[@lockEffect]
+										(click)="$event.stopPropagation(); openPokemonDetails(slot)"
+										class="absolute top-1 right-1 md:top-2 md:right-2 z-10 w-6 h-6 md:w-7 md:h-7 rounded-full bg-slate-700 hover:bg-slate-600 border border-slate-600 flex items-center justify-center shadow-lg transition-all hover:scale-110"
+									>
+										<iconify-icon [icon]="ICONS.search" class="text-white text-[10px] md:text-sm"></iconify-icon>
+									</button>
+								}
+								<img
+									[src]="slot.sprite"
+									[alt]="slot.name"
+									class="w-14 h-14 md:w-28 md:h-28 object-contain transition-all duration-300"
+									[class.brightness-110]="lockedIndices().has($index)"
+								/>
+								<p class="text-[10px] md:text-sm font-bold text-white capitalize leading-tight text-center w-full truncate">{{ slot.name }}</p>
+								@if (lockedIndices().has($index)) {
+									<div class="w-full mt-auto">
+										<div class="flex items-center justify-between mb-0.5 md:mb-1">
+											<span class="text-[9px] text-slate-500 uppercase tracking-wider">Base stats</span>
+											<span class="text-[10px] md:text-[11px] font-black" [ngClass]="getRatingColor(getRating(slot))">{{ getRating(slot) }}</span>
+										</div>
+										<div class="w-full h-1 md:h-1.5 bg-slate-700 rounded-full overflow-hidden">
+											<div
+												class="h-full rounded-full transition-all duration-500"
+												[ngClass]="getRatingBarColor(getRating(slot))"
+												[style.width]="getRatingWidth(getRating(slot))"
+											></div>
+										</div>
+									</div>
+								}
+								@if (!lockedIndices().has($index)) {
+									<div class="absolute inset-0 rounded-xl md:rounded-2xl bg-green-600/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+								}
+							</div>
+						} @else {
+							<div class="bg-slate-800 border border-slate-700 rounded-xl md:rounded-2xl p-2 md:p-5 h-32 md:h-60 flex items-center justify-center animate-pulse">
+								<iconify-icon [icon]="ICONS.pokeball" class="text-2xl md:text-3xl text-slate-700"></iconify-icon>
+							</div>
+						}
+					</div>
+				}
+			</div>
+		</main>
+	}
+
+	<!-- ═══ PHASE COMPLETE ══════════════════════════════════════════════════════ -->
+	@if (phase() === 'complete') {
+		<main class="flex-1 min-h-0 overflow-y-auto px-4 py-4 md:py-8 pb-12 md:pb-8 flex flex-col items-center gap-6 md:gap-8">
+
+			<!-- Bannière résultat -->
+			@if (showScores()) {
+				<div
+					[@scoreReveal]
+					class="w-full max-w-xl rounded-2xl px-6 py-4 text-center border"
+					[class.bg-yellow-900/30]="winner() === 'me'"
+					[class.border-yellow-500/50]="winner() === 'me'"
+					[class.bg-red-900/20]="winner() === 'opponent'"
+					[class.border-red-500/30]="winner() === 'opponent'"
+					[class.bg-slate-800]="winner() === 'draw'"
+					[class.border-slate-600]="winner() === 'draw'"
+				>
+					@if (winner() === 'me') {
+						<p class="text-2xl font-black text-yellow-400">🏆 Victoire !</p>
+						<p class="text-slate-300 text-sm mt-1">Tu as battu {{ trainer()?.nom }} !</p>
+					} @else if (winner() === 'opponent') {
+						<p class="text-2xl font-black text-red-400">Défaite</p>
+						<p class="text-slate-300 text-sm mt-1">{{ trainer()?.nom }} avait une meilleure équipe cette fois.</p>
+					} @else {
+						<p class="text-2xl font-black text-slate-200">Égalité !</p>
+						<p class="text-slate-300 text-sm mt-1">Même note finale pour les deux équipes.</p>
+					}
+				</div>
+			}
+
+			<!-- Tableau des scores -->
+			@if (showScores()) {
+				<div class="w-full max-w-2xl" [@scoreReveal]>
+					<div class="grid grid-cols-3 gap-2 md:gap-3 text-center mb-2">
+						<div class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Critère</div>
+						<div class="text-[10px] text-slate-300 uppercase tracking-wider font-bold">Moi</div>
+						<div class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">{{ trainer()?.nom }}</div>
+					</div>
+
+					<!-- Base Stats -->
+					<div class="grid grid-cols-3 gap-2 md:gap-3 items-center bg-slate-800/60 border border-slate-700/50 rounded-xl px-3 py-2 mb-2">
+						<span class="text-xs text-slate-400">Base Stats</span>
+						<div class="text-center">
+							<span class="font-black font-mono text-lg" [ngClass]="getScoreColor(myStatsScore())">{{ myStatsScore() }}</span>
+							<span class="text-xs text-slate-600">/10</span>
+						</div>
+						<div class="text-center">
+							<span class="font-black font-mono text-lg text-slate-500">{{ opponentStatsScore() }}</span>
+							<span class="text-xs text-slate-600">/10</span>
+						</div>
+					</div>
+
+					<!-- Couverture de types -->
+					<div class="grid grid-cols-3 gap-2 md:gap-3 items-center bg-slate-800/60 border border-slate-700/50 rounded-xl px-3 py-2 mb-2">
+						<span class="text-xs text-slate-400">Couverture de types</span>
+						<div class="text-center">
+							<span class="font-black font-mono text-lg" [ngClass]="getScoreColor(myCoverageScore())">{{ myCoverageScore() }}</span>
+							<span class="text-xs text-slate-600">/10</span>
+						</div>
+						<div class="text-center">
+							<span class="font-black font-mono text-lg text-slate-500">{{ opponentCoverageScore() }}</span>
+							<span class="text-xs text-slate-600">/10</span>
+						</div>
+					</div>
+
+					<!-- Note finale -->
+					<div class="grid grid-cols-3 gap-2 md:gap-3 items-center bg-slate-800 border border-yellow-500/40 rounded-xl px-3 py-3 ring-1 ring-yellow-500/20">
+						<span class="text-xs font-bold text-white">Note finale</span>
+						<div class="text-center">
+							<span class="font-black font-mono text-2xl" [ngClass]="getScoreColor(myFinalScore())">{{ myFinalScore() }}</span>
+							<span class="text-xs text-slate-600">/10</span>
+						</div>
+						<div class="text-center">
+							<span class="font-black font-mono text-2xl text-slate-500">{{ opponentFinalScore() }}</span>
+							<span class="text-xs text-slate-600">/10</span>
+						</div>
+					</div>
+				</div>
+			}
+
+			<!-- Les 2 équipes côte à côte -->
+			<div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+
+				<!-- Mon équipe -->
+				<div class="flex flex-col gap-3">
+					<h3 class="text-sm font-black uppercase tracking-wider flex items-center gap-2" [ngClass]="winner() === 'opponent' ? 'text-slate-400' : 'text-white'">
+						<iconify-icon [icon]="ICONS.pokeball" [ngClass]="winner() === 'opponent' ? 'text-slate-500' : 'text-yellow-400'"></iconify-icon>
+						Mon équipe
+					</h3>
+					<div class="grid grid-cols-3 gap-2">
+						@for (p of myTeamPokemons(); track p.id) {
+							<div class="relative">
+								<div
+									class="rounded-xl p-2 flex flex-col items-center gap-1 cursor-pointer hover:border-slate-500 transition-colors border"
+									[ngClass]="winner() === 'opponent' ? 'bg-slate-800/60 border-slate-700/50' : 'bg-slate-800 border-slate-700'"
+									(click)="openPokemonDetails(p)"
+								>
+									<img [src]="p.sprite" [alt]="p.name" class="w-14 h-14 object-contain" [ngClass]="winner() === 'opponent' ? 'opacity-80' : ''" />
+									<p class="text-[9px] font-bold capitalize text-center w-full truncate" [ngClass]="winner() === 'opponent' ? 'text-slate-400' : 'text-white'">{{ p.name }}</p>
+									<div class="flex gap-0.5">
+										@for (type of p.types; track type) {
+											<span class="text-[7px] font-bold px-1 py-0.5 rounded text-white" [ngClass]="[getTypeColor(type), winner() === 'opponent' ? 'opacity-70' : '']">{{ type }}</span>
+										}
+									</div>
+								</div>
+							</div>
+						}
+					</div>
+				</div>
+
+				<!-- Équipe adverse -->
+				<div class="flex flex-col gap-3">
+					<h3 class="text-sm font-black uppercase tracking-wider flex items-center gap-2" [ngClass]="winner() === 'me' ? 'text-slate-400' : 'text-white'">
+						<img [src]="trainer()?.image" class="w-6 h-6 object-cover rounded-full" [ngClass]="winner() === 'me' ? 'opacity-60 grayscale' : ''" />
+						{{ trainer()?.nom }} ({{ trainer()?.role }})
+					</h3>
+					<div class="grid grid-cols-3 gap-2">
+						@for (p of opponentTeamPokemons(); track p.id) {
+							<div class="relative">
+								<div
+									class="rounded-xl p-2 flex flex-col items-center gap-1 cursor-pointer hover:border-slate-500 transition-colors border"
+									[ngClass]="winner() === 'me' ? 'bg-slate-800/60 border-slate-700/50' : 'bg-slate-800 border-slate-700'"
+									(click)="openPokemonDetails(p)"
+								>
+									<img [src]="p.sprite" [alt]="p.name" class="w-14 h-14 object-contain" [ngClass]="winner() === 'me' ? 'opacity-80' : ''" />
+									<p class="text-[9px] font-bold capitalize text-center w-full truncate" [ngClass]="winner() === 'me' ? 'text-slate-400' : 'text-white'">{{ p.name }}</p>
+									<div class="flex gap-0.5">
+										@for (type of p.types; track type) {
+											<span class="text-[7px] font-bold px-1 py-0.5 rounded text-white" [ngClass]="[getTypeColor(type), winner() === 'me' ? 'opacity-70' : '']">{{ type }}</span>
+										}
+									</div>
+								</div>
+							</div>
+						}
+					</div>
+				</div>
+			</div>
+
+			<!-- Actions -->
+			<div class="flex flex-col gap-2 w-full max-w-xs shrink-0">
+				<!-- removed rejouer -->
+				<button
+					(click)="goHome()"
+					class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2"
+				>
+					<iconify-icon [icon]="ICONS.home" class="text-lg"></iconify-icon>
+					Retour à l'accueil
+				</button>
+			</div>
+		</main>
+	}
+
+	<!-- Modal aide -->
+	@if (showHelpModal()) {
+		<app-draft-help-modal [mode]="'trainer'" (close)="showHelpModal.set(false)" />
+	}
+
+	<!-- Modal fiche Pokémon -->
+	@if (selectedPokemon()) {
+		<div
+			class="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm"
+			(click)="closePokemonDetails()"
+		>
+			<div class="flex min-h-full items-center justify-center p-4">
+				<div
+					class="relative w-full max-w-sm rounded-2xl"
+					(click)="$event.stopPropagation()"
+				>
+					<button
+						(click)="closePokemonDetails()"
+						class="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-slate-300 hover:text-white transition-all"
+					>
+						<iconify-icon icon="mdi:close" class="text-lg"></iconify-icon>
+					</button>
+					<app-pokemon-card [pokemon]="selectedPokemon()!" />
+				</div>
+			</div>
+		</div>
+	}
+
+</div>

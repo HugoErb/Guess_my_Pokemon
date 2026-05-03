@@ -12,7 +12,7 @@ import { NgClass } from '@angular/common';
         <iconify-icon [icon]="icon" [ngClass]="[iconSize, iconColor]"></iconify-icon>
         <h2 class="text-4xl font-black text-white tracking-wide">{{ title }}</h2>
       </div>
-      <div class="flex flex-col sm:flex-row gap-6 w-full max-w-2xl">
+      <div class="flex flex-col sm:flex-row gap-6 w-full" [ngClass]="maxWidth">
         <ng-content />
       </div>
     </div>
@@ -23,4 +23,5 @@ export class ModeSelectComponent {
   @Input() icon = '';
   @Input() iconColor = 'text-white';
   @Input() iconSize = 'text-6xl';
+  @Input() maxWidth = 'max-w-2xl';
 }

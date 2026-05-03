@@ -1,6 +1,7 @@
 export const ICONS = {
   // Navigation & UI
   home: 'mdi:home',
+  back: 'mdi:arrow-left',
   copy: 'mdi:content-copy',
   check: 'mdi:check',
   close: 'mdi:close',

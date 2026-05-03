@@ -1,0 +1,54 @@
+<div class="h-dvh bg-slate-900 text-white flex flex-col overflow-hidden">
+  <header class="bg-slate-800 border-b border-slate-700 px-3 md:px-6 py-3 flex items-center gap-4 shrink-0">
+    <button (click)="goBack()" class="w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center transition-colors">
+      <iconify-icon [icon]="ICONS.back" class="text-xl"></iconify-icon>
+    </button>
+    <div class="flex items-center gap-3">
+      <iconify-icon [icon]="ICONS.sword" class="text-3xl text-yellow-400"></iconify-icon>
+      <h1 class="text-lg font-bold text-white">Sélection du Dresseur</h1>
+    </div>
+  </header>
+
+  <main class="flex-1 overflow-y-auto p-4 md:p-8">
+    @if (isLoading()) {
+      <div class="flex items-center justify-center h-full">
+        <iconify-icon [icon]="ICONS.loading" class="text-5xl text-yellow-400 animate-spin"></iconify-icon>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 max-w-7xl mx-auto">
+        @for (trainer of trainers(); track $index) {
+          <div 
+            (click)="selectTrainer($index)"
+            class="bg-slate-800 border border-slate-700 hover:border-yellow-500 rounded-2xl p-4 cursor-pointer transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-yellow-900/20 group flex flex-col gap-3"
+          >
+            <div class="flex items-center gap-3">
+              <img [src]="trainer.image" [alt]="trainer.nom" class="w-16 h-16 object-cover rounded-full bg-slate-700 border-2 border-slate-600 group-hover:border-yellow-400 transition-colors" />
+              <div>
+                <h2 class="text-lg font-bold text-white group-hover:text-yellow-400 transition-colors">{{ trainer.nom }}</h2>
+                <p class="text-xs text-slate-400 font-medium">{{ trainer.role }}</p>
+              </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-2 text-[10px] uppercase tracking-wider font-bold text-slate-300">
+              <span class="bg-slate-700 px-2 py-1 rounded-md">{{ trainer.region }}</span>
+              <span class="bg-slate-700 px-2 py-1 rounded-md">Gen {{ trainer.generation }}</span>
+            </div>
+            <p class="text-[10px] text-slate-500 italic truncate">{{ trainer.version }}</p>
+            
+            <div class="mt-auto pt-2 border-t border-slate-700 flex justify-between gap-1">
+              @for (pid of trainer.pokemons; track pid) {
+                <div class="w-8 h-8 md:w-10 md:h-10 bg-slate-900 rounded-lg flex items-center justify-center border border-slate-700 group-hover:border-slate-600 p-0.5" [title]="getPokemonName(pid)">
+                  @if (getPokemonSprite(pid)) {
+                    <img [src]="getPokemonSprite(pid)" [alt]="getPokemonName(pid)" class="w-full h-full object-contain" />
+                  } @else {
+                    <iconify-icon [icon]="ICONS.pokeball" class="text-slate-600 text-sm"></iconify-icon>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </main>
+</div>

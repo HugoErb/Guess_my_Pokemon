@@ -160,6 +160,10 @@ export class DraftComponent implements OnInit {
     this.phase.set('loading');
   }
 
+  startTrainer(): void {
+    void this.router.navigate(['/trainer-select']);
+  }
+
   async startDuo(): Promise<void> {
     this.isCreatingRoom.set(true);
     try {
