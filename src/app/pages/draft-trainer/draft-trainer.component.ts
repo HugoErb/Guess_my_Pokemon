@@ -381,7 +381,6 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     this.phase.set('loading');
     this.showScores.set(false);
     this.myTeamPokemons.set([]);
-    this.opponentTeamPokemons.set([]);
     
     // Petit délai pour l'effet visuel
     setTimeout(() => {
