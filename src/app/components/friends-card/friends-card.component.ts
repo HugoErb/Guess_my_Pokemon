@@ -114,6 +114,7 @@ export class FriendsCardComponent implements OnInit, OnDestroy {
 	}
 
 	inviteFriend(friend: FriendWithStatus, gameMode: 'guess_my_pokemon' | 'stat_duel' | 'draft_duo'): void {
+		if (friend.status !== 'online') return;
 		this.inviteRequested.emit({ friendId: friend.friendId, username: friend.username, gameMode });
 	}
 
