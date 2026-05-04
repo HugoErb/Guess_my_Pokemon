@@ -139,7 +139,13 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
   });
 
   readonly myTeamPokemons = signal<Pokemon[]>([]);
-  readonly opponentTeamPokemons = signal<Pokemon[]>([]);
+  readonly opponentTeamPokemons = computed(() => {
+    const t = this.trainer();
+    const all = this.allPokemon();
+    if (!t || all.length === 0) return [];
+    const byId = new Map(all.map(p => [p.id, p]));
+    return t.pokemons.map(id => byId.get(id)).filter((p): p is Pokemon => !!p);
+  });
   readonly showScores = signal(false);
 
   readonly myStatsScore = computed(() => this.computeStatsScore(this.myTeamPokemons()));
@@ -346,17 +352,8 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
   private async enterCompletePhase(): Promise<void> {
     this.stopTimer();
     
-    const byId = new Map(this.allPokemon().map(p => [p.id, p]));
     const myTeam = this.lockedPokemon().filter((p): p is Pokemon => p !== null);
-    
-    const trainer = this.trainer();
-    let oppTeam: Pokemon[] = [];
-    if (trainer) {
-        oppTeam = trainer.pokemons.map(id => byId.get(id)).filter((p): p is Pokemon => !!p);
-    }
-    
     this.myTeamPokemons.set(myTeam);
-    this.opponentTeamPokemons.set(oppTeam);
 
     this.phase.set('complete');
 
