@@ -259,7 +259,7 @@
 				</div>
 				<div class="flex gap-2 min-h-[2.5rem] md:min-h-[5rem]">
 					@for (p of opponentLockedPokemons(); track p.id) {
-						<div class="w-10 h-10 md:w-20 md:h-20 bg-slate-800 border border-slate-600 rounded-xl flex items-center justify-center">
+						<div class="w-10 h-10 md:w-20 md:h-20 bg-slate-800 border border-slate-600 rounded-xl flex items-center justify-center transition-all hover:scale-110 cursor-pointer" (click)="openPokemonDetails(p)">
 							<img [src]="p.sprite" [alt]="p.name" class="w-8 h-8 md:w-16 md:h-16 object-contain" [title]="p.name" />
 						</div>
 					}
