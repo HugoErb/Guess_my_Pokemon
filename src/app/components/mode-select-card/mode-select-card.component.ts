@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, CUSTOM_ELEMENTS_SCHEMA } from '
 import { NgClass } from '@angular/common';
 import { ICONS } from '../../constants/icons';
 
-type Accent = 'purple' | 'green' | 'yellow' | 'blue';
+type Accent = 'purple' | 'green' | 'yellow' | 'blue' | 'red';
 
 const ACCENT_CLASSES: Record<Accent, {
   border: string; shadow: string; bg: string;
@@ -12,6 +12,7 @@ const ACCENT_CLASSES: Record<Accent, {
   green:  { border: 'hover:border-green-500',  shadow: 'hover:shadow-green-900/30',  bg: 'bg-green-600/20',  iconBorder: 'border-green-500/30',  iconBgHover: 'group-hover:bg-green-600/30',  text: 'text-green-300'  },
   yellow: { border: 'hover:border-yellow-500', shadow: 'hover:shadow-yellow-900/30', bg: 'bg-yellow-600/20', iconBorder: 'border-yellow-500/30', iconBgHover: 'group-hover:bg-yellow-600/30', text: 'text-yellow-300' },
   blue:   { border: 'hover:border-blue-500',   shadow: 'hover:shadow-blue-900/30',   bg: 'bg-blue-600/20',   iconBorder: 'border-blue-500/30',   iconBgHover: 'group-hover:bg-blue-600/30',   text: 'text-blue-300'   },
+  red:    { border: 'hover:border-red-500',    shadow: 'hover:shadow-red-900/30',    bg: 'bg-red-600/20',    iconBorder: 'border-red-500/30',    iconBgHover: 'group-hover:bg-red-600/30',    text: 'text-red-400'    },
 };
 
 @Component({
