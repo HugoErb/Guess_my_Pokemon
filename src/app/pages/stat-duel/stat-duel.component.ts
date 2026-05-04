@@ -330,14 +330,14 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     // ─── Lancer la partie multi (P1) ─────────────────────────────────────────────
 
-    private isLaunching = false;
+    protected isLaunching = signal(false);
 
     async launchMultiGame(): Promise<void> {
-        if (this.isLaunching || !this.roomId) return;
+        if (this.isLaunching() || !this.roomId) return;
         const currentRoom = this.room();
         if (!currentRoom) return;
 
-        this.isLaunching = true;
+        this.isLaunching.set(true);
         try {
             const allPokemon = await this.loadAll();
             const pokemonIds = this.shuffle(allPokemon).slice(0, ROUND_COUNT).map(p => p.id);
@@ -361,7 +361,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
                 p2_picks: [],
             });
         } finally {
-            this.isLaunching = false;
+            this.isLaunching.set(false);
         }
     }
 
