@@ -70,6 +70,7 @@ export class DraftComponent implements OnInit {
 
   readonly lockedCount = computed(() => this.lockedIndices().size);
   readonly selectedPokemon = signal<Pokemon | null>(null);
+  private confettiFired = false;
 
   readonly statsScore = computed((): number => {
     const locked = this.lockedPokemon();
@@ -301,6 +302,7 @@ export class DraftComponent implements OnInit {
 
   replay(): void {
     this.clearSavedState();
+    this.confettiFired = false;
     this.phase.set('loading');
   }
 
@@ -443,6 +445,8 @@ export class DraftComponent implements OnInit {
   }
 
   private launchConfetti(): void {
+    if (this.confettiFired) return;
+    this.confettiFired = true;
     const colors = ['#ef4444', '#facc15', '#a855f7', '#3b82f6', '#ffffff'];
     confetti({ particleCount: 160, spread: 110, origin: { x: 0.5, y: 0.4 }, colors });
   }

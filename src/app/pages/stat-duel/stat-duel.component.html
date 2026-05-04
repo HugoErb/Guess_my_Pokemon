@@ -15,10 +15,20 @@
 	<div class="relative bg-slate-800/50 border-b border-slate-700 px-3 py-2 flex items-center justify-between gap-2 shrink-0">
 		<!-- Timer (phase playing uniquement) -->
 		@if (phase() === "playing") {
-			<div class="flex items-center gap-1">
-				<iconify-icon [icon]="ICONS.timer" class="text-xl animate-pulse" [ngClass]="getTimerColor()"></iconify-icon>
-				<span class="text-xl font-black tabular-nums" [ngClass]="getTimerColor()">{{ timerValue() }}</span>
-				<span class="text-xl text-slate-500">s</span>
+			<div class="flex items-center gap-4">
+				@if (nextRoundCountdown() === null) {
+					<div class="flex items-center gap-1">
+						<iconify-icon [icon]="ICONS.timer" class="text-xl animate-pulse" [ngClass]="getTimerColor()"></iconify-icon>
+						<span class="text-xl font-black tabular-nums" [ngClass]="getTimerColor()">{{ timerValue() }}</span>
+						<span class="text-xl text-slate-500">s</span>
+					</div>
+				} @else {
+					<div class="flex items-center gap-2 px-3 py-1 bg-yellow-500/10 border border-yellow-500/30 rounded-lg animate-pulse">
+						<iconify-icon [icon]="ICONS.timer" class="text-lg text-yellow-500"></iconify-icon>
+						<span class="text-[10px] font-black text-yellow-500/80 uppercase tracking-widest hidden sm:inline">Prochaine manche</span>
+						<span class="text-sm font-black text-yellow-400 tabular-nums">{{ nextRoundCountdown() }}s</span>
+					</div>
+				}
 			</div>
 		} @else {
 			<div></div>
@@ -66,7 +76,7 @@
 		<app-help-modal mode="stat-duel" (close)="showHelpModal.set(false)" />
 	}
 
-	<main class="flex-1 flex flex-col overflow-hidden">
+	<main class="flex-1 flex flex-col overflow-hidden relative">
 		<!-- ─────────────────────────────────── Phase : mode-select ─── -->
 		@if (phase() === "mode-select") {
 			<div class="flex-1 min-h-0 overflow-y-auto">
@@ -236,7 +246,7 @@
 										@let alreadyPicked = pickedStatKeys().has(stat.key);
 										@let justPicked = justPickedStat()?.stat === stat.key;
 										@let pick = getMyPickForStat(stat.key);
-										@let canPick = !alreadyPicked && !hasPickedThisRound() && !pokemonAnimating() && pokemonVisible();
+										@let canPick = !alreadyPicked && !hasPickedThisRound() && !pokemonAnimating() && pokemonVisible() && nextRoundCountdown() === null;
 
 										<div
 											[class]="getStatRowClass(alreadyPicked, justPicked, canPick)"
@@ -339,7 +349,7 @@
 										@let justPicked = justPickedStat()?.stat === stat.key;
 										@let isPending = pendingMyPickStat() === stat.key;
 										@let revealedPick = getMyRevealedPickForStat(stat.key);
-										@let canPick = !alreadyPicked && !hasPickedThisRound() && !pokemonAnimating() && pokemonVisible();
+										@let canPick = !alreadyPicked && !hasPickedThisRound() && !pokemonAnimating() && pokemonVisible() && nextRoundCountdown() === null;
 
 										<div
 											[class]="getStatRowClass(alreadyPicked, justPicked, canPick)"

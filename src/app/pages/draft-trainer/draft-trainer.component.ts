@@ -147,6 +147,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     return t.pokemons.map(id => byId.get(id)).filter((p): p is Pokemon => !!p);
   });
   readonly showScores = signal(false);
+  private confettiFired = false;
 
   readonly myStatsScore = computed(() => this.computeStatsScore(this.myTeamPokemons()));
   readonly opponentStatsScore = computed(() => this.computeStatsScore(this.opponentTeamPokemons()));
@@ -380,6 +381,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
   async replay(): Promise<void> {
     this.phase.set('loading');
     this.showScores.set(false);
+    this.confettiFired = false;
     this.myTeamPokemons.set([]);
     
     // Petit délai pour l'effet visuel
@@ -563,6 +565,8 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
   }
 
   private launchConfetti(): void {
+    if (this.confettiFired) return;
+    this.confettiFired = true;
     const colors = ['#ef4444', '#facc15', '#a855f7', '#3b82f6', '#ffffff'];
     confetti({ particleCount: 160, spread: 110, origin: { x: 0.5, y: 0.4 }, colors });
   }

@@ -157,6 +157,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
   private broadcastSub?: Subscription;
   private pollInterval: ReturnType<typeof setInterval> | null = null;
   private enteringComplete = false;
+  private confettiFired = false;
 
   // ─── Cycle de vie ────────────────────────────────────────────────────────────
 
@@ -264,8 +265,12 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
     }
 
     // Room terminée
-    if (updated.status === 'finished' && this.phase() !== 'complete') {
-      await this.enterCompletePhase(updated);
+    if (updated.status === 'finished') {
+      if (this.phase() !== 'complete') {
+        await this.enterCompletePhase(updated);
+      } else if (this.winner() === 'me') {
+        this.launchConfetti();
+      }
     }
   }
 
@@ -585,6 +590,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
 
   private resetForReplay(): void {
     this.enteringComplete = false;
+    this.confettiFired = false;
     this.showScores.set(false);
     this.myTeamPokemons.set([]);
     this.opponentTeamPokemons.set([]);
@@ -772,6 +778,8 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
   }
 
   private launchConfetti(): void {
+    if (this.confettiFired) return;
+    this.confettiFired = true;
     const colors = ['#ef4444', '#facc15', '#a855f7', '#3b82f6', '#ffffff'];
     confetti({ particleCount: 160, spread: 110, origin: { x: 0.5, y: 0.4 }, colors });
   }
