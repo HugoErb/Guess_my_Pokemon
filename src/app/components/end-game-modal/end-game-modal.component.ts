@@ -41,11 +41,19 @@ import { Pokemon } from '../../models/pokemon.model';
 					<button
 						(click)="replay.emit()"
 						[disabled]="iWantReplay() || opponentLeft()"
-						class="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold text-white transition-colors flex flex-col items-center justify-center gap-0.5"
+						class="w-full py-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-70 disabled:cursor-not-allowed rounded-2xl font-bold text-white transition-all active:scale-95 shadow-lg shadow-blue-900/20 flex flex-col items-center justify-center gap-0.5"
 					>
 						<div class="flex items-center gap-2">
-							<iconify-icon [icon]="ICONS.dice" class="text-lg"></iconify-icon>
-							<span>{{ iWantReplay() ? "En attente..." : "Rejouer" }}</span>
+							<iconify-icon [icon]="ICONS.dice" class="text-xl"></iconify-icon>
+							<span>
+								@if (iWantReplay()) {
+									En attente...
+								} @else if (opponentWantsReplay()) {
+									L'adversaire veut rejouer !
+								} @else {
+									Rejouer
+								}
+							</span>
 						</div>
 						@if (opponentLeft()) {
 							<span class="text-[9px] font-medium uppercase tracking-wider opacity-80 italic">L'adversaire a quitté la partie</span>
@@ -56,10 +64,10 @@ import { Pokemon } from '../../models/pokemon.model';
 
 					<button
 						(click)="goHome.emit()"
-						class="w-full py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2"
+						class="w-full py-4 bg-red-600 hover:bg-red-500 rounded-2xl font-bold text-white transition-all active:scale-95 shadow-lg shadow-red-900/20 flex items-center justify-center gap-2"
 					>
-						<iconify-icon [icon]="ICONS.home" class="text-lg"></iconify-icon>
-						Retour à l'accueil
+						<iconify-icon [icon]="ICONS.home" class="text-xl"></iconify-icon>
+						Retour au menu
 					</button>
 				</div>
 			</div>

@@ -101,6 +101,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     isCurrentRoundRevealed = computed(() => this.revealedRound() >= this.currentRound());
     myRevealedTotal = computed(() => this.myRevealedPicks().reduce((s, p) => s + p.value, 0));
     opponentRevealedTotal = computed(() => this.opponentRevealedPicks().reduce((s, p) => s + p.value, 0));
+    opponentLeft = signal(false);
 
     // ─── Timer ───────────────────────────────────────────────────────────────────
     private clockInterval: ReturnType<typeof setInterval> | null = null;
@@ -109,6 +110,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     // ─── Abonnements ─────────────────────────────────────────────────────────────
     private roomSub?: Subscription;
     private inviteResponseSub?: Subscription;
+    private broadcastSub?: Subscription;
     private waitingPollInterval: ReturnType<typeof setInterval> | null = null;
 
     // ─── Dev mode bot ────────────────────────────────────────────────────────────
@@ -175,6 +177,12 @@ export class StatDuelComponent implements OnInit, OnDestroy {
                     }
                 });
             }
+
+            this.broadcastSub = this.supabaseService.broadcastEvents$.subscribe(({ event }) => {
+                if (event === 'player_left') {
+                    this.opponentLeft.set(true);
+                }
+            });
         }
     }
 
@@ -182,6 +190,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         this.stopClock();
         this.roomSub?.unsubscribe();
         this.inviteResponseSub?.unsubscribe();
+        this.broadcastSub?.unsubscribe();
         this.stopWaitingPoll();
     }
 
@@ -736,6 +745,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     }
 
     goHome(): void {
+        void this.supabaseService.broadcastPlayerLeft().catch(() => {});
         void this.router.navigate(['/home']);
     }
 

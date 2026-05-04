@@ -377,7 +377,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     void this.router.navigate(['/home']);
   }
 
-  async restartDraft(): Promise<void> {
+  async replay(): Promise<void> {
     this.phase.set('loading');
     this.showScores.set(false);
     this.myTeamPokemons.set([]);

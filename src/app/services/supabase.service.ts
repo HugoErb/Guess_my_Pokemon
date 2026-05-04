@@ -388,13 +388,21 @@ export class SupabaseService implements OnDestroy {
                         observer.next(payload.new as StatDuelRoom);
                     },
                 )
+                .on('broadcast', { event: '*' }, ({ event, payload }) => {
+                    this.broadcastSubject.next({ event, payload });
+                })
                 .subscribe((status) => {
                     if (status === 'CHANNEL_ERROR') {
                         observer.error(new Error(`Erreur canal stat-duel-${roomId}`));
                     }
                 });
 
-            return () => { this.supabase.removeChannel(channel); };
+            this.activeRoomChannel = channel;
+
+            return () => {
+                this.supabase.removeChannel(channel);
+                this.activeRoomChannel = null;
+            };
         });
     }
 
@@ -461,13 +469,21 @@ export class SupabaseService implements OnDestroy {
                     { event: '*', schema: 'public', table: 'draft_duo_rooms', filter: `id=eq.${roomId}` },
                     (payload) => { observer.next(payload.new as DraftDuoRoom); },
                 )
+                .on('broadcast', { event: '*' }, ({ event, payload }) => {
+                    this.broadcastSubject.next({ event, payload });
+                })
                 .subscribe((status) => {
                     if (status === 'CHANNEL_ERROR') {
                         observer.error(new Error(`Erreur canal draft-duo-${roomId}`));
                     }
                 });
 
-            return () => { this.supabase.removeChannel(channel); };
+            this.activeRoomChannel = channel;
+
+            return () => {
+                this.supabase.removeChannel(channel);
+                this.activeRoomChannel = null;
+            };
         });
     }
 
