@@ -258,12 +258,10 @@
 											>{{ stat.label }}</span>
 
 											<div class="flex-1 h-2 bg-slate-700/80 rounded-full overflow-hidden relative">
-												<!-- Barre preview : stat du pokémon actuel (semi-transparente, révélée après le choix) -->
-												@if (!pendingMyPickStat() && hasPickedThisRound() && currentPokemon() && !alreadyPicked) {
+												<!-- Barre preview : stat du pokémon actuel (blanche/grise) -->
+												@if (!pendingMyPickStat() && hasPickedThisRound() && currentPokemon()) {
 													<div
-														class="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
-														[ngClass]="(justPicked || alreadyPicked) ? stat.bgClass : 'bg-slate-400'"
-														[style.opacity]="alreadyPicked ? '0.12' : justPicked ? '0.6' : '0.3'"
+														class="absolute inset-y-0 left-0 rounded-full transition-all duration-700 bg-white/20"
 														[style.width]="getStatBarWidth(currentPokemon()!.stats[stat.key])"
 													></div>
 												}
@@ -275,11 +273,12 @@
 												></div>
 											</div>
 
-											<span class="text-xs font-black w-8 text-right flex-shrink-0">
-												@if (justPicked) {
-													<span [ngClass]="stat.colorClass" class="stat-pop">{{ pick!.value }}</span>
-												} @else if (pick) {
-													<span class="text-white">{{ pick.value }}</span>
+											<span class="text-xs font-black w-14 text-right flex-shrink-0 flex items-center justify-end gap-1.5">
+												@if (pick) {
+													<span [ngClass]="justPicked ? stat.colorClass : 'text-white'" [class.stat-pop]="justPicked">{{ pick.value }}</span>
+													@if (hasPickedThisRound() && currentPokemon() && !justPicked) {
+														<span class="text-[10px] text-slate-500 font-medium">({{ currentPokemon()!.stats[stat.key] }})</span>
+													}
 												} @else if (!pendingMyPickStat() && hasPickedThisRound() && currentPokemon()) {
 													<span class="text-slate-400">{{ currentPokemon()!.stats[stat.key] }}</span>
 												} @else {
@@ -361,12 +360,10 @@
 											>{{ stat.label }}</span>
 
 											<div class="flex-1 h-2 bg-slate-700/80 rounded-full overflow-hidden relative">
-												<!-- Barre preview : stat du pokémon actuel (semi-transparente, révélée après le choix) -->
-												@if (!pendingMyPickStat() && hasPickedThisRound() && currentPokemon() && !alreadyPicked) {
+												<!-- Barre preview : stat du pokémon actuel (blanche/grise) -->
+												@if (!pendingMyPickStat() && hasPickedThisRound() && currentPokemon()) {
 													<div
-														class="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
-														[ngClass]="(justPicked || alreadyPicked) ? stat.bgClass : 'bg-slate-400'"
-														[style.opacity]="alreadyPicked ? '0.12' : justPicked ? '0.6' : '0.3'"
+														class="absolute inset-y-0 left-0 rounded-full transition-all duration-700 bg-white/20"
 														[style.width]="getStatBarWidth(currentPokemon()!.stats[stat.key])"
 													></div>
 												}
@@ -378,13 +375,14 @@
 												></div>
 											</div>
 
-											<span class="text-xs font-black w-8 text-right flex-shrink-0">
+											<span class="text-xs font-black w-14 text-right flex-shrink-0 flex items-center justify-end gap-1.5">
 												@if (isPending) {
 													<iconify-icon [icon]="ICONS.loading" class="text-sm animate-spin text-blue-400"></iconify-icon>
-												} @else if (justPicked) {
-													<span [ngClass]="stat.colorClass" class="stat-pop">{{ revealedPick?.value }}</span>
 												} @else if (revealedPick) {
-													<span class="text-white">{{ revealedPick.value }}</span>
+													<span [ngClass]="justPicked ? stat.colorClass : 'text-white'" [class.stat-pop]="justPicked">{{ revealedPick.value }}</span>
+													@if (hasPickedThisRound() && currentPokemon() && !justPicked) {
+														<span class="text-[10px] text-slate-500 font-medium">({{ currentPokemon()!.stats[stat.key] }})</span>
+													}
 												} @else if (!pendingMyPickStat() && hasPickedThisRound() && currentPokemon()) {
 													<span class="text-slate-400">{{ currentPokemon()!.stats[stat.key] }}</span>
 												} @else {
@@ -441,12 +439,10 @@
 											>{{ stat.label }}</span>
 
 											<div class="flex-1 h-2 bg-slate-700/80 rounded-full overflow-hidden relative">
-												<!-- Barre preview : stat du pokémon actuel (révélée après le choix de l'adversaire) -->
-												@if (opponentRevealedThisRound && currentPokemon() && (!revealedPick || justRevealedThis)) {
+												<!-- Barre preview : stat du pokémon actuel (blanche/grise) -->
+												@if (opponentRevealedThisRound && currentPokemon()) {
 													<div
-														class="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
-														[ngClass]="(justRevealedThis || (revealedPick && !justRevealedOpponentPick())) ? stat.bgClass : 'bg-slate-400'"
-														[style.opacity]="(revealedPick && !justRevealedThis) ? '0.12' : justRevealedThis ? '0.6' : '0.3'"
+														class="absolute inset-y-0 left-0 rounded-full transition-all duration-700 bg-white/20"
 														[style.width]="getStatBarWidth(currentPokemon()!.stats[stat.key])"
 													></div>
 												}
@@ -458,11 +454,12 @@
 												></div>
 											</div>
 
-											<span class="text-xs font-black w-8 text-right flex-shrink-0">
-												@if (justRevealedThis) {
-													<span [ngClass]="stat.colorClass" class="stat-pop">{{ revealedPick?.value }}</span>
-												} @else if (revealedPick) {
-													<span class="text-blue-300">{{ revealedPick.value }}</span>
+											<span class="text-xs font-black w-14 text-right flex-shrink-0 flex items-center justify-end gap-1.5">
+												@if (revealedPick) {
+													<span [ngClass]="justRevealedThis ? stat.colorClass : 'text-blue-300'" [class.stat-pop]="justRevealedThis">{{ revealedPick.value }}</span>
+													@if (opponentRevealedThisRound && currentPokemon() && !justRevealedThis) {
+														<span class="text-[10px] text-slate-500 font-medium">({{ currentPokemon()!.stats[stat.key] }})</span>
+													}
 												} @else if (opponentRevealedThisRound && currentPokemon()) {
 													<span class="text-slate-400">{{ currentPokemon()!.stats[stat.key] }}</span>
 												} @else {
