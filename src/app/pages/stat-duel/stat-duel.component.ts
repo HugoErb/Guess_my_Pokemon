@@ -430,11 +430,11 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     private startMultiClock(roundStartAt: string): void {
         this.stopClock();
         const startMs = new Date(roundStartAt).getTime();
-        
+
         // Initialiser prevRound pour correspondre Ã  l'Ã©tat actuel (Ã©vite le flicker au dÃ©marrage)
         const initialElapsed = Date.now() - startMs;
         let prevRound = initialElapsed < 0 ? -1 : Math.floor(initialElapsed / ROUND_DURATION_MS);
-        
+
         // S'assurer que currentRound est correct avant de commencer l'intervalle
         if (initialElapsed >= 0) {
             this.currentRound.set(Math.min(Math.max(0, prevRound), ROUND_COUNT - 1));
@@ -443,7 +443,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         this.clockInterval = setInterval(() => {
             const now = Date.now();
             const elapsed = now - startMs;
-            
+
             if (elapsed < 0) {
                 this.timerValue.set(10);
                 this.timerProgress.set(10);
@@ -453,7 +453,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
             const round = Math.min(Math.floor(elapsed / ROUND_DURATION_MS), ROUND_COUNT - 1);
             const elapsedInRound = elapsed % ROUND_DURATION_MS;
-            
+
             const remainingPick = Math.max(0, (ROUND_PICK_TIME_MS - elapsedInRound) / 1000);
             const remainingTransition = Math.max(0, (ROUND_DURATION_MS - elapsedInRound) / 1000);
 
@@ -489,7 +489,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
                     this.startPokemonAnimation();
                     this.currentRound.set(round);
                 }
-                
+
                 prevRound = round;
             }
 
@@ -728,7 +728,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         this.pokemonAnimating.set(false);
         this.botPickedRounds.clear();
         this.stopClock();
-        
+
         this.duelShown = false;
         this.confettiFired = false;
         if (this.roomId) {
@@ -740,7 +740,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         if (!this.roomId) return;
         const isP1 = this.isPlayer1();
         await this.supabaseService.updateStatDuelRoom(this.roomId, isP1 ? { p1_ready: true } : { p2_ready: true });
-        
+
         if (this.isDevMode()) {
             setTimeout(async () => {
                 if (!this.roomId) return;
@@ -751,7 +751,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
                     await this.launchReplayGame();
                 }
             }, 2000);
-            
+
             const refreshed = await this.supabaseService.getStatDuelRoom(this.roomId);
             this.room.set(refreshed);
             return;
@@ -796,7 +796,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     }
 
     goHome(): void {
-        void this.supabaseService.broadcastPlayerLeft().catch(() => {});
+        void this.supabaseService.broadcastPlayerLeft().catch(() => { });
         void this.router.navigate(['/home']);
     }
 
