@@ -217,7 +217,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
       ...(starter ? [starter.id] : []),
       ...(legendary ? [legendary.id] : []),
     ]);
-    const normal = this.pickNUnique(pool, excludeForNormal, 4);
+    const normal = this.pickNUnique(this.normalSlotPool(pool), excludeForNormal, 4);
     const initial: (Pokemon | null)[] = [starter, ...normal, legendary];
     this.usedIds.set(new Set(initial.filter((p): p is Pokemon => p !== null).map(p => p.id)));
     this.slots.set(initial);
@@ -274,7 +274,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
 
     const newStarter = slot0Unlocked ? this.pickOneStarter(this.trainerPool(), this.usedIds()) : null;
     const excludeForNormal = new Set([...this.usedIds(), ...(newStarter ? [newStarter.id] : [])]);
-    const newNormal = this.pickNUnique(this.trainerPool(), excludeForNormal, unlockedNormal.length);
+    const newNormal = this.pickNUnique(this.normalSlotPool(this.trainerPool()), excludeForNormal, unlockedNormal.length);
     const excludeForLegend = new Set([...excludeForNormal, ...newNormal.map(p => p.id)]);
     const newLegendary = slot5Unlocked ? this.pickOneLegendary(this.trainerPool(), excludeForLegend) : null;
 
@@ -542,6 +542,11 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     const secondary = legends.filter(p => !currentIds.has(p.id));
     const finalSource = secondary.length > 0 ? secondary : legends;
     return finalSource[Math.floor(Math.random() * finalSource.length)];
+  }
+
+  private normalSlotPool(pool: Pokemon[]): Pokemon[] {
+    if (this.trainer()?.nom === 'Pato') return pool;
+    return pool.filter(p => p.category !== 'légendaire' && p.category !== 'fabuleux');
   }
 
   private pickNUnique(pool: Pokemon[], exclude: Set<number>, n: number): Pokemon[] {
