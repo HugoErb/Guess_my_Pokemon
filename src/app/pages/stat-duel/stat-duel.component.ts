@@ -859,6 +859,19 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         return `${Math.min(100, Math.round((value / 200) * 100))}%`;
     }
 
+    isCurrentPokemonRevealed(): boolean {
+        if (this.isSolo()) return this.hasPickedThisRound();
+        return this.myPicks().length > this.currentRound() && this.opponentPicks().length > this.currentRound();
+    }
+
+    isCurrentPokemonHighestStat(statKey: keyof Pokemon['stats']): boolean {
+        const pokemon = this.currentPokemon();
+        if (!pokemon) return false;
+        const values = Object.values(pokemon.stats) as number[];
+        const max = Math.max(...values);
+        return pokemon.stats[statKey] === max;
+    }
+
     getTimerColor(): string {
         const t = this.timerValue();
         if (t <= 3) return 'text-red-400';

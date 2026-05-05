@@ -240,6 +240,22 @@
 									</div>
 								</div>
 
+								<div class="w-full pt-3 mt-1 border-t border-slate-700/50 grid grid-cols-3 gap-2">
+									@for (stat of STAT_DEFS; track stat.key) {
+										<div
+											class="flex flex-col items-center justify-center rounded-xl px-2 py-2 border transition-all"
+											[ngClass]="isCurrentPokemonRevealed() && isCurrentPokemonHighestStat(stat.key)
+												? 'bg-yellow-500/10 border-yellow-400 shadow-[0_0_0_1px_rgba(250,204,21,0.35)]'
+												: 'bg-slate-900/60 border-slate-800'"
+										>
+											<span class="text-[10px] font-black uppercase" [ngClass]="stat.colorClass">{{ stat.label }}</span>
+											<span class="text-sm font-black text-white">
+												{{ isCurrentPokemonRevealed() ? currentPokemon()!.stats[stat.key] : '-' }}
+											</span>
+										</div>
+									}
+								</div>
+
 								<!-- Lignes de stats cliquables -->
 								<div class="flex flex-col gap-1 w-full">
 									@for (stat of STAT_DEFS; track stat.key) {
@@ -276,11 +292,6 @@
 											<span class="text-xs font-black w-14 text-right flex-shrink-0 flex items-center justify-end gap-1.5">
 												@if (pick) {
 													<span [ngClass]="justPicked ? stat.colorClass : 'text-white'" [class.stat-pop]="justPicked">{{ pick.value }}</span>
-													@if (hasPickedThisRound() && currentPokemon() && !justPicked) {
-														<span class="text-[10px] text-slate-500 font-medium">({{ currentPokemon()!.stats[stat.key] }})</span>
-													}
-												} @else if (!pendingMyPickStat() && hasPickedThisRound() && currentPokemon()) {
-													<span class="text-slate-400">{{ currentPokemon()!.stats[stat.key] }}</span>
 												} @else {
 													<span class="text-slate-600">-</span>
 												}
@@ -301,12 +312,12 @@
 			<!-- â•â• MULTI : layout 3 colonnes desktop, colonne mobile â•â• -->
 			} @else {
 				<div class="flex-1 overflow-y-auto flex lg:justify-center lg:items-center">
-					<div class="w-full p-3 sm:p-4 lg:p-6 flex flex-col lg:grid lg:grid-cols-[440px_260px_440px] gap-3 lg:gap-6 lg:items-start lg:w-auto">
+					<div class="w-full p-3 sm:p-4 lg:p-6 flex flex-col lg:grid lg:grid-cols-[440px_260px_440px] gap-3 lg:gap-6 lg:items-center lg:w-auto">
 
 						<!-- CENTRE : Pokémon - 1er sur mobile, colonne centrale desktop -->
-						<div class="order-1 lg:order-2 flex flex-col items-center gap-3 lg:self-center">
+						<div class="order-1 lg:order-2 relative flex justify-center lg:self-center">
 							@if (waitingForReveal()) {
-								<div class="flex items-center justify-center gap-2 text-sm text-slate-400 text-center">
+								<div class="pointer-events-none absolute left-1/2 top-0 z-10 flex -translate-x-1/2 -translate-y-full items-center justify-center gap-2 whitespace-nowrap text-center text-sm text-slate-400">
 									<iconify-icon [icon]="ICONS.loading" class="text-base animate-spin text-blue-400"></iconify-icon>
 									<span>En attente de l'adversaire...</span>
 								</div>
@@ -328,6 +339,21 @@
 									} @else {
 										<h3 class="text-xl font-black capitalize text-center invisible">{{ currentPokemon()!.name }}</h3>
 									}
+									<div class="w-full pt-3 mt-1 border-t border-slate-700/50 grid grid-cols-3 gap-2">
+										@for (stat of STAT_DEFS; track stat.key) {
+											<div
+												class="flex flex-col items-center justify-center rounded-xl px-2 py-2 border transition-all"
+												[ngClass]="isCurrentPokemonRevealed() && isCurrentPokemonHighestStat(stat.key)
+													? 'bg-yellow-500/10 border-yellow-400 shadow-[0_0_0_1px_rgba(250,204,21,0.35)]'
+													: 'bg-slate-900/60 border-slate-800'"
+											>
+												<span class="text-[10px] font-black uppercase" [ngClass]="stat.colorClass">{{ stat.label }}</span>
+												<span class="text-sm font-black text-white">
+													{{ isCurrentPokemonRevealed() ? currentPokemon()!.stats[stat.key] : '-' }}
+												</span>
+											</div>
+										}
+									</div>
 								</div>
 							}
 						</div>
@@ -386,11 +412,6 @@
 													<iconify-icon [icon]="ICONS.loading" class="text-sm animate-spin text-blue-400"></iconify-icon>
 												} @else if (revealedPick) {
 													<span [ngClass]="justPicked ? stat.colorClass : 'text-white'" [class.stat-pop]="justPicked">{{ revealedPick.value }}</span>
-													@if (hasPickedThisRound() && currentPokemon() && !justPicked) {
-														<span class="text-[10px] text-slate-500 font-medium">({{ currentPokemon()!.stats[stat.key] }})</span>
-													}
-												} @else if (!pendingMyPickStat() && hasPickedThisRound() && currentPokemon()) {
-													<span class="text-slate-400">{{ currentPokemon()!.stats[stat.key] }}</span>
 												} @else {
 													<span class="text-slate-600">-</span>
 												}
@@ -457,11 +478,6 @@
 											<span class="text-xs font-black w-14 text-right flex-shrink-0 flex items-center justify-end gap-1.5">
 												@if (revealedPick) {
 													<span [ngClass]="justRevealedThis ? stat.colorClass : 'text-blue-300'" [class.stat-pop]="justRevealedThis">{{ revealedPick.value }}</span>
-													@if (opponentRevealedThisRound && currentPokemon() && !justRevealedThis) {
-														<span class="text-[10px] text-slate-500 font-medium">({{ currentPokemon()!.stats[stat.key] }})</span>
-													}
-												} @else if (opponentRevealedThisRound && currentPokemon()) {
-													<span class="text-slate-400">{{ currentPokemon()!.stats[stat.key] }}</span>
 												} @else {
 													<span class="text-slate-600">-</span>
 												}
