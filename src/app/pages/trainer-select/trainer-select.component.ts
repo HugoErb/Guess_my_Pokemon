@@ -8,10 +8,11 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NgClass } from '@angular/common';
 
 import { DraftHelpModalComponent } from '../../components/draft-help-modal/draft-help-modal.component';
+import { CancelModalComponent } from '../../components/cancel-modal/cancel-modal.component';
 
 @Component({
   selector: 'app-trainer-select',
-  imports: [NgClass, DraftHelpModalComponent],
+  imports: [NgClass, DraftHelpModalComponent, CancelModalComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './trainer-select.component.html'
 })
@@ -25,6 +26,8 @@ export class TrainerSelectComponent implements OnInit {
   readonly trainers = signal<Trainer[]>([]);
   readonly defeatedIndices = signal<number[]>([]);
   readonly isLoading = signal(true);
+  readonly isResettingProgress = signal(false);
+  readonly showResetModal = signal(false);
   readonly showHelpModal = signal(false);
   
   private readonly allPokemon = toSignal(this.pokemonService.loadAll(), {
@@ -80,5 +83,29 @@ export class TrainerSelectComponent implements OnInit {
 
   goHome() {
     void this.router.navigate(['/home']);
+  }
+
+  openResetModal() {
+    if (this.isResettingProgress()) return;
+    this.showResetModal.set(true);
+  }
+
+  closeResetModal() {
+    if (this.isResettingProgress()) return;
+    this.showResetModal.set(false);
+  }
+
+  async resetProgress() {
+    const user = this.supabaseService.getCurrentUser();
+    if (!user || this.isResettingProgress()) return;
+
+    this.isResettingProgress.set(true);
+    try {
+      await this.supabaseService.resetTrainerProgress(user.id);
+      window.location.reload();
+    } catch (error) {
+      this.isResettingProgress.set(false);
+      window.alert(error instanceof Error ? error.message : 'Impossible de réinitialiser la progression.');
+    }
   }
 }

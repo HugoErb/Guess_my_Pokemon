@@ -852,4 +852,26 @@ export class SupabaseService implements OnDestroy {
 
         if (error) throw error;
     }
+
+    /** Supprime toute la progression des dresseurs d'un utilisateur. */
+    async resetTrainerProgress(userId: string): Promise<void> {
+        const { count: existingCount, error: countError } = await this.supabase
+            .from('defeated_trainers')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', userId);
+
+        if (countError) throw countError;
+
+        const { data, error } = await this.supabase
+            .from('defeated_trainers')
+            .delete()
+            .eq('user_id', userId)
+            .select('trainer_index');
+
+        if (error) throw error;
+
+        if ((existingCount ?? 0) > 0 && (data?.length ?? 0) === 0) {
+            throw new Error('Suppression refusée par Supabase. Vérifie les policies RLS de defeated_trainers.');
+        }
+    }
 }

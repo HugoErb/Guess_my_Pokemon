@@ -18,24 +18,21 @@ import { modalAnimation } from '../../constants/animations';
 				(click)="$event.stopPropagation()"
 			>
 				<iconify-icon [icon]="ICONS.alert" class="text-5xl text-red-500 mx-auto"></iconify-icon>
-				<h2 class="text-xl font-bold text-white uppercase tracking-wider">Quitter la partie ?</h2>
-				<p class="text-slate-300 text-sm">
-					Es-tu sûr de vouloir revenir à l'accueil ? Cela <strong class="text-red-400">annulera définitivement</strong> 
-					la partie en cours pour les deux joueurs.
-				</p>
+				<h2 class="text-xl font-bold text-white uppercase tracking-wider">{{ title() }}</h2>
+				<p class="text-slate-300 text-sm">{{ message() }}</p>
 				<div class="flex flex-col-reverse sm:flex-row gap-3 mt-4">
 					<button
 						(click)="cancel.emit()"
 						class="flex-1 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium text-white transition-colors"
 					>
-						Non, rester
+						{{ cancelLabel() }}
 					</button>
 					<button
 						(click)="confirm.emit()"
 						[disabled]="isCancelling()"
 						class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm font-bold text-white transition-colors"
 					>
-						{{ isCancelling() ? 'Annulation...' : 'Oui, quitter' }}
+						{{ isCancelling() ? loadingLabel() : confirmLabel() }}
 					</button>
 				</div>
 			</div>
@@ -44,6 +41,11 @@ import { modalAnimation } from '../../constants/animations';
 })
 export class CancelModalComponent {
 	isCancelling = input<boolean>(false);
+	title = input<string>('Quitter la partie ?');
+	message = input<string>("Es-tu sûr de vouloir revenir à l'accueil ? Cela annulera définitivement la partie en cours pour les deux joueurs.");
+	cancelLabel = input<string>('Non, rester');
+	confirmLabel = input<string>('Oui, quitter');
+	loadingLabel = input<string>('Annulation...');
 	confirm = output<void>();
 	cancel = output<void>();
 
