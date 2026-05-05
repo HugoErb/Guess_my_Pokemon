@@ -56,7 +56,7 @@ import { Component, input, output, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angul
 		.duel-overlay {
 			animation:
 				duelIn  200ms ease-out          forwards,
-				duelOut 300ms ease-in    2700ms  forwards;
+				duelOut 300ms ease-in    2200ms  forwards;
 		}
 
 		/* Joueurs : glissent depuis les côtés */
@@ -113,6 +113,6 @@ export class DuelIntroComponent implements OnInit {
 	closed = output<void>();
 
 	ngOnInit(): void {
-		setTimeout(() => this.closed.emit(), 3000);
+		setTimeout(() => this.closed.emit(), 2500);
 	}
 }

@@ -24,6 +24,7 @@ import {
 import confetti from 'canvas-confetti';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { DraftHelpModalComponent } from '../../components/draft-help-modal/draft-help-modal.component';
+import { DuelIntroComponent } from '../../components/duel-intro/duel-intro.component';
 
 export interface Trainer {
   nom: string;
@@ -40,7 +41,7 @@ type SlotState = 'idle' | 'leaving' | 'entering';
 
 @Component({
   selector: 'app-draft-trainer',
-  imports: [NgClass, PokemonCardComponent, DraftHelpModalComponent],
+  imports: [NgClass, PokemonCardComponent, DraftHelpModalComponent, DuelIntroComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   animations: [slotsGridAnimation, slotStateAnimation, lockAnimation, scoreRevealAnimation],
   templateUrl: './draft-trainer.component.html',
@@ -112,6 +113,9 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
   readonly phase = signal<Phase>('loading');
   readonly trainer = signal<Trainer | null>(null);
   readonly showHelpModal = signal(false);
+  readonly showDuelIntro = signal(false);
+  readonly duelPlayer1 = signal<{ username: string; avatar_url?: string } | null>(null);
+  readonly duelPlayer2 = signal<{ username: string; avatar_url?: string } | null>(null);
   readonly selectedPokemon = signal<Pokemon | null>(null);
 
   readonly slots = signal<(Pokemon | null)[]>([null, null, null, null, null, null]);
@@ -124,6 +128,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
   readonly timerValue = signal(10);
   readonly timerProgress = signal(1.0);
   private timerInterval: ReturnType<typeof setInterval> | null = null;
+  private startTimerAfterIntro = false;
 
   readonly timerColor = computed(() => {
     const v = this.timerValue();
@@ -194,11 +199,11 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
         const unsub = this.pokemonService.loadAll().subscribe(all => {
           if (all.length > 0) {
             unsub.unsubscribe();
-            this.initDraft();
+            void this.initDraft();
           }
         });
       } else {
-        this.initDraft();
+        void this.initDraft();
       }
     } catch {
       this.router.navigate(['/home']);
@@ -209,7 +214,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     this.stopTimer();
   }
 
-  private initDraft(): void {
+  private async initDraft(): Promise<void> {
     const pool = this.trainerPool();
     const starter = this.pickOneStarter(pool, new Set());
     const legendary = this.pickOneLegendary(pool, new Set(starter ? [starter.id] : []));
@@ -226,7 +231,52 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     this.slotStates.set(['idle', 'idle', 'idle', 'idle', 'idle', 'idle']);
     
     this.phase.set('playing');
+    const introShown = await this.triggerDuelIntro();
+    if (introShown) {
+      this.startTimerAfterIntro = true;
+      return;
+    }
     this.startTimer();
+  }
+
+  onDuelIntroClosed(): void {
+    this.showDuelIntro.set(false);
+    if (this.startTimerAfterIntro && this.phase() === 'playing') {
+      this.startTimerAfterIntro = false;
+      this.startTimer();
+    }
+  }
+
+  private async triggerDuelIntro(): Promise<boolean> {
+    const trainer = this.trainer();
+    if (!trainer) return false;
+
+    try {
+      const user = this.supabaseService.getCurrentUser();
+      const profile = user
+        ? await this.supabaseService.getProfile(user.id).catch(() => ({ username: 'Moi', avatar_url: undefined }))
+        : { username: 'Moi', avatar_url: undefined };
+
+      const player1 = { username: profile.username, avatar_url: profile.avatar_url };
+      const player2 = { username: trainer.nom, avatar_url: trainer.image };
+
+      await Promise.all(
+        [player1, player2]
+          .filter(p => p.avatar_url)
+          .map(p => new Promise<void>(resolve => {
+            const img = new Image();
+            img.onload = img.onerror = () => resolve();
+            img.src = p.avatar_url!;
+          }))
+      );
+
+      this.duelPlayer1.set(player1);
+      this.duelPlayer2.set(player2);
+      this.showDuelIntro.set(true);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async onSlotClick(index: number): Promise<void> {
@@ -386,7 +436,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     
     // Petit délai pour l'effet visuel
     setTimeout(() => {
-      this.initDraft();
+      void this.initDraft();
     }, 500);
   }
 
