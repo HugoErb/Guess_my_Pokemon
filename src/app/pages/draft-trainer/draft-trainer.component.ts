@@ -26,6 +26,7 @@ import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card
 import { DraftHelpModalComponent } from '../../components/draft-help-modal/draft-help-modal.component';
 import { DuelIntroComponent } from '../../components/duel-intro/duel-intro.component';
 import { EndGameActionsComponent } from '../../components/end-game-actions/end-game-actions.component';
+import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 
 export interface Trainer {
   nom: string;
@@ -42,7 +43,7 @@ type SlotState = 'idle' | 'leaving' | 'entering';
 
 @Component({
   selector: 'app-draft-trainer',
-  imports: [NgClass, PokemonCardComponent, DraftHelpModalComponent, DuelIntroComponent, EndGameActionsComponent],
+  imports: [NgClass, PokemonCardComponent, DraftHelpModalComponent, DuelIntroComponent, EndGameActionsComponent, AppHeaderComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   animations: [slotsGridAnimation, slotStateAnimation, lockAnimation, scoreRevealAnimation],
   templateUrl: './draft-trainer.component.html',

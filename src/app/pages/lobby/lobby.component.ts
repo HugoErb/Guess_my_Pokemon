@@ -13,12 +13,13 @@ import { DEFAULT_SETTINGS, DraftDuoRoom, FirstPlayer, GameMode, GameSettings, Ro
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { CancelModalComponent } from '../../components/cancel-modal/cancel-modal.component';
 import { HelpModalComponent } from '../../components/help-modal/help-modal.component';
+import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 import { ICONS } from '../../constants/icons';
 import { modalAnimation } from '../../constants/animations';
 
 @Component({
 	selector: 'app-lobby',
-	imports: [FormsModule, PokemonCardComponent, CancelModalComponent, HelpModalComponent],
+	imports: [FormsModule, PokemonCardComponent, CancelModalComponent, HelpModalComponent, AppHeaderComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
 	animations: [modalAnimation],
 	templateUrl: './lobby.component.html',

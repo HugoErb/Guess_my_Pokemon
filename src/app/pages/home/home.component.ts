@@ -7,10 +7,11 @@ import { GameInvite } from '../../models/room.model';
 import { ICONS } from '../../constants/icons';
 import { modalAnimation } from '../../constants/animations';
 import { FriendsCardComponent } from '../../components/friends-card/friends-card.component';
+import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 
 @Component({
   selector: 'app-home',
-  imports: [FormsModule, FriendsCardComponent],
+  imports: [FormsModule, FriendsCardComponent, AppHeaderComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   animations: [modalAnimation],
   templateUrl: './home.component.html',

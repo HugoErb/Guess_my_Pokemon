@@ -9,10 +9,11 @@ import { NgClass } from '@angular/common';
 
 import { DraftHelpModalComponent } from '../../components/draft-help-modal/draft-help-modal.component';
 import { CancelModalComponent } from '../../components/cancel-modal/cancel-modal.component';
+import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 
 @Component({
   selector: 'app-trainer-select',
-  imports: [NgClass, DraftHelpModalComponent, CancelModalComponent],
+  imports: [NgClass, DraftHelpModalComponent, CancelModalComponent, AppHeaderComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './trainer-select.component.html'
 })

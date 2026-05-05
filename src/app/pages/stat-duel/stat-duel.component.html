@@ -3,13 +3,7 @@
 		<app-duel-intro [player1]="duelPlayer1()!" [player2]="duelPlayer2()!" (closed)="showDuelIntro.set(false)" />
 	}
 
-	<!-- Header -->
-	<header class="flex items-center justify-between px-6 py-4 border-b border-slate-700 flex-shrink-0">
-		<div class="flex items-center gap-3">
-			<iconify-icon [icon]="ICONS.statDuel" class="text-2xl text-yellow-400"></iconify-icon>
-			<span class="text-xl font-bold tracking-wide">Duel de Base Stats</span>
-		</div>
-	</header>
+	<app-header [icon]="ICONS.statDuel" iconClass="text-yellow-400" title="Duel de Base Stats" />
 
 	<!-- Barre d'actions -->
 	<div class="relative bg-slate-800/50 border-b border-slate-700 px-3 py-2 flex items-center justify-between gap-2 shrink-0">

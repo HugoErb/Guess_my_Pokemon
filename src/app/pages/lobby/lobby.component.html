@@ -1,11 +1,5 @@
 <div class="h-dvh bg-slate-900 text-white flex flex-col overflow-hidden">
-	<!-- Header -->
-	<header class="bg-slate-800 border-b border-slate-700 px-3 md:px-6 py-4 flex items-center justify-between shrink-0">
-		<div class="flex items-center gap-3">
-			<iconify-icon [icon]="modeConfig.icon" [class]="'text-2xl ' + modeConfig.iconClass"></iconify-icon>
-			<h1 class="text-xl font-bold text-white">{{ modeConfig.title }} @if (modeSubtitle) { <span class="text-slate-500 font-medium mx-2">-</span> <span class="text-lg text-slate-300">{{ modeSubtitle }}</span> }</h1>
-		</div>
-	</header>
+	<app-header [icon]="modeConfig.icon" [iconClass]="modeConfig.iconClass" [title]="modeConfig.title" [subtitle]="modeSubtitle" />
 
 	<div class="bg-slate-800/50 border-b border-slate-700 px-3 py-2 flex items-center justify-end gap-2 shrink-0">
 		<button

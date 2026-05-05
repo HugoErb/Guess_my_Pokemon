@@ -16,13 +16,14 @@ import { HelpModalComponent } from '../../components/help-modal/help-modal.compo
 import { IncorrectGuessModalComponent } from '../../components/incorrect-guess-modal/incorrect-guess-modal.component';
 import { MyTurnModalComponent } from '../../components/my-turn-modal/my-turn-modal.component';
 import { DuelIntroComponent } from '../../components/duel-intro/duel-intro.component';
+import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 import { ICONS } from '../../constants/icons';
 import { environment } from '../../../environments/environment';
 import confetti from 'canvas-confetti';
 
 @Component({
 	selector: 'app-game',
-	imports: [PokemonCardComponent, PokedexComponent, CancelModalComponent, EndGameModalComponent, GameSettingsModalComponent, HelpModalComponent, IncorrectGuessModalComponent, MyTurnModalComponent, DuelIntroComponent],
+	imports: [PokemonCardComponent, PokedexComponent, CancelModalComponent, EndGameModalComponent, GameSettingsModalComponent, HelpModalComponent, IncorrectGuessModalComponent, MyTurnModalComponent, DuelIntroComponent, AppHeaderComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
 	templateUrl: './game.component.html',
 })

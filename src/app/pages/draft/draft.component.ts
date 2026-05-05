@@ -28,12 +28,13 @@ import { DraftHelpModalComponent } from '../../components/draft-help-modal/draft
 import { ModeSelectCardComponent } from '../../components/mode-select-card/mode-select-card.component';
 import { ModeSelectComponent } from '../../components/mode-select-card/mode-select.component';
 import { EndGameActionsComponent } from '../../components/end-game-actions/end-game-actions.component';
+import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 
 type SlotState = 'idle' | 'leaving' | 'entering';
 
 @Component({
   selector: 'app-draft',
-  imports: [NgClass, PokemonCardComponent, DraftHelpModalComponent, ModeSelectCardComponent, ModeSelectComponent, EndGameActionsComponent],
+  imports: [NgClass, PokemonCardComponent, DraftHelpModalComponent, ModeSelectCardComponent, ModeSelectComponent, EndGameActionsComponent, AppHeaderComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   animations: [slotsGridAnimation, slotStateAnimation, lockAnimation, scoreRevealAnimation],
   templateUrl: './draft.component.html',

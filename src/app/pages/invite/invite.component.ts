@@ -3,10 +3,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { SupabaseService } from '../../services/supabase.service';
 import { ICONS } from '../../constants/icons';
+import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 
 @Component({
 	selector: 'app-invite',
-	imports: [],
+	imports: [AppHeaderComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
 	templateUrl: './invite.component.html',
 })
