@@ -1,4 +1,4 @@
-# Guess My Pokémon — Architecture
+# PokéLudik — Architecture
 
 Angular 21 + Tailwind + Supabase (realtime multiplayer). Stack standalone components, lazy routing, SSE via Supabase channels.
 

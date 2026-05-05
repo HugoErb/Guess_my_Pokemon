@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "guess-my-pokemon": {
+    "pokeludik": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/guess-my-pokemon",
+            "outputPath": "dist/pokeludik",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -74,10 +74,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "guess-my-pokemon:build:production"
+              "buildTarget": "pokeludik:build:production"
             },
             "development": {
-              "buildTarget": "guess-my-pokemon:build:development"
+              "buildTarget": "pokeludik:build:development"
             }
           },
           "defaultConfiguration": "development"

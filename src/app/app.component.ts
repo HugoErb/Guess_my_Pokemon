@@ -8,5 +8,5 @@ import { RouterOutlet } from '@angular/router';
   styles: []
 })
 export class AppComponent {
-  title = 'guess-my-pokemon';
+  title = 'pokeludik';
 }

@@ -1,10 +1,10 @@
-# Guess my Pokémon
+# PokéLudik
 
-Un jeu multijoueur en temps réel où deux joueurs s'affrontent pour deviner le Pokémon choisi par l'adversaire.
+Une application multijoueur en temps réel avec plusieurs mini-jeux Pokémon.
 
 ## Le projet
 
-**Guess my Pokémon** est une application web de type "devine le Pokémon de l'autre". Chaque joueur choisit secrètement un Pokémon dans son Pokédex, puis les deux joueurs s'affrontent pour deviner lequel l'autre a sélectionné.
+**PokéLudik** est une application web de mini-jeux Pokémon multijoueur.
 
 ### Fonctionnalités principales
 

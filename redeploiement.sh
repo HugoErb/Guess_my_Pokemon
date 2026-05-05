@@ -4,7 +4,7 @@ export NVM_DIR="/home/ubuntu/.nvm"
 export PATH="$NVM_DIR/versions/node/v22.22.2/bin:$PATH"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
-echo "======== $(date) | Déploiement Guess my Pokemon ========"
+echo "======== $(date) | Déploiement PokéLudik ========"
 
 cd /home/ubuntu/Guess-my-Pokemon || exit 1
 
