@@ -1,55 +1,53 @@
 # PokéLudik
 
-Une application multijoueur en temps réel avec plusieurs mini-jeux Pokémon.
+Application web de mini-jeux Pokémon, jouables en solo ou en multijoueur temps réel.
 
-## Le projet
+## Modes de jeu
 
-**PokéLudik** est une application web de mini-jeux Pokémon multijoueur.
+- **Guess my Pokémon** : deux joueurs choisissent secrètement un Pokémon et tentent de deviner celui de l'adversaire.
+- **Duel de Base Stats** : duel en plusieurs manches basé sur les statistiques des Pokémon.
+- **Team Builder Solo** : création d'une équipe de 6 Pokémon puis évaluation automatique.
+- **Team Builder Duo** : version multijoueur du Team Builder.
+- **Team Builder vs Dresseur** : draft solo contre des dresseurs prédéfinis.
 
-### Fonctionnalités principales
+## Fonctionnalités
 
-- **Authentification** — Connexion via Supabase (email/mot de passe ou OAuth)
-- **Création de salon** — Un joueur crée une room et invite un ami via un lien
-- **Lobby** — Les deux joueurs se retrouvent et confirment leur présence avant de démarrer
-- **Sélection secrète** — Chaque joueur choisit un Pokémon dans son Pokédex sans que l'adversaire ne le voie
-- **Partie en temps réel** — La room est synchronisée en temps réel grâce aux Realtime subscriptions de Supabase
-- **Pokédex intégré** — Interface de sélection avec les Pokémons disponibles
+- Authentification Supabase.
+- Profils utilisateurs avec pseudo et avatar.
+- Système d'amis.
+- Invitations de jeu entre amis.
+- Salons multijoueur avec lobby.
+- Synchronisation temps réel via Supabase Realtime.
+- Pokédex intégré avec filtres.
+- Données Pokémon générées depuis PokéAPI.
 
-### Stack technique
+## Stack
 
-| Technologie | Rôle |
-|-------------|------|
-| **Angular 21** | Framework frontend (standalone components, signals) |
-| **Supabase** | Backend as a service : base de données PostgreSQL, authentification, temps réel |
-| **TailwindCSS** | Styles utilitaires |
-| **TypeScript** | Typage statique |
+| Technologie | Usage |
+|-------------|-------|
+| Angular 21 | Frontend |
+| TypeScript | Langage |
+| TailwindCSS | Styles |
+| Supabase | Auth, PostgreSQL, Realtime |
+| PokéAPI | Source des données Pokémon |
 
----
+## Prérequis
 
-## Lancer le projet
+- Node.js 18 ou plus récent.
+- npm.
+- Un projet Supabase configuré.
 
-### Prérequis
-
-- [Node.js](https://nodejs.org/) v18 ou supérieur
-- npm (inclus avec Node.js)
-- Un projet Supabase configuré (voir ci-dessous)
-
-### Installation
+## Installation
 
 ```bash
-# Cloner le dépôt
-git clone <url-du-repo>
-cd "Guess my pokemon"
-
-# Installer les dépendances
 npm install
 ```
 
-### Configuration Supabase
+## Configuration
 
-Créez un fichier `src/environments/environment.ts` avec vos clés Supabase :
+Créer ou mettre à jour `src/environments/environment.ts` :
 
-```typescript
+```ts
 export const environment = {
   production: false,
   supabaseUrl: 'https://VOTRE_PROJET.supabase.co',
@@ -57,23 +55,36 @@ export const environment = {
 };
 ```
 
-### Démarrer le serveur de développement
+Le schéma de référence est dans `sql-schema/ddb-schema`.
+
+## Scripts
 
 ```bash
 npm start
-# ou
-ng serve
 ```
 
-L'application sera disponible sur [http://localhost:4200](http://localhost:4200).  
-Elle se recharge automatiquement à chaque modification de fichier source.
+Lance le serveur Angular en développement.
 
-### Générer les données Pokémon
+```bash
+npm run build
+```
 
-Un script fetch les données depuis l'API PokéAPI et les prépare pour l'application :
+Génère le build de production dans `dist/pokeludik`.
 
 ```bash
 npm run generate:pokemon
 ```
 
----
+Régénère `src/assets/pokemon.json` depuis PokéAPI.
+
+```bash
+npm run add:ratings
+```
+
+Ajoute ou recalcule les notes des Pokémon dans les données locales.
+
+```bash
+npm test
+```
+
+Lance les tests Angular.
