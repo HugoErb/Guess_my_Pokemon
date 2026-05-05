@@ -292,7 +292,7 @@
 												></div>
 											</div>
 
-											<span class="text-xs font-black w-14 text-right flex-shrink-0 flex items-center justify-end gap-1.5">
+											<span class="text-sm font-black w-8 text-right flex-shrink-0 flex items-center justify-end gap-1">
 												@if (pick) {
 													<span [ngClass]="justPicked ? stat.colorClass : 'text-white'" [class.stat-pop]="justPicked">{{ pick.value }}</span>
 												} @else {
@@ -305,7 +305,7 @@
 
 								<div class="w-full pt-3 border-t border-slate-700/50 flex justify-between items-center">
 									<span class="text-xs text-slate-500">Total actuel</span>
-									<span class="text-sm font-black text-yellow-400">{{ myTotal() }}</span>
+									<span class="text-base font-black text-yellow-400">{{ myTotal() }}</span>
 								</div>
 							</div>
 						}
@@ -413,7 +413,7 @@
 												></div>
 											</div>
 
-											<span class="text-xs font-black w-14 text-right flex-shrink-0 flex items-center justify-end gap-1.5">
+											<span class="text-sm font-black w-8 text-right flex-shrink-0 flex items-center justify-end gap-1">
 												@if (isPending) {
 													<iconify-icon [icon]="ICONS.loading" class="text-sm animate-spin text-blue-400"></iconify-icon>
 												} @else if (revealedPick) {
@@ -429,7 +429,7 @@
 
 								<div class="mt-3 pt-3 border-t border-slate-700/50 flex justify-between items-center">
 									<span class="text-xs text-slate-500">Total actuel</span>
-									<span class="text-sm font-black text-yellow-400">{{ myRevealedTotal() }}</span>
+									<span class="text-base font-black text-yellow-400">{{ myRevealedTotal() }}</span>
 								</div>
 							</div>
 						</div>
@@ -457,7 +457,7 @@
 										@let opponentRevealedThisRound = opponentRevealedPicks().length > currentRound();
 
 										<div
-											class="flex items-center gap-3 rounded-xl px-2 py-2 border transition-all"
+											class="flex items-center gap-2 rounded-xl px-2 py-2 border transition-all"
 											[ngClass]="justRevealedThis ? 'border-blue-500/30 bg-blue-500/5' : 'border-transparent'"
 										>
 											<span
@@ -481,7 +481,7 @@
 												></div>
 											</div>
 
-											<span class="text-xs font-black w-14 text-right flex-shrink-0 flex items-center justify-end gap-1.5">
+											<span class="text-sm font-black w-8 text-right flex-shrink-0 flex items-center justify-end gap-1">
 												@if (revealedPick) {
 													<span [ngClass]="justRevealedThis ? stat.colorClass : 'text-blue-300'" [class.stat-pop]="justRevealedThis">{{ revealedPick.value }}</span>
 												} @else {
@@ -494,7 +494,7 @@
 
 								<div class="mt-3 pt-3 border-t border-slate-700/50 flex justify-between items-center">
 									<span class="text-xs text-slate-500">Total actuel</span>
-									<span class="text-sm font-black text-blue-400">{{ opponentRevealedTotal() }}</span>
+									<span class="text-base font-black text-blue-400">{{ opponentRevealedTotal() }}</span>
 								</div>
 							</div>
 						</div>

@@ -939,7 +939,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     }
 
     getStatRowClass(alreadyPicked: boolean, justPicked: boolean, canPick: boolean): string {
-        const base = 'flex items-center gap-3 rounded-xl px-2 py-2 transition-all border';
+        const base = 'flex items-center gap-2 rounded-xl px-2 py-2 transition-all border';
         if (justPicked) return `${base} border-yellow-500/30 bg-yellow-500/5`;
         if (canPick) return `${base} border-transparent hover:border-white/20 hover:bg-slate-700/40 cursor-pointer active:scale-[0.99]`;
         return `${base} border-transparent`;
