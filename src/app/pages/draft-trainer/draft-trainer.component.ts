@@ -25,6 +25,7 @@ import confetti from 'canvas-confetti';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { DraftHelpModalComponent } from '../../components/draft-help-modal/draft-help-modal.component';
 import { DuelIntroComponent } from '../../components/duel-intro/duel-intro.component';
+import { EndGameActionsComponent } from '../../components/end-game-actions/end-game-actions.component';
 
 export interface Trainer {
   nom: string;
@@ -41,7 +42,7 @@ type SlotState = 'idle' | 'leaving' | 'entering';
 
 @Component({
   selector: 'app-draft-trainer',
-  imports: [NgClass, PokemonCardComponent, DraftHelpModalComponent, DuelIntroComponent],
+  imports: [NgClass, PokemonCardComponent, DraftHelpModalComponent, DuelIntroComponent, EndGameActionsComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   animations: [slotsGridAnimation, slotStateAnimation, lockAnimation, scoreRevealAnimation],
   templateUrl: './draft-trainer.component.html',

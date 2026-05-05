@@ -12,6 +12,7 @@ import { DuelIntroComponent } from '../../components/duel-intro/duel-intro.compo
 import { ModeSelectCardComponent } from '../../components/mode-select-card/mode-select-card.component';
 import { ModeSelectComponent } from '../../components/mode-select-card/mode-select.component';
 import { HelpModalComponent } from '../../components/help-modal/help-modal.component';
+import { EndGameActionsComponent } from '../../components/end-game-actions/end-game-actions.component';
 import { environment } from '../../../environments/environment';
 
 type Phase = 'mode-select' | 'waiting' | 'playing' | 'result';
@@ -40,7 +41,7 @@ const ROUND_DURATION_MS = ROUND_PICK_TIME_MS + ROUND_TRANSITION_TIME_MS;
 @Component({
     selector: 'app-stat-duel',
     standalone: true,
-    imports: [NgClass, DuelIntroComponent, ModeSelectCardComponent, ModeSelectComponent, HelpModalComponent],
+    imports: [NgClass, DuelIntroComponent, ModeSelectCardComponent, ModeSelectComponent, HelpModalComponent, EndGameActionsComponent],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     templateUrl: './stat-duel.component.html',
     styles: [`

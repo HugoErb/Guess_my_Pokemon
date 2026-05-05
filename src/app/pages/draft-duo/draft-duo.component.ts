@@ -27,13 +27,14 @@ import {
 import confetti from 'canvas-confetti';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { DraftHelpModalComponent } from '../../components/draft-help-modal/draft-help-modal.component';
+import { EndGameActionsComponent } from '../../components/end-game-actions/end-game-actions.component';
 
 type DuoPhase = 'loading' | 'waiting' | 'playing' | 'waiting-opponent' | 'complete';
 type SlotState = 'idle' | 'leaving' | 'entering';
 
 @Component({
   selector: 'app-draft-duo',
-  imports: [NgClass, PokemonCardComponent, DraftHelpModalComponent],
+  imports: [NgClass, PokemonCardComponent, DraftHelpModalComponent, EndGameActionsComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   animations: [slotsGridAnimation, slotStateAnimation, lockAnimation, scoreRevealAnimation],
   templateUrl: './draft-duo.component.html',
