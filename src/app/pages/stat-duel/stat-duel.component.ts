@@ -345,14 +345,17 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
         this.phase.set('playing');
         void this.triggerDuelIntro(room);
-        this.startMultiClock(room.round_start_at!);
-
         if (this.isDevMode()) {
             this.botPickedRounds.clear();
-            for (let r = 0; r < ROUND_COUNT; r++) {
-                this.scheduleBotPick(r, room.round_start_at!);
-            }
+            const delayFromNow = Math.max(0, new Date(room.round_start_at!).getTime() - Date.now());
+            setTimeout(() => {
+                if (this.phase() !== 'playing') return;
+                this.startPokemonAnimation(() => this.startMultiPickClock());
+            }, delayFromNow);
+            return;
         }
+
+        this.startMultiClock(room.round_start_at!);
     }
 
     // â”€â”€â”€ Lancer la partie multi (P1) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -423,6 +426,51 @@ export class StatDuelComponent implements OnInit, OnDestroy {
                 this.stopClock();
                 this.nextRoundCountdown.set(null);
                 this.advanceSoloRound();
+            }
+        }, 200);
+    }
+
+    private startMultiPickClock(): void {
+        this.stopClock();
+        this.nextRoundCountdown.set(null);
+        this.roundStartTime = Date.now();
+        this.timerValue.set(10);
+        this.timerProgress.set(10);
+        if (this.isDevMode()) {
+            this.scheduleBotPick(this.currentRound());
+        }
+        this.clockInterval = setInterval(() => {
+            const elapsed = Date.now() - this.roundStartTime;
+            const remainingFloat = Math.max(0, ROUND_PICK_TIME_MS / 1000 - elapsed / 1000);
+            const remaining = Math.ceil(remainingFloat);
+            this.timerValue.set(remaining);
+            this.timerProgress.set(remainingFloat);
+
+            if (remaining <= 0) {
+                if (!this.hasPickedThisRound()) {
+                    this.autoPickStat();
+                } else if (this.waitingForReveal() && !this.isCurrentRoundRevealed()) {
+                    this.triggerReveal();
+                }
+            }
+        }, 200);
+    }
+
+    private startMultiTransition(): void {
+        this.stopClock();
+        const startTime = Date.now();
+        this.nextRoundCountdown.set(Math.ceil(ROUND_TRANSITION_TIME_MS / 1000));
+        this.timerValue.set(0);
+        this.timerProgress.set(0);
+        this.clockInterval = setInterval(() => {
+            const elapsed = Date.now() - startTime;
+            const remaining = Math.max(0, (ROUND_TRANSITION_TIME_MS - elapsed) / 1000);
+            this.nextRoundCountdown.set(Math.ceil(remaining));
+            if (remaining <= 0) {
+                this.stopClock();
+                this.nextRoundCountdown.set(null);
+                this.currentRound.update(round => round + 1);
+                this.startPokemonAnimation(() => this.startMultiPickClock());
             }
         }, 200);
     }
@@ -539,9 +587,6 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
         const bothPicked = this.myPicks().length > round && this.opponentPicks().length > round;
         if (bothPicked) {
-            // In multiplayer, keep the clock running through the 17.5s cycle
-            // This keeps both players moving to the next round at the same time.
-
             if (round >= ROUND_COUNT - 1) {
                 setTimeout(() => {
                     if (this.phase() !== 'playing') return;
@@ -556,6 +601,8 @@ export class StatDuelComponent implements OnInit, OnDestroy {
                 }, 2000);
                 return;
             }
+
+            this.startMultiTransition();
         }
     }
 
@@ -640,14 +687,13 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     // â”€â”€â”€ Bot (dev mode) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    private scheduleBotPick(roundIndex: number, roundStartAt: string): void {
-        const roundStartMs = new Date(roundStartAt).getTime() + roundIndex * ROUND_DURATION_MS;
+    private scheduleBotPick(roundIndex: number): void {
         const botDelay = 1500 + Math.random() * 6500; // 1.5s to 8s dans la manche
-        const delayFromNow = Math.max(200, roundStartMs + botDelay - Date.now());
 
         setTimeout(async () => {
             if (this.phase() !== 'playing' || !this.roomId) return;
             if (this.botPickedRounds.has(roundIndex)) return;
+            if (this.currentRound() !== roundIndex) return;
 
             const botUsedStats = Array.from(this.botPickedRounds).length;
             if (botUsedStats !== roundIndex) return; // ordre strict
@@ -664,7 +710,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
             this.botPickedRounds.add(roundIndex);
 
             await this.supabaseService.appendStatPick(this.roomId, 'p2_picks', { stat: randomStat, value });
-        }, delayFromNow);
+        }, botDelay);
     }
 
     // â”€â”€â”€ Duel intro â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -739,24 +785,17 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     private async requestStatDuelReplay(): Promise<void> {
         if (!this.roomId) return;
         const isP1 = this.isPlayer1();
-        await this.supabaseService.updateStatDuelRoom(this.roomId, isP1 ? { p1_ready: true } : { p2_ready: true });
-
         if (this.isDevMode()) {
-            setTimeout(async () => {
-                if (!this.roomId) return;
-                await this.supabaseService.updateStatDuelRoom(this.roomId, { p2_ready: true });
-                const r = await this.supabaseService.getStatDuelRoom(this.roomId);
-                this.room.set(r);
-                if (r.p1_ready && r.p2_ready && r.status === 'finished') {
-                    await this.launchReplayGame();
-                }
-            }, 2000);
-
+            await this.supabaseService.updateStatDuelRoom(this.roomId, { p1_ready: true, p2_ready: true });
             const refreshed = await this.supabaseService.getStatDuelRoom(this.roomId);
             this.room.set(refreshed);
+            if (refreshed.status === 'finished') {
+                await this.launchReplayGame();
+            }
             return;
         }
 
+        await this.supabaseService.updateStatDuelRoom(this.roomId, isP1 ? { p1_ready: true } : { p2_ready: true });
         const refreshed = await this.supabaseService.getStatDuelRoom(this.roomId);
         this.room.set(refreshed);
         if (refreshed.p1_ready && refreshed.p2_ready && refreshed.status === 'finished') {
