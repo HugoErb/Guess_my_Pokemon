@@ -864,6 +864,10 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         return this.myPicks().length > this.currentRound() && this.opponentPicks().length > this.currentRound();
     }
 
+    shouldShowCurrentPokemonStats(): boolean {
+        return this.pokemonVisible() && this.isCurrentPokemonRevealed();
+    }
+
     isCurrentPokemonHighestStat(statKey: keyof Pokemon['stats']): boolean {
         const pokemon = this.currentPokemon();
         if (!pokemon) return false;
