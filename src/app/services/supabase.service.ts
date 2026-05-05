@@ -547,6 +547,7 @@ export class SupabaseService implements OnDestroy {
     private presenceChannel: any = null;
     private readonly presenceStateSubject = new BehaviorSubject<Record<string, any[]>>({});
     private presenceUpdateState: (() => void) | null = null;
+    private currentPresenceStatus: 'online' | 'in_game' | null = null;
 
     /** Rejoint le canal de présence global et diffuse le statut de l'utilisateur. */
     trackPresence(status: 'online' | 'in_game'): void {
@@ -554,10 +555,24 @@ export class SupabaseService implements OnDestroy {
         if (!user) return;
 
         if (this.presenceChannel) {
-            // Canal déjà ouvert : mise à jour du statut et force une ré-émission immédiate
-            this.presenceChannel.track({ user_id: user.id, status })
-                .then(() => this.presenceUpdateState?.())
-                .catch(() => undefined);
+            if (this.currentPresenceStatus === status) {
+                this.presenceChannel.track({ user_id: user.id, status })
+                    .then(() => this.presenceUpdateState?.())
+                    .catch(() => undefined);
+                return;
+            }
+
+            // Force un leave/join pour que les autres clients reçoivent le changement immédiatement.
+            this.presenceChannel.untrack()
+                .catch(() => undefined)
+                .finally(() => {
+                    this.presenceChannel.track({ user_id: user.id, status })
+                        .then(() => {
+                            this.currentPresenceStatus = status;
+                            this.presenceUpdateState?.();
+                        })
+                        .catch(() => undefined);
+                });
             return;
         }
 
@@ -575,6 +590,7 @@ export class SupabaseService implements OnDestroy {
             .subscribe(async (s: string) => {
                 if (s === 'SUBSCRIBED') {
                     await channel.track({ user_id: user.id, status });
+                    this.currentPresenceStatus = status;
                 }
             });
 
@@ -586,6 +602,7 @@ export class SupabaseService implements OnDestroy {
         if (this.presenceChannel) {
             this.presenceChannel.untrack().catch(() => undefined);
         }
+        this.currentPresenceStatus = null;
         this.ngZone.run(() => this.presenceStateSubject.next({}));
     }
 
