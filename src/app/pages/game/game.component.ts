@@ -114,6 +114,8 @@ export class GameComponent implements OnInit, OnDestroy {
 	private opponentSub?: Subscription;
 	private devOpponentSub?: Subscription;
 	private broadcastSub?: Subscription;
+	private loadedMyPokemonId: number | null = null;
+	private loadedDevOpponentPokemonId: number | null = null;
 
 	private lastTurnId: string | null = null;
 
@@ -121,8 +123,19 @@ export class GameComponent implements OnInit, OnDestroy {
 		// Watch room signal for 'finished' status
 		effect(() => {
 			const r = this.room();
+			if (r) {
+				untracked(() => {
+					this.syncDisplayedPokemon(r);
+				});
+			}
 			if (r?.status === 'finished' && !this.showEndModal) {
 				void this.handleGameFinished(r);
+			}
+
+			if (r?.status !== 'finished' && this.showEndModal) {
+				untracked(() => {
+					this.resetRoundUi();
+				});
 			}
 
 			if (r?.status === 'playing' && r.current_turn !== this.lastTurnId) {
@@ -259,6 +272,8 @@ export class GameComponent implements OnInit, OnDestroy {
 			}
 		}
 
+		this.syncDisplayedPokemon(r);
+
 		// Le dernier guess adverse est lu depuis room().last_guess (DB-synced via Realtime/polling)
 
 		this.broadcastSub = this.gameService.broadcastEvents$.subscribe(({ event }) => {
@@ -373,6 +388,51 @@ export class GameComponent implements OnInit, OnDestroy {
 	}
 
 	// ─── Annulation de partie ──────────────────────────────────────────────────
+
+	private syncDisplayedPokemon(r: { pokemon_p1: number | null; pokemon_p2: number | null }): void {
+		const isPlayer1 = this.gameService.isPlayer1();
+		const myPokemonId = isPlayer1 ? r.pokemon_p1 : r.pokemon_p2;
+
+		if (myPokemonId !== this.loadedMyPokemonId) {
+			this.loadedMyPokemonId = myPokemonId;
+			this.pokemonSub?.unsubscribe();
+			if (myPokemonId === null) {
+				this.myPokemon = null;
+			} else {
+				this.pokemonSub = this.pokemonService.getById(myPokemonId).subscribe((p) => {
+					this.myPokemon = p ?? null;
+				});
+			}
+		}
+
+		if (!this.isDev) return;
+
+		const opponentPokemonId = isPlayer1 ? r.pokemon_p2 : r.pokemon_p1;
+		if (opponentPokemonId !== this.loadedDevOpponentPokemonId) {
+			this.loadedDevOpponentPokemonId = opponentPokemonId;
+			this.devOpponentSub?.unsubscribe();
+			if (opponentPokemonId === null) {
+				this.devOpponentPokemon = null;
+			} else {
+				this.devOpponentSub = this.pokemonService.getById(opponentPokemonId).subscribe((p) => {
+					this.devOpponentPokemon = p ?? null;
+				});
+			}
+		}
+	}
+
+	private resetRoundUi(): void {
+		this.showEndModal = false;
+		this.isWinner = false;
+		this.opponentPokemon = null;
+		this.lastGuessedPokemon = null;
+		this.guessedPokemonIds.set([]);
+		this.showIncorrectModal.set(false);
+		this.showMyTurnModal.set(false);
+		this.pendingMyTurnModal.set(false);
+		this.opponentLeft.set(false);
+		this.devOpponentTries.set(0);
+	}
 
 	/** Affiche la modal de confirmation d'annulation. */
 	promptCancel(): void {
