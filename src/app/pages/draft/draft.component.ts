@@ -170,7 +170,7 @@ export class DraftComponent implements OnInit {
     this.isCreatingRoom.set(true);
     try {
       const roomId = await this.supabaseService.createDraftDuoRoom();
-      void this.router.navigate(['/draft-duo', roomId]);
+      void this.router.navigate(['/lobby', roomId], { queryParams: { mode: 'draft_duo' } });
     } catch (err) {
       console.error('[DraftComponent] Erreur création room duo:', err);
       this.isCreatingRoom.set(false);

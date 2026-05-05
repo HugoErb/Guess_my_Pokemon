@@ -26,7 +26,9 @@ export class InviteComponent implements OnInit, OnDestroy {
 	ngOnInit(): void {
 		this.supabaseService.trackPresence('online');
 		const mode = this.route.snapshot.queryParamMap.get('mode');
-		if (mode === 'draft_duo') {
+		if (mode === 'stat_duel') {
+			this.loadStatDuelRoom();
+		} else if (mode === 'draft_duo') {
 			this.loadDraftDuoRoom();
 		} else {
 			this.loadRoom();
@@ -35,6 +37,41 @@ export class InviteComponent implements OnInit, OnDestroy {
 
 	ngOnDestroy(): void {
 		this.supabaseService.untrackPresence();
+	}
+
+	private async loadStatDuelRoom(): Promise<void> {
+		try {
+			const room = await this.supabaseService.getStatDuelRoom(this.roomId());
+
+			if (room?.status !== 'waiting') {
+				this.state = 'error';
+				this.errorMessage = "Cette invitation n'est plus valide.";
+				return;
+			}
+
+			if (room.player2_id) {
+				this.state = 'full';
+				this.errorMessage = 'Cette partie est dÃ©jÃ  complÃ¨te.';
+				return;
+			}
+
+			const currentUser = await firstValueFrom(this.supabaseService.authReady$);
+			if (currentUser?.id === room.player1_id) {
+				this.router.navigate(['/lobby', this.roomId()], { queryParams: { mode: 'stat_duel' } });
+				return;
+			}
+
+			try {
+				await this.supabaseService.joinStatDuelRoom(this.roomId());
+				await this.router.navigate(['/lobby', this.roomId()], { queryParams: { mode: 'stat_duel' } });
+			} catch {
+				this.state = 'error';
+				this.errorMessage = 'Impossible de rejoindre la partie.';
+			}
+		} catch {
+			this.state = 'error';
+			this.errorMessage = "Cette invitation n'est plus valide.";
+		}
 	}
 
 	private async loadDraftDuoRoom(): Promise<void> {
@@ -55,13 +92,13 @@ export class InviteComponent implements OnInit, OnDestroy {
 
 			const currentUser = await firstValueFrom(this.supabaseService.authReady$);
 			if (currentUser?.id === room.player1_id) {
-				this.router.navigate(['/draft-duo', this.roomId()]);
+				this.router.navigate(['/lobby', this.roomId()], { queryParams: { mode: 'draft_duo' } });
 				return;
 			}
 
 			try {
 				await this.supabaseService.joinDraftDuoRoom(this.roomId());
-				await this.router.navigate(['/draft-duo', this.roomId()]);
+				await this.router.navigate(['/lobby', this.roomId()], { queryParams: { mode: 'draft_duo' } });
 			} catch {
 				this.state = 'error';
 				this.errorMessage = 'Impossible de rejoindre la partie.';

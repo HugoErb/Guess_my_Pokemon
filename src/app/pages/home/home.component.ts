@@ -190,9 +190,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.clearInviteToast();
     await this.supabaseService.acceptGameInvite(invite.id, invite.room_id, invite.game_mode);
     if (invite.game_mode === 'stat_duel') {
-      this.router.navigate(['/stat-duel', invite.room_id]);
+      this.router.navigate(['/lobby', invite.room_id], { queryParams: { mode: 'stat_duel' } });
     } else if (invite.game_mode === 'draft_duo') {
-      this.router.navigate(['/draft-duo', invite.room_id]);
+      this.router.navigate(['/lobby', invite.room_id], { queryParams: { mode: 'draft_duo' } });
     } else {
       this.router.navigate(['/lobby', invite.room_id]);
     }
@@ -217,9 +217,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     try {
       const { roomId, inviteId } = await this.supabaseService.sendGameInvite(event.friendId, event.gameMode);
       if (event.gameMode === 'stat_duel') {
-        this.router.navigate(['/stat-duel', roomId], { queryParams: { inviteId, friendName: event.username } });
+        this.router.navigate(['/lobby', roomId], { queryParams: { mode: 'stat_duel', inviteId, friendName: event.username } });
       } else if (event.gameMode === 'draft_duo') {
-        this.router.navigate(['/draft-duo', roomId], { queryParams: { inviteId, friendName: event.username } });
+        this.router.navigate(['/lobby', roomId], { queryParams: { mode: 'draft_duo', inviteId, friendName: event.username } });
       } else {
         this.router.navigate(['/lobby', roomId], { queryParams: { inviteId, friendName: event.username } });
       }

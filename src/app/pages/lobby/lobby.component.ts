@@ -9,7 +9,7 @@ import { GameService } from '../../services/game.service';
 import { PokemonService } from '../../services/pokemon.service';
 import { SupabaseService } from '../../services/supabase.service';
 import { Pokemon } from '../../models/pokemon.model';
-import { DEFAULT_SETTINGS, FirstPlayer, GameSettings } from '../../models/room.model';
+import { DEFAULT_SETTINGS, DraftDuoRoom, FirstPlayer, GameMode, GameSettings, Room, StatDuelRoom } from '../../models/room.model';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { CancelModalComponent } from '../../components/cancel-modal/cancel-modal.component';
 import { HelpModalComponent } from '../../components/help-modal/help-modal.component';
@@ -55,12 +55,31 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	}
 
 	// États
-	room = computed(() => this.gameService.currentRoom());
-	isPlayer1 = computed(() => this.gameService.isPlayer1());
+	gameMode: GameMode = 'guess_my_pokemon';
+	private readonly statDuelRoom = signal<StatDuelRoom | null>(null);
+	private readonly draftDuoRoom = signal<DraftDuoRoom | null>(null);
+	room = computed<Room | StatDuelRoom | DraftDuoRoom | null>(() => {
+		const statRoom = this.statDuelRoom();
+		const draftRoom = this.draftDuoRoom();
+		const guessRoom = this.gameService.currentRoom();
+		if (this.gameMode === 'stat_duel') return statRoom;
+		if (this.gameMode === 'draft_duo') return draftRoom;
+		return guessRoom;
+	});
+	isPlayer1 = computed(() => {
+		if (this.gameMode === 'guess_my_pokemon') return this.gameService.isPlayer1();
+		const r = this.room();
+		const user = this.supabaseService.currentUserSignal();
+		return !!r && !!user && r.player1_id === user.id;
+	});
 	opponentReady = computed(() => {
 		const r = this.room();
 		if (!r) return false;
 		return this.isPlayer1() ? r.p2_ready : r.p1_ready;
+	});
+	hasOpponent = computed(() => {
+		const r = this.room();
+		return !!r?.player2_id || (this.gameMode === 'guess_my_pokemon' && r?.status === 'ready');
 	});
 
 	// Sélection Pokémon
@@ -138,6 +157,27 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
 	private pokemonsSub?: Subscription;
 	private inviteResponseSub?: Subscription;
+	private multiRoomSub?: Subscription;
+	private pollInterval: ReturnType<typeof setInterval> | null = null;
+
+	private readonly MODE_CONFIG: Record<GameMode, { title: string; subtitle?: string; icon: string; iconClass: string; helpMode?: 'stat-duel'; playRoute: string }> = {
+		guess_my_pokemon: { title: 'Guess my Pokémon', icon: ICONS.guess, iconClass: 'text-red-400', playRoute: '/game' },
+		stat_duel: { title: 'Duel de Base Stats', subtitle: 'Deux joueurs en ligne', icon: ICONS.statDuel, iconClass: 'text-yellow-400', helpMode: 'stat-duel', playRoute: '/stat-duel' },
+		draft_duo: { title: 'Team Builder', subtitle: 'Deux joueurs en ligne', icon: ICONS.draft, iconClass: 'text-purple-200', playRoute: '/draft-duo' },
+	};
+
+	get modeConfig(): { title: string; subtitle?: string; icon: string; iconClass: string; helpMode?: 'stat-duel'; playRoute: string } {
+		return this.MODE_CONFIG[this.gameMode];
+	}
+
+	get modeSubtitle(): string {
+		if (this.gameMode === 'guess_my_pokemon') return '';
+		return this.modeConfig.subtitle ?? 'Lobby';
+	}
+
+	isGuessMode(): boolean {
+		return this.gameMode === 'guess_my_pokemon';
+	}
 
 	/** Lifecycle Angular — initialise le lobby. */
 	ngOnInit(): void {
@@ -151,6 +191,17 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	private async init(): Promise<void> {
 		// 1. Attendre que l'auth soit prête
 		await firstValueFrom(this.supabaseService.authReady$);
+		this.gameMode = this.resolveMode();
+
+		if (this.gameMode === 'stat_duel') {
+			await this.initStatDuelLobby();
+			return;
+		}
+
+		if (this.gameMode === 'draft_duo') {
+			await this.initDraftDuoLobby();
+			return;
+		}
 
 		// 2. Watcher Realtime mis en place AVANT joinAndWatch pour éviter la race condition :
 		//    si la room passe à 'playing' pendant joinAndWatch, la navigation est garantie.
@@ -160,7 +211,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 				take(1),
 			)
 			.subscribe(() => {
-				this.router.navigate(['/game', this.roomId()]);
+				this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
 			});
 
 		// 3. Lancer joinAndWatch (Realtime)
@@ -207,6 +258,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		this.gameService.stopWatching();
 		this.pokemonsSub?.unsubscribe();
 		this.inviteResponseSub?.unsubscribe();
+		this.multiRoomSub?.unsubscribe();
+		if (this.pollInterval) clearInterval(this.pollInterval);
 	}
 
 	// ─── Actions ─────────────────────────────────────────────────────────────────
@@ -282,9 +335,11 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	cancelRoom(): void {
 		if (this.isCancelling) return;
 		this.isCancelling = true;
-		void this.gameService.cancelRoom(this.roomId()).catch(() => {
-			// ignore les erreurs d'annulation
-		});
+		if (this.gameMode === 'guess_my_pokemon') {
+			void this.gameService.cancelRoom(this.roomId()).catch(() => {
+				// ignore les erreurs d'annulation
+			});
+		}
 		void this.router.navigate(['/home']);
 	}
 
@@ -294,7 +349,17 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		this.isSimulating = true;
 		this.simulateError = '';
 		try {
-			await this.gameService.simulateOpponent(this.roomId());
+			if (this.gameMode === 'stat_duel') {
+				await this.supabaseService.updateStatDuelRoom(this.roomId(), { player2_id: null });
+				const room = await this.supabaseService.getStatDuelRoom(this.roomId());
+				this.statDuelRoom.set(room);
+			} else if (this.gameMode === 'draft_duo') {
+				await this.supabaseService.updateDraftDuoRoom(this.roomId(), { player2_id: null });
+				const room = await this.supabaseService.getDraftDuoRoom(this.roomId());
+				this.draftDuoRoom.set(room);
+			} else {
+				await this.gameService.simulateOpponent(this.roomId());
+			}
 		} catch (err) {
 			this.simulateError = `Erreur simulation: ${err instanceof Error ? err.message : JSON.stringify(err)}`;
 		} finally {
@@ -308,7 +373,34 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		this.isLaunching = true;
 		this.launchError = '';
 		try {
-			await this.gameService.launchGame(this.roomId(), this.gameSettings);
+			if (this.gameMode === 'stat_duel') {
+				const allPokemon = await firstValueFrom(this.pokemonService.loadAll());
+				const pokemonIds = this.shuffle(allPokemon).slice(0, 6).map(p => p.id);
+				const roundStartAt = new Date(Date.now() + 3000).toISOString();
+				await this.supabaseService.updateStatDuelRoom(this.roomId(), {
+					status: 'playing',
+					pokemon_ids: pokemonIds,
+					round_start_at: roundStartAt,
+					p1_picks: [],
+					p2_picks: [],
+					winner: null,
+					p1_ready: false,
+					p2_ready: false,
+				});
+				void this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
+			} else if (this.gameMode === 'draft_duo') {
+				await this.supabaseService.updateDraftDuoRoom(this.roomId(), {
+					status: 'playing',
+					p1_team: [],
+					p2_team: [],
+					winner: null,
+					p1_ready: false,
+					p2_ready: false,
+				});
+				void this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
+			} else {
+				await this.gameService.launchGame(this.roomId(), this.gameSettings);
+			}
 		} catch {
 			this.launchError = 'Erreur lors du lancement. Réessaie.';
 		} finally {
@@ -502,5 +594,98 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	confirmCancel(): void {
 		this.closeCancelModal();
 		this.cancelRoom();
+	}
+
+	private resolveMode(): GameMode {
+		const mode = this.route.snapshot.queryParamMap.get('mode');
+		if (mode === 'stat_duel' || mode === 'draft_duo') return mode;
+		return 'guess_my_pokemon';
+	}
+
+	private async initStatDuelLobby(): Promise<void> {
+		try {
+			let room = await this.supabaseService.getStatDuelRoom(this.roomId());
+			const user = this.supabaseService.getCurrentUser();
+			if (user && !room.player2_id && room.player1_id !== user.id) {
+				await this.supabaseService.joinStatDuelRoom(this.roomId());
+				room = await this.supabaseService.getStatDuelRoom(this.roomId());
+			}
+			this.statDuelRoom.set(room);
+			this.isLoading = false;
+			this.inviteLink = `${globalThis.location.origin}/invite/${this.roomId()}?mode=stat_duel`;
+			this.supabaseService.trackPresence('in_game');
+			this.subscribeInviteDecline();
+			if (room.status !== 'waiting') void this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
+			this.multiRoomSub = this.supabaseService.subscribeToStatDuelRoom(this.roomId()).subscribe((updated) => {
+				this.statDuelRoom.set(updated);
+				if (updated.status !== 'waiting') void this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
+			});
+			this.startMultiPoll();
+		} catch {
+			void this.router.navigate(['/home'], { queryParams: { roomNotFound: true } });
+		}
+	}
+
+	private async initDraftDuoLobby(): Promise<void> {
+		try {
+			let room = await this.supabaseService.getDraftDuoRoom(this.roomId());
+			const user = this.supabaseService.getCurrentUser();
+			if (user && !room.player2_id && room.player1_id !== user.id) {
+				await this.supabaseService.joinDraftDuoRoom(this.roomId());
+				room = await this.supabaseService.getDraftDuoRoom(this.roomId());
+			}
+			this.draftDuoRoom.set(room);
+			this.isLoading = false;
+			this.inviteLink = `${globalThis.location.origin}/invite/${this.roomId()}?mode=draft_duo`;
+			this.supabaseService.trackPresence('in_game');
+			this.subscribeInviteDecline();
+			if (room.status !== 'waiting') void this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
+			this.multiRoomSub = this.supabaseService.subscribeToDraftDuoRoom(this.roomId()).subscribe((updated) => {
+				this.draftDuoRoom.set(updated);
+				if (updated.status !== 'waiting') void this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
+			});
+			this.startMultiPoll();
+		} catch {
+			void this.router.navigate(['/home'], { queryParams: { roomNotFound: true } });
+		}
+	}
+
+	private subscribeInviteDecline(): void {
+		const inviteId = this.route.snapshot.queryParamMap.get('inviteId');
+		const friendName = this.route.snapshot.queryParamMap.get('friendName') ?? 'Ton ami';
+		if (inviteId) {
+			this.inviteResponseSub = this.supabaseService.subscribeToGameInviteResponse(inviteId).subscribe((invite) => {
+				if (invite.status === 'declined') {
+					void this.router.navigate(['/home'], { queryParams: { declined: friendName } });
+				}
+			});
+		}
+	}
+
+	private startMultiPoll(): void {
+		this.pollInterval = setInterval(async () => {
+			try {
+				if (this.gameMode === 'stat_duel') {
+					const room = await this.supabaseService.getStatDuelRoom(this.roomId());
+					this.statDuelRoom.set(room);
+					if (room.status !== 'waiting') void this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
+				} else if (this.gameMode === 'draft_duo') {
+					const room = await this.supabaseService.getDraftDuoRoom(this.roomId());
+					this.draftDuoRoom.set(room);
+					if (room.status !== 'waiting') void this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
+				}
+			} catch {
+				// ignore les erreurs de polling
+			}
+		}, 2000);
+	}
+
+	private shuffle<T>(arr: T[]): T[] {
+		const a = [...arr];
+		for (let i = a.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[a[i], a[j]] = [a[j], a[i]];
+		}
+		return a;
 	}
 }

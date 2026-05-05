@@ -1,12 +1,12 @@
 <div class="h-dvh bg-slate-900 text-white flex flex-col overflow-hidden">
 	<!-- Header -->
-	<header class="bg-slate-800 border-b border-slate-700 px-3 md:px-6 py-3 md:py-4 flex items-center justify-between">
+	<header class="bg-slate-800 border-b border-slate-700 px-3 md:px-6 py-4 flex items-center justify-between shrink-0">
 		<div class="flex items-center gap-3">
-			<iconify-icon [icon]="ICONS.guess" class="text-2xl text-red-400"></iconify-icon>
-			<h1 class="text-base md:text-xl font-bold text-white">Guess my Pokémon</h1>
+			<iconify-icon [icon]="modeConfig.icon" [class]="'text-2xl ' + modeConfig.iconClass"></iconify-icon>
+			<h1 class="text-xl font-bold text-white">{{ modeConfig.title }} @if (modeSubtitle) { <span class="text-slate-500 font-medium mx-2">-</span> <span class="text-lg text-slate-300">{{ modeSubtitle }}</span> }</h1>
 		</div>
 	</header>
-	
+
 	<div class="bg-slate-800/50 border-b border-slate-700 px-3 py-2 flex items-center justify-end gap-2 shrink-0">
 		<button
 			(click)="showHelpModal.set(true)"
@@ -33,28 +33,32 @@
 	<!-- Phase 1 : En attente du 2ème joueur / ready -->
 	@if (room()?.status === 'waiting' || room()?.status === 'ready') {
 		<div class="flex-1 flex flex-col items-center justify-center overflow-y-auto p-4 md:p-6">
+			<div class="flex items-center gap-3 mb-8">
+				<iconify-icon [icon]="modeConfig.icon" [class]="'text-4xl ' + modeConfig.iconClass"></iconify-icon>
+				<h1 class="text-3xl md:text-4xl font-black text-white tracking-wide">{{ modeConfig.title }}</h1>
+			</div>
 			<div class="bg-slate-800 rounded-2xl p-4 md:p-6 max-w-md w-full text-center shadow-xl border border-slate-700 max-h-[90dvh] overflow-y-auto">
-				@if (room()?.status === 'ready') {
+				@if (hasOpponent()) {
 					<iconify-icon [icon]="ICONS.checkCircle" class="text-5xl mb-1 text-green-400"></iconify-icon>
 				} @else {
 					<iconify-icon [icon]="ICONS.timer" class="text-4xl mb-4 text-red-500 animate-pulse"></iconify-icon>
 				}
 				<h2 class="text-2xl font-bold mb-4">
-					@if (room()?.status === 'waiting') {
+					@if (!hasOpponent()) {
 						<span>En attente de ton adversaire…</span>
 					}
-					@if (room()?.status === 'ready' && isPlayer1()) {
+					@if (hasOpponent() && isPlayer1()) {
 						<span>Ton adversaire est connecté !</span>
 					}
-					@if (room()?.status === 'ready' && !isPlayer1()) {
+					@if (hasOpponent() && !isPlayer1()) {
 						<span>Tu as rejoint la partie !</span>
 					}
 				</h2>
-				@if (room()?.status === 'waiting' && isPlayer1()) {
+				@if (!hasOpponent() && isPlayer1()) {
 					<p class="text-slate-400 mb-6">Partage ce lien à ton ami pour qu'il rejoigne la partie :</p>
 				}
 
-				@if (room()?.status === 'ready' && !isPlayer1()) {
+				@if (hasOpponent() && !isPlayer1()) {
 					<p class="text-slate-400 mb-6">La partie va bientôt commencer. En attente du lancement par l'hôte de la partie.</p>
 				}
 
@@ -84,7 +88,7 @@
 				}
 
 				<!-- Panneau de configuration (Player 1 uniquement) -->
-				@if (isPlayer1()) {
+				@if (isPlayer1() && isGuessMode()) {
 					<div class="mt-4 text-left">
 						<!-- Toggle header -->
 						<button
@@ -318,17 +322,17 @@
 					<div class="mt-6 flex flex-col gap-2">
 						<button
 							(click)="launchGame()"
-							[disabled]="isLaunching || room()?.status === 'waiting'"
+							[disabled]="isLaunching || !hasOpponent()"
 							class="w-full bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors flex items-center justify-center gap-2"
 						>
 							@if (isLaunching) {
 								<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
 								Lancement…
-							} @else if (room()?.status === 'waiting') {
+							} @else if (!hasOpponent()) {
 								<iconify-icon [icon]="ICONS.loading" class="text-lg animate-spin"></iconify-icon>
 								En attente de ton adversaire…
 							} @else {
-								<iconify-icon [icon]="ICONS.guess" class="text-xl"></iconify-icon>
+								<iconify-icon [icon]="modeConfig.icon" class="text-xl"></iconify-icon>
 								Lancer la partie !
 							}
 						</button>
@@ -348,7 +352,7 @@
 				</button>
 
 				<!-- Bouton mode dev -->
-				@if (devMode && room()?.status === 'waiting') {
+				@if (devMode && !hasOpponent() && isGuessMode()) {
 					<button
 						(click)="simulateOpponent()"
 						[disabled]="isSimulating"
@@ -365,7 +369,7 @@
 	}
 
 	<!-- Phase 2 : Sélection du Pokémon -->
-	@if (room()?.status === 'selecting' || room()?.status === 'playing') {
+	@if (isGuessMode() && (room()?.status === 'selecting' || room()?.status === 'playing')) {
 		<div class="flex-1 flex flex-col overflow-hidden">
 			<!-- Contenu principal en deux colonnes (une colonne sur mobile) -->
 			<div class="flex-1 flex flex-col md:flex-row overflow-hidden">
@@ -631,6 +635,6 @@
 	}
 
 	@if (showHelpModal()) {
-		<app-help-modal [showFilters]="true" (close)="showHelpModal.set(false)" />
+		<app-help-modal [mode]="modeConfig.helpMode ?? 'guess'" [showFilters]="isGuessMode()" (close)="showHelpModal.set(false)" />
 	}
 </div>

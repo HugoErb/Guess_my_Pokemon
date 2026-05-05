@@ -226,7 +226,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     async createMultiRoom(): Promise<void> {
         const roomId = await this.supabaseService.createStatDuelRoom();
-        void this.router.navigate(['/stat-duel', roomId]);
+        void this.router.navigate(['/lobby', roomId], { queryParams: { mode: 'stat_duel' } });
     }
 
     async startDevMode(): Promise<void> {
@@ -240,7 +240,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         const me = this.supabaseService.getCurrentUser();
         if (!me) return;
 
-        this.inviteLink = `${window.location.origin}/stat-duel/${roomId}`;
+        this.inviteLink = `${window.location.origin}/invite/${roomId}?mode=stat_duel`;
 
         const room = await this.supabaseService.getStatDuelRoom(roomId);
         this.room.set(room);
