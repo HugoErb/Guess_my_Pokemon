@@ -78,7 +78,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     isPlayer1 = signal(false);
     roomId: string | null = null;
 
-    // â”€â”€â”€ DonnÃ©es de jeu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // Game state
     pokemonList = signal<Pokemon[]>([]);
     currentRound = signal(0);
     timerValue = signal(10);
@@ -119,7 +119,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     // â”€â”€â”€ Dev mode bot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private botPickedRounds = new Set<number>();
 
-    // â”€â”€â”€ Animation PokÃ©mon â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // Pokemon animation
     pokemonVisible = signal(false);
     pokemonAnimating = signal(false);
     private readonly ANIMATION_DURATION_MS = 450;
@@ -154,11 +154,11 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     // â”€â”€â”€ Type colors map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     protected readonly TYPE_COLORS: Record<string, string> = {
         'Normal': 'bg-gray-400', 'Feu': 'bg-orange-500', 'Eau': 'bg-blue-500',
-        'Ã‰lectrik': 'bg-yellow-400', 'Plante': 'bg-green-500', 'Glace': 'bg-cyan-400',
+        'Électrik': 'bg-yellow-400', 'Plante': 'bg-green-500', 'Glace': 'bg-cyan-400',
         'Combat': 'bg-red-700', 'Poison': 'bg-purple-500', 'Sol': 'bg-yellow-600',
         'Vol': 'bg-indigo-400', 'Psy': 'bg-pink-500', 'Insecte': 'bg-lime-500',
         'Roche': 'bg-yellow-700', 'Spectre': 'bg-violet-700', 'Dragon': 'bg-indigo-600',
-        'TÃ©nÃ¨bres': 'bg-gray-700', 'Acier': 'bg-slate-400', 'FÃ©e': 'bg-pink-300',
+        'Ténèbres': 'bg-gray-700', 'Acier': 'bg-slate-400', 'Fée': 'bg-pink-300',
     };
 
     // â”€â”€â”€ Animation & Effects â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -278,14 +278,14 @@ export class StatDuelComponent implements OnInit, OnDestroy {
                 const me2 = this.supabaseService.getCurrentUser();
                 if (!me2) return;
                 const isP1 = updated.player1_id === me2.id;
-                // Ne pas Ã©craser l'Ã©tat local si la DB est en retard (race condition appendStatPick)
+                // Do not overwrite local state if DB updates lag behind (appendStatPick race)
                 const dbMyPicks = isP1 ? updated.p1_picks : updated.p2_picks;
                 if (dbMyPicks.length >= this.myPicks().length) {
                     this.myPicks.set(dbMyPicks);
                 }
                 this.opponentPicks.set(isP1 ? updated.p2_picks : updated.p1_picks);
 
-                // Reveal simultanÃ© : dÃ¨s que les deux ont choisi, on rÃ©vÃ¨le
+                // Simultaneous reveal: as soon as both players picked, reveal
                 if (this.waitingForReveal() && this.opponentPicks().length > this.currentRound()) {
                     this.triggerReveal();
                 }
@@ -339,7 +339,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         this.myPicks.set(isP1 ? room.p1_picks : room.p2_picks);
         this.opponentPicks.set(isP1 ? room.p2_picks : room.p1_picks);
 
-        // En cas de reconnexion mid-game, les manches terminÃ©es sont dÃ©jÃ  rÃ©vÃ©lÃ©es
+        // On reconnect mid-game, completed rounds are already revealed
         const completedRounds = Math.min(room.p1_picks.length, room.p2_picks.length) - 1;
         this.revealedRound.set(completedRounds);
 
@@ -368,7 +368,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         try {
             const allPokemon = await this.loadAll();
             const pokemonIds = this.shuffle(allPokemon).slice(0, ROUND_COUNT).map(p => p.id);
-            // DÃ©cale le dÃ©part de la durÃ©e de l'animation VS pour que le timer ne commence qu'aprÃ¨s
+            // Delay round start until the VS animation has finished
             const roundStartAt = new Date(Date.now() + 3000).toISOString();
 
             await this.supabaseService.updateStatDuelRoom(this.roomId, {
@@ -377,8 +377,8 @@ export class StatDuelComponent implements OnInit, OnDestroy {
                 round_start_at: roundStartAt,
             });
 
-            // P1 transite directement â€” la subscription ne renvoie pas toujours l'Ã©cho
-            // au client qui a Ã©mis le changement (comportement Supabase realtime)
+            // P1 moves forward locally because the subscription does not always echo
+            // changes back to the client that emitted them (Supabase realtime behavior)
             await this.loadPokemonAndStartMulti({
                 ...currentRoom,
                 status: 'playing',
@@ -431,7 +431,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         this.stopClock();
         const startMs = new Date(roundStartAt).getTime();
 
-        // Initialiser prevRound pour correspondre Ã  l'Ã©tat actuel (Ã©vite le flicker au dÃ©marrage)
+        // Initialize prevRound from current state to avoid startup flicker
         const initialElapsed = Date.now() - startMs;
         let prevRound = initialElapsed < 0 ? -1 : Math.floor(initialElapsed / ROUND_DURATION_MS);
 
@@ -457,7 +457,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
             const remainingPick = Math.max(0, (ROUND_PICK_TIME_MS - elapsedInRound) / 1000);
             const remainingTransition = Math.max(0, (ROUND_DURATION_MS - elapsedInRound) / 1000);
 
-            // Gestion du timer et du compte Ã  rebours
+            // Timer and countdown handling
             if (elapsedInRound > ROUND_PICK_TIME_MS) {
                 this.nextRoundCountdown.set(Math.ceil(remainingTransition));
                 this.timerValue.set(0);
@@ -470,12 +470,12 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
             // Changement de manche
             if (round !== prevRound) {
-                // Si on a manquÃ© des manches (lag/background), on rattrape les auto-picks
+                // If we missed rounds (lag/background), catch up auto-picks
                 if (prevRound >= 0 && round > prevRound) {
                     for (let r = prevRound; r < round; r++) {
                         if (this.myPicks().length <= r) {
-                            // On pourrait auto-pick ici pour les manches manquÃ©es
-                            // Mais pickStat dÃ©pend de currentRound, donc c'est dÃ©licat.
+                            // We could auto-pick here for missed rounds
+                            // But pickStat depends on currentRound, so it is tricky.
                         }
                     }
                 }
@@ -484,7 +484,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
                     this.triggerReveal();
                 }
 
-                // Animation seulement si on avance rÃ©ellement
+                // Animate only when we actually advance
                 if (round > prevRound) {
                     this.startPokemonAnimation();
                     this.currentRound.set(round);
@@ -493,7 +493,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
                 prevRound = round;
             }
 
-            // Auto-pick Ã  la fin du temps de choix
+            // Auto-pick at the end of the pick window
             if (remainingPick <= 0 && elapsedInRound <= ROUND_PICK_TIME_MS + 200) {
                 if (this.myPicks().length <= round) {
                     this.autoPickStat();
@@ -539,8 +539,8 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
         const bothPicked = this.myPicks().length > round && this.opponentPicks().length > round;
         if (bothPicked) {
-            // En multi, on ne stoppe plus le clock pour laisser le cycle de 17.5s dÃ©filer
-            // Cela garantit que tous les joueurs passent Ã  la manche suivante en mÃªme temps.
+            // In multiplayer, keep the clock running through the 17.5s cycle
+            // This keeps both players moving to the next round at the same time.
 
             if (round >= ROUND_COUNT - 1) {
                 setTimeout(() => {
@@ -583,7 +583,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
             this.pendingMyPickStat.set(statKey);
             this.waitingForReveal.set(true);
             void this.supabaseService.appendStatPick(this.roomId, isP1 ? 'p1_picks' : 'p2_picks', pick);
-            // Si l'adversaire a dÃ©jÃ  choisi, on rÃ©vÃ¨le immÃ©diatement
+            // If the opponent already picked, reveal immediately
             if (this.opponentPicks().length > this.currentRound()) {
                 this.triggerReveal();
             }
@@ -642,7 +642,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     private scheduleBotPick(roundIndex: number, roundStartAt: string): void {
         const roundStartMs = new Date(roundStartAt).getTime() + roundIndex * ROUND_DURATION_MS;
-        const botDelay = 1500 + Math.random() * 6500; // 1.5sâ€“8s dans la manche
+        const botDelay = 1500 + Math.random() * 6500; // 1.5s to 8s dans la manche
         const delayFromNow = Math.max(200, roundStartMs + botDelay - Date.now());
 
         setTimeout(async () => {
@@ -901,10 +901,10 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         const me = this.supabaseService.getCurrentUser();
         const room = this.room();
         if (!me || !room?.winner) return '';
-        if (room.winner === 'draw') return 'Ã‰galitÃ© !';
+        if (room.winner === 'draw') return 'Égalité !';
         const isMeP1 = room.player1_id === me.id;
         const iWon = (room.winner === 'player1' && isMeP1) || (room.winner === 'player2' && !isMeP1);
-        return iWon ? 'Victoire !' : 'DÃ©faite';
+        return iWon ? 'Victoire !' : 'Défaite';
     }
 
     getResultColor(): string {
