@@ -317,7 +317,7 @@
 						<!-- CENTRE : Pokémon - 1er sur mobile, colonne centrale desktop -->
 						<div class="order-1 lg:order-2 relative flex justify-center lg:self-center">
 							@if (waitingForReveal()) {
-								<div class="pointer-events-none absolute left-1/2 top-0 z-10 flex -translate-x-1/2 -translate-y-full items-center justify-center gap-2 whitespace-nowrap text-center text-sm text-slate-400">
+								<div class="pointer-events-none absolute left-1/2 top-0 z-10 flex -translate-x-1/2 -translate-y-[calc(100%+0.5rem)] items-center justify-center gap-2 whitespace-nowrap text-center text-sm text-slate-400">
 									<iconify-icon [icon]="ICONS.loading" class="text-base animate-spin text-blue-400"></iconify-icon>
 									<span>En attente de l'adversaire...</span>
 								</div>
