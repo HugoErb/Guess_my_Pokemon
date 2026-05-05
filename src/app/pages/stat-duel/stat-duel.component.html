@@ -296,7 +296,7 @@
 												@if (pick) {
 													<span [ngClass]="justPicked ? stat.colorClass : 'text-white'" [class.stat-pop]="justPicked">{{ pick.value }}</span>
 												} @else {
-													<span class="text-slate-600">-</span>
+													<span class="text-slate-600 relative -top-0.5">&mdash;</span>
 												}
 											</span>
 										</div>
@@ -419,7 +419,7 @@
 												} @else if (revealedPick) {
 													<span [ngClass]="justPicked ? stat.colorClass : 'text-white'" [class.stat-pop]="justPicked">{{ revealedPick.value }}</span>
 												} @else {
-													<span class="text-slate-600">-</span>
+													<span class="text-slate-600 relative -top-0.5">&mdash;</span>
 												}
 											</span>
 										</div>
