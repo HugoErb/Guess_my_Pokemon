@@ -1,6 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{html,ts}"],
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
   theme: {
     screens: {
       sm:  '640px',
