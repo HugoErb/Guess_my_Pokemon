@@ -6,7 +6,7 @@ export PATH="$NVM_DIR/versions/node/v22.22.2/bin:$PATH"
 
 echo "======== $(date) | Déploiement PokéLudik ========"
 
-cd /home/ubuntu/Guess-my-Pokemon || exit 1
+cd /home/ubuntu/PokeLudik || exit 1
 
 echo "Mise à jour du dépôt Git..."
 git pull origin
