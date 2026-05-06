@@ -15,8 +15,8 @@ CREATE TABLE public.draft_duo_rooms (
   player1_id uuid NOT NULL,
   player2_id uuid,
   status text NOT NULL DEFAULT 'waiting'::text,
-  p1_team ARRAY NOT NULL DEFAULT '{}'::integer[],
-  p2_team ARRAY NOT NULL DEFAULT '{}'::integer[],
+  p1_team integer[] NOT NULL DEFAULT '{}'::integer[],
+  p2_team integer[] NOT NULL DEFAULT '{}'::integer[],
   winner text,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   p1_ready boolean NOT NULL DEFAULT false,
@@ -80,7 +80,7 @@ CREATE TABLE public.stat_duel_rooms (
   player1_id uuid NOT NULL,
   player2_id uuid,
   status text DEFAULT 'waiting'::text,
-  pokemon_ids ARRAY DEFAULT '{}'::integer[],
+  pokemon_ids integer[] DEFAULT '{}'::integer[],
   p1_picks jsonb DEFAULT '[]'::jsonb,
   p2_picks jsonb DEFAULT '[]'::jsonb,
   round_start_at timestamp with time zone,
@@ -88,5 +88,45 @@ CREATE TABLE public.stat_duel_rooms (
   created_at timestamp with time zone DEFAULT now(),
   p1_ready boolean NOT NULL DEFAULT false,
   p2_ready boolean NOT NULL DEFAULT false,
-  CONSTRAINT stat_duel_rooms_pkey PRIMARY KEY (id)
+  CONSTRAINT stat_duel_rooms_pkey PRIMARY KEY (id),
+  CONSTRAINT stat_duel_rooms_player1_id_fkey FOREIGN KEY (player1_id) REFERENCES auth.users(id),
+  CONSTRAINT stat_duel_rooms_player2_id_fkey FOREIGN KEY (player2_id) REFERENCES auth.users(id)
 );
+
+ALTER TABLE public.defeated_trainers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.draft_duo_rooms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.friendships ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.game_invites ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.guess_pokemon_rooms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.stat_duel_rooms ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "profiles_select" ON public.profiles FOR SELECT USING (true);
+CREATE POLICY "profiles_insert_own" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "profiles_update_own" ON public.profiles FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "defeated_trainers_select_own" ON public.defeated_trainers FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "defeated_trainers_insert_own" ON public.defeated_trainers FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "defeated_trainers_delete_own" ON public.defeated_trainers FOR DELETE USING (auth.uid() = user_id);
+
+CREATE POLICY "friendships_select_related" ON public.friendships FOR SELECT USING (auth.uid() = requester_id OR auth.uid() = recipient_id);
+CREATE POLICY "friendships_insert_own" ON public.friendships FOR INSERT WITH CHECK (auth.uid() = requester_id);
+CREATE POLICY "friendships_update_related" ON public.friendships FOR UPDATE USING (auth.uid() = requester_id OR auth.uid() = recipient_id);
+CREATE POLICY "friendships_delete_related" ON public.friendships FOR DELETE USING (auth.uid() = requester_id OR auth.uid() = recipient_id);
+
+CREATE POLICY "game_invites_select_related" ON public.game_invites FOR SELECT USING (auth.uid() = sender_id OR auth.uid() = recipient_id);
+CREATE POLICY "game_invites_insert_own" ON public.game_invites FOR INSERT WITH CHECK (auth.uid() = sender_id);
+CREATE POLICY "game_invites_update_related" ON public.game_invites FOR UPDATE USING (auth.uid() = sender_id OR auth.uid() = recipient_id);
+
+CREATE POLICY "guess_rooms_select_related_or_open" ON public.guess_pokemon_rooms FOR SELECT USING (auth.uid() = player1_id OR auth.uid() = player2_id OR status IN ('waiting', 'ready'));
+CREATE POLICY "guess_rooms_insert_own" ON public.guess_pokemon_rooms FOR INSERT WITH CHECK (auth.uid() = player1_id);
+CREATE POLICY "guess_rooms_update_related_or_open" ON public.guess_pokemon_rooms FOR UPDATE USING (auth.uid() = player1_id OR auth.uid() = player2_id OR (player2_id IS NULL AND status = 'waiting'));
+CREATE POLICY "guess_rooms_delete_owner" ON public.guess_pokemon_rooms FOR DELETE USING (auth.uid() = player1_id);
+
+CREATE POLICY "stat_duel_rooms_select_related_or_open" ON public.stat_duel_rooms FOR SELECT USING (auth.uid() = player1_id OR auth.uid() = player2_id OR status = 'waiting');
+CREATE POLICY "stat_duel_rooms_insert_own" ON public.stat_duel_rooms FOR INSERT WITH CHECK (auth.uid() = player1_id);
+CREATE POLICY "stat_duel_rooms_update_related_or_open" ON public.stat_duel_rooms FOR UPDATE USING (auth.uid() = player1_id OR auth.uid() = player2_id OR (player2_id IS NULL AND status = 'waiting'));
+
+CREATE POLICY "draft_duo_rooms_select_related_or_open" ON public.draft_duo_rooms FOR SELECT USING (auth.uid() = player1_id OR auth.uid() = player2_id OR status = 'waiting');
+CREATE POLICY "draft_duo_rooms_insert_own" ON public.draft_duo_rooms FOR INSERT WITH CHECK (auth.uid() = player1_id);
+CREATE POLICY "draft_duo_rooms_update_related_or_open" ON public.draft_duo_rooms FOR UPDATE USING (auth.uid() = player1_id OR auth.uid() = player2_id OR (player2_id IS NULL AND status = 'waiting'));

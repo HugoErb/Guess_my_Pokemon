@@ -332,10 +332,17 @@ export class SupabaseService implements OnDestroy {
         const user = this.userSubject.getValue();
         if (!user) throw new Error('Utilisateur non connecté');
 
+        const room = await this.getStatDuelRoom(roomId);
+        if (room.player1_id === user.id) throw new Error('Le créateur ne peut pas rejoindre sa propre room');
+        if (room.player2_id) throw new Error('Room déjà complète');
+        if (room.status !== 'waiting') throw new Error('Room non joignable');
+
         const { error } = await this.supabase
             .from('stat_duel_rooms')
             .update({ player2_id: user.id })
-            .eq('id', roomId);
+            .eq('id', roomId)
+            .eq('status', 'waiting')
+            .is('player2_id', null);
 
         if (error) throw error;
     }
@@ -440,10 +447,16 @@ export class SupabaseService implements OnDestroy {
         const user = this.userSubject.getValue();
         if (!user) throw new Error('Utilisateur non connecté');
 
+        const room = await this.getDraftDuoRoom(roomId);
+        if (room.player1_id === user.id) throw new Error('Le créateur ne peut pas rejoindre sa propre room');
+        if (room.player2_id) throw new Error('Room déjà complète');
+        if (room.status !== 'waiting') throw new Error('Room non joignable');
+
         const { error } = await this.supabase
             .from('draft_duo_rooms')
             .update({ player2_id: user.id })
             .eq('id', roomId)
+            .eq('status', 'waiting')
             .is('player2_id', null);
 
         if (error) throw error;

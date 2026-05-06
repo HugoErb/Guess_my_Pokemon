@@ -52,7 +52,7 @@ export class InviteComponent implements OnInit, OnDestroy {
 
 			if (room.player2_id) {
 				this.state = 'full';
-				this.errorMessage = 'Cette partie est dÃ©jÃ  complÃ¨te.';
+				this.errorMessage = 'Cette partie est déjà complète.';
 				return;
 			}
 

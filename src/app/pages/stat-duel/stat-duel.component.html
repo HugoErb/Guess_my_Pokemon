@@ -71,7 +71,7 @@
 	}
 
 	<main class="flex-1 flex flex-col overflow-hidden relative">
-		<!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Phase : mode-select â”€â”€â”€ -->
+		<!-- ----------------------------------- Phase : mode-select --- -->
 		@if (phase() === "mode-select") {
 			<div class="flex-1 min-h-0 overflow-y-auto">
 				<div class="min-h-full flex flex-col items-center justify-center pt-8 pb-20 px-4 relative">
@@ -107,7 +107,7 @@
 			</div>
 		}
 
-		<!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Phase : waiting â”€â”€â”€ -->
+		<!-- --------------------------------------- Phase : waiting --- -->
 		@if (phase() === "waiting") {
 			<div class="flex-1 flex flex-col items-center justify-center overflow-y-auto p-4 md:p-6 w-full">
 				<div class="bg-slate-800 rounded-2xl p-4 md:p-6 max-w-md w-full text-center shadow-xl border border-slate-700">
@@ -195,10 +195,10 @@
 			</div>
 		}
 
-		<!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Phase : playing â”€â”€â”€ -->
+		<!-- --------------------------------------- Phase : playing --- -->
 		@if (phase() === "playing") {
 
-			<!-- â•â• SOLO : layout colonne unique â•â• -->
+			<!-- == SOLO : layout colonne unique == -->
 			@if (isSolo()) {
 				<div class="flex-1 flex flex-col items-center justify-start overflow-y-auto px-3 md:px-4 py-3 md:py-6">
 					<div class="w-full max-w-lg flex flex-col gap-3 md:gap-5 my-auto">
@@ -306,7 +306,7 @@
 					</div>
 				</div>
 
-			<!-- â•â• MULTI : layout 3 colonnes desktop, colonne mobile â•â• -->
+			<!-- == MULTI : layout 3 colonnes desktop, colonne mobile == -->
 			} @else {
 				<div class="flex-1 overflow-y-auto flex lg:justify-center lg:items-center">
 					<div class="w-full p-3 sm:p-4 lg:p-6 flex flex-col lg:grid lg:grid-cols-[440px_260px_440px] gap-3 lg:gap-6 lg:items-center lg:w-auto">
@@ -498,7 +498,7 @@
 			}
 		}
 
-		<!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Phase : result â”€â”€â”€ -->
+		<!-- ---------------------------------------- Phase : result --- -->
 		@if (phase() === "result") {
 			<div class="flex-1 overflow-y-auto flex flex-col items-center justify-start md:justify-center px-4 pt-4 md:pt-8 pb-8 md:pb-24">
 				<div class="w-full max-w-lg md:max-w-3xl flex flex-col gap-4 md:gap-6">

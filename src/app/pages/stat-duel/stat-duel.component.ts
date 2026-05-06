@@ -73,7 +73,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     private readonly pokemonService = inject(PokemonService);
     private readonly supabaseService = inject(SupabaseService);
 
-    // â”€â”€â”€ Phase & mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Phase & mode ------------------------------------------------------------
     phase = signal<Phase>('mode-select');
     isSolo = signal(true);
     isDevMode = signal(false);
@@ -95,7 +95,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     justRevealedOpponentPick = signal<StatPick | null>(null);
     nextRoundCountdown = signal<number | null>(null);
 
-    // â”€â”€â”€ Computed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Computed ----------------------------------------------------------------
     currentPokemon = computed(() => this.pokemonList()[this.currentRound()] ?? null);
     pickedStatKeys = computed(() => new Set(this.myPicks().map(p => p.stat)));
     hasPickedThisRound = computed(() => this.myPicks().length > this.currentRound());
@@ -108,17 +108,17 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     opponentRevealedTotal = computed(() => this.opponentRevealedPicks().reduce((s, p) => s + p.value, 0));
     opponentLeft = signal(false);
 
-    // â”€â”€â”€ Timer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Timer -------------------------------------------------------------------
     private clockInterval: ReturnType<typeof setInterval> | null = null;
     private roundStartTime = 0;
 
-    // â”€â”€â”€ Abonnements â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Abonnements -------------------------------------------------------------
     private roomSub?: Subscription;
     private inviteResponseSub?: Subscription;
     private broadcastSub?: Subscription;
     private waitingPollInterval: ReturnType<typeof setInterval> | null = null;
 
-    // â”€â”€â”€ Dev mode bot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Dev mode bot ------------------------------------------------------------
     private botPickedRounds = new Set<number>();
 
     // Pokemon animation
@@ -126,13 +126,13 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     pokemonAnimating = signal(false);
     private readonly ANIMATION_DURATION_MS = 450;
 
-    // â”€â”€â”€ Duel intro â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Duel intro --------------------------------------------------------------
     showDuelIntro = signal(false);
     duelPlayer1 = signal<{ username: string; avatar_url?: string } | null>(null);
     duelPlayer2 = signal<{ username: string; avatar_url?: string } | null>(null);
     private duelShown = false;
 
-    // â”€â”€â”€ Replay state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Replay state ------------------------------------------------------------
     iWantReplay = computed(() => {
         const r = this.room();
         if (!r) return false;
@@ -144,16 +144,16 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         return this.isPlayer1() ? r.p2_ready : r.p1_ready;
     });
 
-    // â”€â”€â”€ UI state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- UI state ----------------------------------------------------------------
     showHelpModal = signal(false);
     statsExpanded = signal(false);
 
-    // â”€â”€â”€ Partage lien â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Partage lien ------------------------------------------------------------
     inviteLink = '';
     linkCopied = signal(false);
     private preloadedImages: HTMLImageElement[] = [];
 
-    // â”€â”€â”€ Type colors map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Type colors map ---------------------------------------------------------
     protected readonly TYPE_COLORS: Record<string, string> = {
         'Normal': 'bg-gray-400', 'Feu': 'bg-orange-500', 'Eau': 'bg-blue-500',
         'Électrik': 'bg-yellow-400', 'Plante': 'bg-green-500', 'Glace': 'bg-cyan-400',
@@ -163,7 +163,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         'Ténèbres': 'bg-gray-700', 'Acier': 'bg-slate-400', 'Fée': 'bg-pink-300',
     };
 
-    // â”€â”€â”€ Animation & Effects â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Animation & Effects --------------------------------------------------
     private confettiFired = false;
 
 
@@ -211,7 +211,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         confetti({ particleCount: 160, spread: 110, origin: { x: 0.5, y: 0.4 }, colors });
     }
 
-    // â”€â”€â”€ Mode select â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Mode select -------------------------------------------------------------
 
     async startSolo(): Promise<void> {
         this.isSolo.set(true);
@@ -235,7 +235,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         void this.router.navigate(['/stat-duel', roomId], { queryParams: { dev: '1' } });
     }
 
-    // â”€â”€â”€ Multi init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Multi init --------------------------------------------------------------
 
     private async initMulti(roomId: string): Promise<void> {
         const me = this.supabaseService.getCurrentUser();
@@ -360,7 +360,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         this.startMultiClock(room.round_start_at!);
     }
 
-    // â”€â”€â”€ Lancer la partie multi (P1) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Lancer la partie multi (P1) ---------------------------------------------
 
     protected isLaunching = signal(false);
 
@@ -397,7 +397,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }
     }
 
-    // â”€â”€â”€ Horloges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Horloges ----------------------------------------------------------------
 
     private startSoloClock(): void {
         this.stopClock();
@@ -608,7 +608,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }
     }
 
-    // â”€â”€â”€ Pick stat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Pick stat ---------------------------------------------------------------
 
     pickStat(statKey: keyof Pokemon['stats']): void {
         if (this.hasPickedThisRound()) return;
@@ -646,7 +646,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         this.pickStat(randomKey);
     }
 
-    // â”€â”€â”€ Avancer (solo) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Avancer (solo) ----------------------------------------------------------
 
     private advanceSoloRound(): void {
         const next = this.currentRound() + 1;
@@ -659,7 +659,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }
     }
 
-    // â”€â”€â”€ Fin de partie multi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Fin de partie multi -----------------------------------------------------
 
     private endMultiGame(room: StatDuelRoom): void {
         this.stopClock();
@@ -687,7 +687,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         if (iWon) setTimeout(() => this.launchConfetti(), 300);
     }
 
-    // â”€â”€â”€ Bot (dev mode) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Bot (dev mode) ----------------------------------------------------------
 
     private scheduleBotPick(roundIndex: number): void {
         const botDelay = 1500 + Math.random() * 6500; // 1.5s to 8s dans la manche
@@ -715,7 +715,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }, botDelay);
     }
 
-    // â”€â”€â”€ Duel intro â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Duel intro --------------------------------------------------------------
 
     private async triggerDuelIntro(room: StatDuelRoom): Promise<void> {
         if (!this.roomId) return;
@@ -751,7 +751,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }
     }
 
-    // â”€â”€â”€ Rejouer / Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Rejouer / Navigation ----------------------------------------------------
 
     replay(): void {
         if (this.isSolo()) {
@@ -844,7 +844,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         void this.router.navigate(['/home']);
     }
 
-    // â”€â”€â”€ Partage lien multi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Partage lien multi ------------------------------------------------------
 
     async copyRoomLink(): Promise<void> {
         if (!this.inviteLink) return;
@@ -862,7 +862,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         setTimeout(() => this.linkCopied.set(false), 2000);
     }
 
-    // â”€â”€â”€ Utilitaires â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Utilitaires -------------------------------------------------------------
 
     private preloadImages(pokemons: Pokemon[]): void {
         this.preloadedImages = pokemons.map(p => {

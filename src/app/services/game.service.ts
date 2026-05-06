@@ -121,6 +121,12 @@ export class GameService implements OnDestroy {
 
     /** Passe la room en phase de sélection, ou assigne directement des Pokémon aléatoires si le mode est activé. */
     async launchGame(roomId: string, settings: GameSettings): Promise<void> {
+        const user = this.supabaseService.getCurrentUser();
+        if (!user) throw new Error('Utilisateur non connecté');
+
+        const currentRoom = await this.supabaseService.getRoomById(roomId);
+        if (currentRoom.player1_id !== user.id) throw new Error('Seul le créateur peut lancer la partie');
+
         if (settings.randomPokemon) {
             let pokemons = await firstValueFrom(this.pokemonService.loadAll());
             if (settings.generations.length > 0) {
@@ -131,7 +137,6 @@ export class GameService implements OnDestroy {
             }
             if (pokemons.length < 2) throw new Error('Pas assez de Pokémon disponibles pour ces filtres');
             const [p1, p2] = this.pickTwoDifferent(pokemons);
-            const room = await this.supabaseService.getRoomById(roomId);
             await this.updateAndRefresh(roomId, {
                 settings,
                 pokemon_p1: p1.id,
@@ -139,7 +144,7 @@ export class GameService implements OnDestroy {
                 p1_ready: true,
                 p2_ready: true,
                 status: 'playing',
-                current_turn: this.resolveFirstTurn({ ...room, settings }),
+                current_turn: this.resolveFirstTurn({ ...currentRoom, settings }),
             });
         } else {
             await this.updateAndRefresh(roomId, { status: 'selecting', settings });
@@ -161,7 +166,12 @@ export class GameService implements OnDestroy {
         const room = this.currentRoom();
         if (!room) throw new Error('Aucune room active');
 
-        const patch: RoomPatch = user.id === room.player1_id ? { pokemon_p1: pokemonId } : { pokemon_p2: pokemonId };
+        const isPlayer1 = user.id === room.player1_id;
+        const isPlayer2 = user.id === room.player2_id;
+        if (!isPlayer1 && !isPlayer2) throw new Error('Utilisateur hors de la room');
+        if (room.status !== 'selecting') throw new Error('La sélection est fermée');
+
+        const patch: RoomPatch = isPlayer1 ? { pokemon_p1: pokemonId } : { pokemon_p2: pokemonId };
 
         await this.supabaseService.updateRoom(roomId, patch);
     }
@@ -178,6 +188,10 @@ export class GameService implements OnDestroy {
         if (!room) throw new Error('Aucune room active');
 
         const isPlayer1 = user.id === room.player1_id;
+        const isPlayer2 = user.id === room.player2_id;
+        if (!isPlayer1 && !isPlayer2) throw new Error('Utilisateur hors de la room');
+        if (room.status !== 'selecting') throw new Error('La partie n’est pas en phase de sélection');
+
         const patch: RoomPatch = isPlayer1 ? { p1_ready: true } : { p2_ready: true };
 
         await this.supabaseService.updateRoom(roomId, patch);
@@ -208,8 +222,12 @@ export class GameService implements OnDestroy {
 
         const room = this.currentRoom();
         if (!room) throw new Error('Aucune room active');
+        if (room.status !== 'playing') throw new Error('La partie n’est pas en cours');
+        if (room.current_turn !== user.id) throw new Error('Ce n’est pas ton tour');
 
         const isPlayer1 = user.id === room.player1_id;
+        const isPlayer2 = user.id === room.player2_id;
+        if (!isPlayer1 && !isPlayer2) throw new Error('Utilisateur hors de la room');
 
         // Le Pokémon adverse : player1 cherche pokemon_p2 et vice-versa
         const adversaryPokemonId = isPlayer1 ? room.pokemon_p2 : room.pokemon_p1;
