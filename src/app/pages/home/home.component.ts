@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SupabaseService } from '../../services/supabase.service';
-import { GameInvite } from '../../models/room.model';
+import { GameInvite, GameMode } from '../../models/room.model';
 import { ICONS } from '../../constants/icons';
 import { modalAnimation } from '../../constants/animations';
 import { FriendsCardComponent } from '../../components/friends-card/friends-card.component';
@@ -23,6 +23,43 @@ import { AppHeaderComponent } from '../../components/app-header/app-header.compo
 })
 export class HomeComponent implements OnInit, OnDestroy {
   protected readonly ICONS = ICONS;
+  private readonly inviteToastModes: Record<GameMode, {
+    label: string;
+    icon: string;
+    borderClass: string;
+    glowClass: string;
+    iconBoxClass: string;
+    iconClass: string;
+    buttonClass: string;
+  }> = {
+    guess_my_pokemon: {
+      label: 'Guess my Pokémon',
+      icon: ICONS.guess,
+      borderClass: 'border-red-500/60',
+      glowClass: 'shadow-red-950/50',
+      iconBoxClass: 'bg-red-500/20 border-red-500/30',
+      iconClass: 'text-red-400',
+      buttonClass: 'bg-red-600 hover:bg-red-500 focus-visible:ring-red-400',
+    },
+    stat_duel: {
+      label: 'Duel de Base Stats',
+      icon: ICONS.statDuel,
+      borderClass: 'border-yellow-500/60',
+      glowClass: 'shadow-yellow-950/50',
+      iconBoxClass: 'bg-yellow-500/20 border-yellow-500/30',
+      iconClass: 'text-yellow-400',
+      buttonClass: 'bg-yellow-500 hover:bg-yellow-400 text-slate-950 focus-visible:ring-yellow-300',
+    },
+    draft_duo: {
+      label: 'Team Builder',
+      icon: ICONS.draft,
+      borderClass: 'border-purple-500/60',
+      glowClass: 'shadow-purple-950/50',
+      iconBoxClass: 'bg-purple-500/20 border-purple-500/30',
+      iconClass: 'text-purple-300',
+      buttonClass: 'bg-purple-600 hover:bg-purple-500 focus-visible:ring-purple-400',
+    },
+  };
   showPasswordModal = signal(false);
   showUsernameModal = signal(false);
 
@@ -80,6 +117,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   toggleCurrentPassword(): void { this.showCurrentPassword.update(v => !v); }
   toggleNewPassword(): void { this.showNewPassword.update(v => !v); }
   toggleConfirmPassword(): void { this.showConfirmPassword.update(v => !v); }
+
+  inviteToastMode(mode: GameMode) {
+    return this.inviteToastModes[mode];
+  }
 
   private triggerToast(message: string): void {
     this.toastMessage.set(message);
