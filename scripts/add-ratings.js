@@ -17,11 +17,13 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const FILE = join(__dirname, '..', 'src', 'assets', 'pokemon.json');
 
+/** Calcule le total des statistiques d'un Pokemon. */
 function statTotal(pokemon) {
   const s = pokemon.stats;
   return s.pv + s.attaque + s.defense + s.atq_spe + s.def_spe + s.vitesse;
 }
 
+/** Point d'entree du script. */
 function main() {
   const data = JSON.parse(fs.readFileSync(FILE, 'utf8'));
 

@@ -27,6 +27,7 @@ export class EndGameActionsComponent {
 
 	protected readonly ICONS = ICONS;
 
+	/** Retourne true si la revanche concerne une partie multijoueur. */
 	protected isMultiReplay(): boolean {
 		return this.replayMode() === 'multi';
 	}

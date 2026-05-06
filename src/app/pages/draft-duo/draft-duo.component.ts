@@ -177,6 +177,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
 
   // ─── Cycle de vie ────────────────────────────────────────────────────────────
 
+  /** Lifecycle Angular : initialise le composant. */
   async ngOnInit(): Promise<void> {
     this.supabaseService.trackPresence('in_game');
     try {
@@ -229,6 +230,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Lifecycle Angular : nettoie les abonnements et timers du composant. */
   ngOnDestroy(): void {
     this.stopTimer();
     this.roomSub?.unsubscribe();
@@ -239,6 +241,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
 
   // ─── Gestion des mises à jour de la room ────────────────────────────────────
 
+  /** Synchronise l'etat local apres une mise a jour de room. */
   private async onRoomUpdated(updated: DraftDuoRoom): Promise<void> {
     const prev = this.room();
     this.room.set(updated);
@@ -290,6 +293,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Charge le pseudo du joueur 2. */
   private async loadPlayer2Username(player2Id: string): Promise<void> {
     try {
       const profile = await this.supabaseService.getProfile(player2Id);
@@ -301,6 +305,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
 
   // ─── Démarrage du jeu ───────────────────────────────────────────────────────
 
+  /** Lance la partie. */
   async launchGame(): Promise<void> {
     if (this.isLaunching() || !this.room()?.player2_id) return;
     this.isLaunching.set(true);
@@ -311,6 +316,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Passe la room en phase de jeu. */
   private async enterPlayingPhase(room: DraftDuoRoom): Promise<void> {
     // Charger adversaire si pas encore fait
     if (!this.player2Username() && room.player2_id) {
@@ -348,6 +354,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
 
   // ─── Draft local ────────────────────────────────────────────────────────────
 
+  /** Initialise l'etat du draft. */
   private initDraft(): void {
     const pool = this.allPokemon();
     const starter = this.pickOneStarter(pool, new Set());
@@ -366,6 +373,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
     this.isLockingPick = false;
   }
 
+  /** Gere le clic sur un slot de draft. */
   async onSlotClick(index: number): Promise<void> {
     if (this.isLockingPick || this.lockedIndices().has(index) || this.phase() !== 'playing') return;
     const picked = this.slots()[index];
@@ -373,6 +381,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
     await this.lockPokemon(index, picked);
   }
 
+  /** Choisit automatiquement un slot de draft. */
   private async autoPickSlot(): Promise<void> {
     if (this.isLockingPick) return;
     const unlocked = [0, 1, 2, 3, 4, 5].filter(i => !this.lockedIndices().has(i));
@@ -382,6 +391,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
     if (picked) await this.lockPokemon(randomIndex, picked);
   }
 
+  /** Verrouille le Pokemon choisi dans un slot de draft. */
   private async lockPokemon(index: number, picked: Pokemon): Promise<void> {
     if (this.isLockingPick) return;
     this.isLockingPick = true;
@@ -487,6 +497,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
 
   // ─── Timer ──────────────────────────────────────────────────────────────────
 
+  /** Demarre le timer de choix. */
   private startTimer(): void {
     this.stopTimer();
     const start = Date.now();
@@ -507,6 +518,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
     }, 200);
   }
 
+  /** Arrete le timer de choix. */
   private stopTimer(): void {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
@@ -516,6 +528,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
 
   // ─── Phase complète ──────────────────────────────────────────────────────────
 
+  /** Passe le draft en phase terminee. */
   private async enterCompletePhase(room: DraftDuoRoom): Promise<void> {
     if (this.enteringComplete || this.phase() === 'complete') return;
     this.enteringComplete = true;
@@ -546,6 +559,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
     }, 800);
   }
 
+  /** Enregistre le gagnant de la partie. */
   private async saveWinner(room: DraftDuoRoom): Promise<void> {
     if (room.winner !== null) return;
     const my = this.myFinalScore();
@@ -567,10 +581,12 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
 
   // ─── Invitation ──────────────────────────────────────────────────────────────
 
+  /** Retourne le lien d'invitation de la room. */
   get inviteLink(): string {
     return `${window.location.origin}/invite/${this.roomId()}?mode=draft_duo`;
   }
 
+  /** Copie le lien d'invitation dans le presse-papiers. */
   async copyLink(): Promise<void> {
     try {
       await navigator.clipboard.writeText(this.inviteLink);
@@ -581,11 +597,13 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
 
   // ─── Navigation ──────────────────────────────────────────────────────────────
 
+  /** Navigue vers la page d'accueil. */
   async goHome(): Promise<void> {
     await this.supabaseService.broadcastPlayerLeft().catch(() => {});
     void this.router.navigate(['/home']);
   }
 
+  /** Relance une partie. */
   async replay(): Promise<void> {
     try {
       const patch = this.isPlayer1() ? { p1_ready: true } : { p2_ready: true };
@@ -610,6 +628,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
     } catch { /* silencieux */ }
   }
 
+  /** Reinitialise l'etat local pour une revanche. */
   private resetForReplay(): void {
     this.isLockingPick = false;
     this.enteringComplete = false;
@@ -623,82 +642,101 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
 
   // ─── Calculs scores ──────────────────────────────────────────────────────────
 
+  /** Calcule le total des statistiques d'un Pokemon. */
   private computeTotal(p: Pokemon): number {
     return computePokemonTotal(p);
   }
 
+  /** Calcule la note d'un Pokemon sur la plage donnee. */
   private computeRating(p: Pokemon): number {
     return computePokemonRating(p, this.statsRange());
   }
 
+  /** Calcule le score moyen de statistiques d'une equipe. */
   private computeStatsScore(team: Pokemon[]): number {
     return computePokemonStatsScore(team, this.statsRange());
   }
 
+  /** Calcule le score de couverture offensive et defensive d'une equipe contre une autre. */
   private computeDuoCoverageScore(myTeam: Pokemon[], opponentTeam: Pokemon[]): number {
     return computePokemonDuoCoverageScore(myTeam, opponentTeam);
   }
 
   // ─── Helpers UI ─────────────────────────────────────────────────────────────
 
+  /** Retourne la note d'un Pokemon. */
   getRating(p: Pokemon): number {
     return this.computeRating(p);
   }
 
+  /** Retourne la classe CSS de couleur associee a une note. */
   getRatingColor(rating: number): string {
     return getPokemonScoreColor(rating);
   }
 
+  /** Retourne la classe CSS de barre associee a une note. */
   getRatingBarColor(rating: number): string {
     return getPokemonScoreBarColor(rating);
   }
 
+  /** Retourne la largeur CSS correspondant a une note. */
   getRatingWidth(rating: number): string {
     return getPokemonRatingWidth(rating);
   }
 
+  /** Retourne la classe CSS de couleur associee a un score. */
   getScoreColor(score: number): string {
     return getPokemonScoreColor(score);
   }
 
+  /** Retourne la classe CSS de barre associee a un score. */
   getScoreBarColor(score: number): string {
     return getPokemonScoreBarColor(score);
   }
 
+  /** Retourne la classe CSS de couleur associee a un type Pokemon. */
   getTypeColor(type: string): string {
     return TYPE_COLORS[type] ?? 'bg-gray-500';
   }
 
+  /** Retourne l'icone associee a un type Pokemon. */
   getTypeIcon(type: string): string {
     return TYPE_ICONS[type] ?? 'mdi:circle-outline';
   }
 
+  /** Ouvre la modal de details d'un Pokemon. */
   openPokemonDetails(pokemon: Pokemon): void {
     this.selectedPokemon.set(pokemon);
   }
 
+  /** Ferme la modal de details d'un Pokemon. */
   closePokemonDetails(): void {
     this.selectedPokemon.set(null);
   }
 
   // ─── Sélection aléatoire ────────────────────────────────────────────────────
 
+  /** Selectionne un starter disponible dans le pool. */
   private pickOneStarter(pool: Pokemon[], exclude: Set<number>): Pokemon {
     return pickOneStarterPokemon(pool, exclude, this.slots());
   }
 
+  /** Selectionne un Pokemon legendaire ou fabuleux disponible dans le pool. */
   private pickOneLegendary(pool: Pokemon[], exclude: Set<number>): Pokemon {
     return pickOneLegendaryPokemon(pool, exclude, this.slots());
   }
 
+  /** Selectionne plusieurs Pokemon uniques dans le pool. */
   private pickNUnique(pool: Pokemon[], exclude: Set<number>, n: number): Pokemon[] {
     return pickNUniquePokemon(pool, exclude, n);
   }
 
+  /** Precharge les images donnees. */
   private preloadImages(urls: string[]): Promise<void[]> {
     return preloadPokemonImages(urls);
   }
 
+  /** Lance l'animation de confettis. */
   private launchConfetti(): void {
     if (this.confettiFired) return;
     this.confettiFired = true;

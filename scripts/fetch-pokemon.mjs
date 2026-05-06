@@ -157,6 +157,7 @@ async function getEvolutionStage(species) {
   try {
     const chainData = await fetchWithRetry(species.evolution_chain.url);
 
+    /** Analyse une chaine d'evolution pour retrouver la profondeur du Pokemon cible et la profondeur maximale. */
     function analyzeChain(node, targetName, currentDepth = 1) {
       let myDepth = node.species.name === targetName ? currentDepth : -1;
       let maxDepth = currentDepth;
@@ -333,6 +334,7 @@ async function runInBatches(tasks, batchSize, delayMs) {
 // Point d'entrée
 // ---------------------------------------------------------------------------
 
+/** Point d'entree du script. */
 async function main() {
   console.log('=== Génération de pokemon.json ===\n');
 

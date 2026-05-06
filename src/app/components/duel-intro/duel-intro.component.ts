@@ -66,6 +66,7 @@ export class DuelIntroComponent implements OnInit {
 	player2 = input.required<{ username: string; avatar_url?: string }>();
 	closed = output<void>();
 
+	/** Lifecycle Angular : initialise le composant. */
 	ngOnInit(): void {
 		setTimeout(() => this.closed.emit(), 2500);
 	}

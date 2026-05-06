@@ -24,6 +24,7 @@ export class InviteComponent implements OnInit, OnDestroy {
 		private readonly route: ActivatedRoute,
 	) {}
 
+	/** Lifecycle Angular : initialise le composant. */
 	ngOnInit(): void {
 		this.supabaseService.trackPresence('online');
 		const mode = this.route.snapshot.queryParamMap.get('mode');
@@ -36,10 +37,12 @@ export class InviteComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** Lifecycle Angular : nettoie les abonnements et timers du composant. */
 	ngOnDestroy(): void {
 		this.supabaseService.untrackPresence();
 	}
 
+	/** Charge une room Duel de Base Stats depuis l'invitation. */
 	private async loadStatDuelRoom(): Promise<void> {
 		try {
 			const room = await this.supabaseService.getStatDuelRoom(this.roomId());
@@ -75,6 +78,7 @@ export class InviteComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** Charge une room Draft Duo depuis l'invitation. */
 	private async loadDraftDuoRoom(): Promise<void> {
 		try {
 			const room = await this.supabaseService.getDraftDuoRoom(this.roomId());
@@ -110,6 +114,7 @@ export class InviteComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** Charge une room Guess my Pokemon depuis l'invitation. */
 	private async loadRoom(): Promise<void> {
 		try {
 			const room = await this.supabaseService.getRoomById(this.roomId());
@@ -147,6 +152,7 @@ export class InviteComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** Refuse l'invitation et revient a l'accueil. */
 	decline(): void {
 		this.router.navigate(['/home']);
 	}

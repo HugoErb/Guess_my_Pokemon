@@ -114,6 +114,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 	showSettings = signal(false);
 	showHelpModal = signal(false);
 
+	/** Retourne le nombre de parametres actifs. */
 	get activeSettingsCount(): number {
 		const s = this.gameSettings;
 		let count = 0;
@@ -167,15 +168,18 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		draft_duo: { title: 'Team Builder', subtitle: 'Deux joueurs en ligne', icon: ICONS.draft, iconClass: 'text-purple-200', playRoute: '/draft-duo' },
 	};
 
+	/** Retourne la configuration d'affichage du mode courant. */
 	get modeConfig(): { title: string; subtitle?: string; icon: string; iconClass: string; helpMode?: 'stat-duel'; playRoute: string } {
 		return this.MODE_CONFIG[this.gameMode];
 	}
 
+	/** Retourne le sous-titre du mode courant. */
 	get modeSubtitle(): string {
 		if (this.gameMode === 'guess_my_pokemon') return '';
 		return this.modeConfig.subtitle ?? 'Lobby';
 	}
 
+	/** Retourne true si le lobby est en mode Guess my Pokemon. */
 	isGuessMode(): boolean {
 		return this.gameMode === 'guess_my_pokemon';
 	}
@@ -598,12 +602,14 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		this.cancelRoom();
 	}
 
+	/** Resout le mode de jeu depuis les parametres de route. */
 	private resolveMode(): GameMode {
 		const mode = this.route.snapshot.queryParamMap.get('mode');
 		if (mode === 'stat_duel' || mode === 'draft_duo') return mode;
 		return 'guess_my_pokemon';
 	}
 
+	/** Initialise le lobby Duel de Base Stats. */
 	private async initStatDuelLobby(): Promise<void> {
 		try {
 			let room = await this.supabaseService.getStatDuelRoom(this.roomId());
@@ -628,6 +634,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** Initialise le lobby Draft Duo. */
 	private async initDraftDuoLobby(): Promise<void> {
 		try {
 			let room = await this.supabaseService.getDraftDuoRoom(this.roomId());
@@ -652,6 +659,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** S'abonne au refus d'invitation associe au lobby. */
 	private subscribeInviteDecline(): void {
 		const inviteId = this.route.snapshot.queryParamMap.get('inviteId');
 		const friendName = this.route.snapshot.queryParamMap.get('friendName') ?? 'Ton ami';
@@ -664,6 +672,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** Demarre le polling des rooms multijoueur. */
 	private startMultiPoll(): void {
 		this.pollInterval = setInterval(async () => {
 			try {
@@ -682,6 +691,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		}, 2000);
 	}
 
+	/** Retourne une copie melangee du tableau donne. */
 	private shuffle<T>(arr: T[]): T[] {
 		const a = [...arr];
 		for (let i = a.length - 1; i > 0; i--) {
@@ -691,11 +701,13 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		return a;
 	}
 
+	/** Navigue vers la page de jeu du mode courant. */
 	private async navigateToPlay(): Promise<void> {
 		await this.preloadDuelIntroForRoom();
 		void this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
 	}
 
+	/** Precharge l'intro de duel pour la room courante. */
 	private async preloadDuelIntroForRoom(): Promise<void> {
 		const room = this.room();
 		if (!room || this.gameMode === 'draft_duo') return;
@@ -723,6 +735,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 		await this.preloadIntroImages(players);
 	}
 
+	/** Precharge les avatars de l'intro de duel. */
 	private preloadIntroImages(players: { avatar_url?: string }[]): Promise<void[]> {
 		return Promise.all(
 			players

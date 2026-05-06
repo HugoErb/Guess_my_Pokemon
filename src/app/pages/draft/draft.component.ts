@@ -98,6 +98,7 @@ export class DraftComponent implements OnInit {
 
   private readonly STORAGE_KEY = 'draft_state';
 
+  /** Sauvegarde l'etat du draft en stockage local. */
   private saveState(): void {
     const state = {
       slots: this.slots().map(p => p?.id ?? null),
@@ -110,6 +111,7 @@ export class DraftComponent implements OnInit {
     sessionStorage.setItem(this.STORAGE_KEY, JSON.stringify(state));
   }
 
+  /** Charge l'etat du draft depuis le stockage local. */
   private loadSavedState(): Record<string, unknown> | null {
     try {
       const raw = sessionStorage.getItem(this.STORAGE_KEY);
@@ -119,10 +121,12 @@ export class DraftComponent implements OnInit {
     }
   }
 
+  /** Supprime l'etat de draft sauvegarde. */
   private clearSavedState(): void {
     sessionStorage.removeItem(this.STORAGE_KEY);
   }
 
+  /** Restaure l'etat du draft depuis une sauvegarde. */
   private restoreState(saved: Record<string, unknown>): void {
     const all = this.allPokemon();
     const byId = new Map(all.map(p => [p.id, p]));
@@ -171,14 +175,17 @@ export class DraftComponent implements OnInit {
     });
   }
 
+  /** Demarre une partie solo. */
   startSolo(): void {
     this.phase.set('loading');
   }
 
+  /** Demarre le draft contre un dresseur. */
   startTrainer(): void {
     void this.router.navigate(['/trainer-select']);
   }
 
+  /** Demarre un draft duo. */
   async startDuo(): Promise<void> {
     this.isCreatingRoom.set(true);
     try {
@@ -190,6 +197,7 @@ export class DraftComponent implements OnInit {
     }
   }
 
+  /** Initialise l'etat du draft. */
   private initDraft(): void {
     const pool = this.allPokemon();
     const starter = this.pickOneStarter(pool, new Set());
@@ -211,6 +219,7 @@ export class DraftComponent implements OnInit {
     this.saveState();
   }
 
+  /** Gere le clic sur un slot de draft. */
   onSlotClick(index: number): void {
     if (this.isLockingPick || this.lockedIndices().has(index) || this.phase() !== 'draft') return;
     this.isLockingPick = true;
@@ -307,10 +316,12 @@ export class DraftComponent implements OnInit {
     });
   }
 
+  /** Precharge les images donnees. */
   private preloadImages(urls: string[]): Promise<void[]> {
     return preloadPokemonImages(urls);
   }
 
+  /** Relance une partie. */
   replay(): void {
     this.clearSavedState();
     this.confettiFired = false;
@@ -318,6 +329,7 @@ export class DraftComponent implements OnInit {
     this.phase.set('loading');
   }
 
+  /** Reinitialise l'equipe draftee. */
   resetTeam(): void {
     if (this.phase() !== 'draft') return;
     this.clearSavedState();
@@ -329,81 +341,99 @@ export class DraftComponent implements OnInit {
     }, 50);
   }
 
+  /** Navigue vers la page d'accueil. */
   goHome(): void {
     this.clearSavedState();
     void this.router.navigate(['/home']);
   }
 
+  /** Ouvre la modal de details d'un Pokemon. */
   openPokemonDetails(pokemon: Pokemon): void {
     this.selectedPokemon.set(pokemon);
   }
 
+  /** Ferme la modal de details d'un Pokemon. */
   closePokemonDetails(): void {
     this.selectedPokemon.set(null);
   }
 
   // ─── Calculs rating ──────────────────────────────────────────────────────────
 
+  /** Retourne la classe CSS de couleur associee a un score. */
   getScoreColor(score: number): string {
     return getPokemonScoreColor(score);
   }
 
+  /** Retourne la classe CSS de barre associee a un score. */
   getScoreBarColor(score: number): string {
     return getPokemonScoreBarColor(score);
   }
 
+  /** Calcule le total des statistiques d'un Pokemon. */
   private computeTotal(p: Pokemon): number {
     return computePokemonTotal(p);
   }
 
+  /** Calcule la note d'un Pokemon sur la plage donnee. */
   private computeRating(p: Pokemon, range: { min: number; max: number }): number {
     return computePokemonRating(p, range);
   }
 
+  /** Retourne la note d'un Pokemon. */
   getRating(p: Pokemon): number {
     return this.computeRating(p, this.statsRange());
   }
 
+  /** Retourne la classe CSS de couleur associee a une note. */
   getRatingColor(rating: number): string {
     return getPokemonScoreColor(rating);
   }
 
+  /** Retourne la classe CSS de barre associee a une note. */
   getRatingBarColor(rating: number): string {
     return getPokemonScoreBarColor(rating);
   }
 
+  /** Retourne la largeur CSS correspondant a une note. */
   getRatingWidth(rating: number): string {
     return getPokemonRatingWidth(rating);
   }
 
+  /** Retourne la classe CSS de couleur associee a un type Pokemon. */
   getTypeColor(type: string): string {
     return TYPE_COLORS[type] ?? 'bg-gray-500';
   }
 
+  /** Retourne l'icone associee a un type Pokemon. */
   getTypeIcon(type: string): string {
     return TYPE_ICONS[type] ?? 'mdi:circle-outline';
   }
 
   // ─── Sélection aléatoire sans doublons ───────────────────────────────────────
 
+  /** Selectionne un starter disponible dans le pool. */
   private pickOneStarter(pool: Pokemon[], exclude: Set<number>): Pokemon {
     return pickOneStarterPokemon(pool, exclude, this.slots());
   }
 
+  /** Selectionne un Pokemon legendaire ou fabuleux disponible dans le pool. */
   private pickOneLegendary(pool: Pokemon[], exclude: Set<number>): Pokemon {
     return pickOneLegendaryPokemon(pool, exclude, this.slots());
   }
 
+  /** Selectionne plusieurs Pokemon uniques dans le pool. */
   private pickNUnique(pool: Pokemon[], exclude: Set<number>, n: number): Pokemon[] {
     return pickNUniquePokemon(pool, exclude, n);
   }
 
   // ─── Confetti ────────────────────────────────────────────────────────────────
 
+  /** Lifecycle Angular : initialise le composant. */
   ngOnInit(): void {
     this.supabaseService.trackPresence('in_game');
   }
 
+  /** Lance l'animation de confettis. */
   private launchConfetti(): void {
     if (this.confettiFired) return;
     this.confettiFired = true;

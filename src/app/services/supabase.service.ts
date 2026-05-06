@@ -726,6 +726,7 @@ export class SupabaseService implements OnDestroy {
         if (error) throw error;
     }
 
+    /** Supprime une relation d'amitie. */
     async removeFriend(friendshipId: string): Promise<void> {
         const { error } = await this.supabase.from('friendships').delete().eq('id', friendshipId);
         if (error) throw error;

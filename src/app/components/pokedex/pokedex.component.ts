@@ -82,6 +82,7 @@ export class PokedexComponent implements OnInit {
 
     private static readonly FILTERS_KEY = 'gmp:filters';
     private static readonly RELOAD_TOKEN_KEY = 'gmp:reload-token';
+    /** Retourne la cle de stockage du grisage manuel. */
     private static dimmedKey(id: string) { return `gmp:dimmed:${id}`; }
 
     allPokemons = signal<Pokemon[]>([]);
@@ -417,31 +418,37 @@ export class PokedexComponent implements OnInit {
         return this.selectedTypeSet().has(type);
     }
 
+    /** Selectionne tous les types. */
     selectAllTypes(): void {
         this.selectedTypes.set([...ALL_TYPES]);
         this.displayedCount.set(this.PAGE_SIZE);
     }
 
+    /** Deselectionne tous les types. */
     deselectAllTypes(): void {
         this.selectedTypes.set([]);
         this.displayedCount.set(this.PAGE_SIZE);
     }
 
+    /** Selectionne toutes les generations. */
     selectAllGenerations(): void {
         this.selectedGenerations.set([...GENERATIONS]);
         this.displayedCount.set(this.PAGE_SIZE);
     }
 
+    /** Deselectionne toutes les generations. */
     deselectAllGenerations(): void {
         this.selectedGenerations.set([]);
         this.displayedCount.set(this.PAGE_SIZE);
     }
 
+    /** Selectionne toutes les categories. */
     selectAllCategories(): void {
         this.selectedCategories.set(this.categories.map(c => c.id));
         this.displayedCount.set(this.PAGE_SIZE);
     }
 
+    /** Deselectionne toutes les categories. */
     deselectAllCategories(): void {
         this.selectedCategories.set([]);
         this.displayedCount.set(this.PAGE_SIZE);
@@ -543,10 +550,12 @@ export class PokedexComponent implements OnInit {
         return this.manuallyDimmedIdSet().has(id);
     }
 
+    /** Retourne true si le Pokemon a deja ete propose. */
     isPokemonGuessed(id: number): boolean {
         return this.guessedPokemonIdSet().has(id);
     }
 
+    /** Retourne true si le Pokemon ne peut pas etre selectionne. */
     isPokemonUnavailable(id: number): boolean {
         return this.guessedPokemonIdSet().has(id) || this.manuallyDimmedIdSet().has(id);
     }

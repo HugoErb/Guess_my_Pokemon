@@ -105,7 +105,9 @@ export class GameComponent implements OnInit, OnDestroy {
 	openGameSettingsModal(): void { this.showGameSettingsModal.set(true); }
 	/** Ferme la modal des paramètres de la partie. */
 	closeGameSettingsModal(): void { this.showGameSettingsModal.set(false); }
+	/** Ouvre la modal d'aide. */
 	openHelpModal(): void { this.showHelpModal.set(true); }
+	/** Ferme la modal d'aide. */
 	closeHelpModal(): void { this.showHelpModal.set(false); }
 	isCancelling = false;
 
@@ -227,6 +229,7 @@ export class GameComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** Lit les donnees de l'intro de duel depuis le cache local. */
 	private readDuelIntroCache(key: string): { username: string; avatar_url?: string }[] | null {
 		try {
 			const cached = sessionStorage.getItem(key);
@@ -393,6 +396,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
 	// ─── Annulation de partie ──────────────────────────────────────────────────
 
+	/** Synchronise les Pokemon affiches avec l'etat de la room. */
 	private syncDisplayedPokemon(r: { pokemon_p1: number | null; pokemon_p2: number | null }): void {
 		const isPlayer1 = this.gameService.isPlayer1();
 		const myPokemonId = isPlayer1 ? r.pokemon_p1 : r.pokemon_p2;
@@ -425,6 +429,7 @@ export class GameComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** Reinitialise l'interface de la manche courante. */
 	private resetRoundUi(): void {
 		this.showEndModal = false;
 		this.isWinner = false;

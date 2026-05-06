@@ -1,5 +1,6 @@
 import { addIcon } from 'iconify-icon';
 
+/** Enregistre les icones Iconify utilisees par l'application. */
 export function registerIcons(): void {
   addIcon('mdi:home', { body: "<path fill=\"currentColor\" d=\"M10 20v-6h4v6h5v-8h3L12 3L2 12h3v8z\"/>", width: 24, height: 24 });
   addIcon('mdi:content-copy', { body: "<path fill=\"currentColor\" d=\"M19 21H8V7h11m0-2H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-3-4H4a2 2 0 0 0-2 2v14h2V3h12z\"/>", width: 24, height: 24 });

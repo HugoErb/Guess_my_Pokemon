@@ -201,6 +201,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     return 'draw';
   });
 
+  /** Lifecycle Angular : initialise le composant. */
   async ngOnInit(): Promise<void> {
     try {
       const res = await fetch('/assets/trainers.json');
@@ -226,10 +227,12 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Lifecycle Angular : nettoie les abonnements et timers du composant. */
   ngOnDestroy(): void {
     this.stopTimer();
   }
 
+  /** Initialise l'etat du draft. */
   private async initDraft(): Promise<void> {
     const pool = this.trainerPool();
     const starter = this.pickOneStarter(pool, new Set());
@@ -256,6 +259,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     this.startTimer();
   }
 
+  /** Ferme l'intro de duel. */
   onDuelIntroClosed(): void {
     this.showDuelIntro.set(false);
     if (this.startTimerAfterIntro && this.phase() === 'playing') {
@@ -264,6 +268,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Declenche l'intro de duel si ses donnees sont disponibles. */
   private async triggerDuelIntro(): Promise<boolean> {
     const trainer = this.trainer();
     if (!trainer) return false;
@@ -291,6 +296,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Lit les donnees de l'intro de duel depuis le cache local. */
   private readDuelIntroCache(key: string): { username: string; avatar_url?: string }[] | null {
     try {
       const cached = sessionStorage.getItem(key);
@@ -300,6 +306,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Gere le clic sur un slot de draft. */
   async onSlotClick(index: number): Promise<void> {
     if (this.isLockingPick || this.lockedIndices().has(index) || this.phase() !== 'playing') return;
     const picked = this.slots()[index];
@@ -307,6 +314,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     await this.lockPokemon(index, picked);
   }
 
+  /** Choisit automatiquement un slot de draft. */
   private async autoPickSlot(): Promise<void> {
     if (this.isLockingPick) return;
     const unlocked = [0, 1, 2, 3, 4, 5].filter(i => !this.lockedIndices().has(i));
@@ -316,6 +324,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     if (picked) await this.lockPokemon(randomIndex, picked);
   }
 
+  /** Verrouille le Pokemon choisi dans un slot de draft. */
   private async lockPokemon(index: number, picked: Pokemon): Promise<void> {
     if (this.isLockingPick) return;
     this.isLockingPick = true;
@@ -399,6 +408,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Demarre le timer de choix. */
   private startTimer(): void {
     this.stopTimer();
     const start = Date.now();
@@ -419,6 +429,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     }, 200);
   }
 
+  /** Arrete le timer de choix. */
   private stopTimer(): void {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
@@ -426,6 +437,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Passe le draft en phase terminee. */
   private async enterCompletePhase(): Promise<void> {
     this.stopTimer();
     
@@ -450,10 +462,12 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     }, 800);
   }
 
+  /** Navigue vers la page d'accueil. */
   async goHome(): Promise<void> {
     void this.router.navigate(['/home']);
   }
 
+  /** Relance une partie. */
   async replay(): Promise<void> {
     this.phase.set('loading');
     this.showScores.set(false);
@@ -467,87 +481,108 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     }, 500);
   }
 
+  /** Navigue vers la selection de dresseur. */
   async goToTrainerSelect(): Promise<void> {
     void this.router.navigate(['/trainer-select']);
   }
 
+  /** Calcule le total des statistiques d'un Pokemon. */
   private computeTotal(p: Pokemon): number {
     return computePokemonTotal(p);
   }
 
+  /** Calcule la note d'un Pokemon sur la plage donnee. */
   private computeRating(p: Pokemon): number {
     return computePokemonRating(p, this.statsRange());
   }
 
+  /** Calcule le score moyen de statistiques d'une equipe. */
   private computeStatsScore(team: Pokemon[]): number {
     return computePokemonStatsScore(team, this.statsRange());
   }
 
+  /** Calcule le score de couverture offensive et defensive d'une equipe contre une autre. */
   private computeDuoCoverageScore(myTeam: Pokemon[], opponentTeam: Pokemon[]): number {
     return computePokemonDuoCoverageScore(myTeam, opponentTeam);
   }
 
+  /** Retourne la note d'un Pokemon. */
   getRating(p: Pokemon): number {
     return this.computeRating(p);
   }
 
+  /** Retourne la classe CSS de couleur associee a une note. */
   getRatingColor(rating: number): string {
     return getPokemonScoreColor(rating);
   }
 
+  /** Retourne la classe CSS de barre associee a une note. */
   getRatingBarColor(rating: number): string {
     return getPokemonScoreBarColor(rating);
   }
 
+  /** Retourne la largeur CSS correspondant a une note. */
   getRatingWidth(rating: number): string {
     return getPokemonRatingWidth(rating);
   }
 
+  /** Retourne la classe CSS de couleur associee a un score. */
   getScoreColor(score: number): string {
     return getPokemonScoreColor(score);
   }
 
+  /** Retourne la classe CSS de barre associee a un score. */
   getScoreBarColor(score: number): string {
     return getPokemonScoreBarColor(score);
   }
 
+  /** Retourne la classe CSS de couleur associee a un type Pokemon. */
   getTypeColor(type: string): string {
     return TYPE_COLORS[type] ?? 'bg-gray-500';
   }
 
+  /** Retourne l'icone associee a un type Pokemon. */
   getTypeIcon(type: string): string {
     return TYPE_ICONS[type] ?? 'mdi:circle-outline';
   }
 
+  /** Ouvre la modal de details d'un Pokemon. */
   openPokemonDetails(pokemon: Pokemon): void {
     this.selectedPokemon.set(pokemon);
   }
 
+  /** Ferme la modal de details d'un Pokemon. */
   closePokemonDetails(): void {
     this.selectedPokemon.set(null);
   }
 
+  /** Selectionne un starter disponible dans le pool. */
   private pickOneStarter(pool: Pokemon[], exclude: Set<number>): Pokemon {
     return pickOneStarterPokemon(pool, exclude, this.slots());
   }
 
+  /** Selectionne un Pokemon legendaire ou fabuleux disponible dans le pool. */
   private pickOneLegendary(pool: Pokemon[], exclude: Set<number>): Pokemon {
     return pickOneLegendaryPokemon(pool, exclude, this.slots());
   }
 
+  /** Retourne le pool utilisable pour un slot normal. */
   private normalSlotPool(pool: Pokemon[]): Pokemon[] {
     if (this.trainer()?.nom === 'Pato') return pool;
     return pool.filter(p => p.category !== 'légendaire' && p.category !== 'fabuleux');
   }
 
+  /** Selectionne plusieurs Pokemon uniques dans le pool. */
   private pickNUnique(pool: Pokemon[], exclude: Set<number>, n: number): Pokemon[] {
     return pickNUniquePokemon(pool, exclude, n);
   }
 
+  /** Precharge les images donnees. */
   private preloadImages(urls: string[]): Promise<void[]> {
     return preloadPokemonImages(urls);
   }
 
+  /** Lance l'animation de confettis. */
   private launchConfetti(): void {
     if (this.confettiFired) return;
     this.confettiFired = true;

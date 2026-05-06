@@ -35,6 +35,7 @@ export class ModeSelectCardComponent {
 
   @Output() selected = new EventEmitter<void>();
 
+  /** Retourne les classes CSS d'accentuation de la carte. */
   get accentClasses() {
     return ACCENT_CLASSES[this.accent];
   }

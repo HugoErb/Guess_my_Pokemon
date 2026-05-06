@@ -63,6 +63,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   showPasswordModal = signal(false);
   showUsernameModal = signal(false);
 
+  /** Ouvre la modal de changement de mot de passe. */
   openPasswordModal(): void {
     this.showPasswordModal.set(true);
     this.passwordError = '';
@@ -70,6 +71,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.newPassword = '';
     this.confirmPassword = '';
   }
+  /** Ferme la modal de changement de mot de passe. */
   closePasswordModal(): void {
     this.showPasswordModal.set(false);
     this.showCurrentPassword.set(false);
@@ -77,11 +79,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.showConfirmPassword.set(false);
   }
 
+  /** Ouvre la modal de changement de pseudo. */
   openUsernameModal(): void {
     this.newUsernameInput = this.username;
     this.showUsernameModal.set(true);
     this.usernameError = '';
   }
+  /** Ferme la modal de changement de pseudo. */
   closeUsernameModal(): void { this.showUsernameModal.set(false); }
 
   username = '';
@@ -114,14 +118,19 @@ export class HomeComponent implements OnInit, OnDestroy {
   private inviteCountdownInterval: ReturnType<typeof setInterval> | null = null;
   private invitesSub?: Subscription;
 
+  /** Bascule la visibilite du mot de passe actuel. */
   toggleCurrentPassword(): void { this.showCurrentPassword.update(v => !v); }
+  /** Bascule la visibilite du nouveau mot de passe. */
   toggleNewPassword(): void { this.showNewPassword.update(v => !v); }
+  /** Bascule la visibilite de la confirmation du mot de passe. */
   toggleConfirmPassword(): void { this.showConfirmPassword.update(v => !v); }
 
+  /** Retourne les textes d'invitation correspondant au mode de jeu. */
   inviteToastMode(mode: GameMode) {
     return this.inviteToastModes[mode];
   }
 
+  /** Affiche temporairement un toast. */
   private triggerToast(message: string): void {
     this.toastMessage.set(message);
     this.showToast.set(true);
@@ -134,6 +143,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
   ) {}
 
+  /** Lifecycle Angular : initialise le composant. */
   ngOnInit(): void {
     this.loadProfile();
     this.supabaseService.trackPresence('online');
@@ -157,11 +167,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Lifecycle Angular : nettoie les abonnements et timers du composant. */
   ngOnDestroy(): void {
     this.invitesSub?.unsubscribe();
     this.clearInviteToast();
   }
 
+  /** Charge le profil de l'utilisateur courant. */
   private async loadProfile(): Promise<void> {
     try {
       const user = this.supabaseService.getCurrentUser();
@@ -206,6 +218,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // ─── Invitation de jeu entrante ──────────────────────────────────────────────
 
+  /** Affiche le toast d'invitation de jeu. */
   private showGameInviteToast(invite: GameInvite): void {
     this.clearInviteToast();
     this.incomingInvite.set(invite);
@@ -218,6 +231,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }, 1000);
   }
 
+  /** Nettoie le toast d'invitation de jeu. */
   private clearInviteToast(): void {
     if (this.inviteCountdownInterval) {
       clearInterval(this.inviteCountdownInterval);
@@ -226,6 +240,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.incomingInvite.set(null);
   }
 
+  /** Accepte l'invitation de jeu courante. */
   async acceptGameInvite(): Promise<void> {
     const invite = this.incomingInvite();
     if (!invite) return;
@@ -240,6 +255,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Refuse l'invitation de jeu courante. */
   async declineGameInvite(): Promise<void> {
     const invite = this.incomingInvite();
     if (!invite) return;
@@ -247,12 +263,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     await this.supabaseService.declineGameInvite(invite.id);
   }
 
+  /** Refuse automatiquement l'invitation de jeu courante. */
   private async autoDeclineInvite(): Promise<void> {
     await this.declineGameInvite();
   }
 
   // ─── Invitation envoyée à un ami ─────────────────────────────────────────────
 
+  /** Traite une demande d'invitation envoyee a un ami. */
   async onInviteRequested(event: { friendId: string; username: string; gameMode: 'guess_my_pokemon' | 'stat_duel' | 'draft_duo' }): Promise<void> {
     this.isCreating = true;
     this.createError = '';
@@ -274,14 +292,17 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // ─── Partie classique ────────────────────────────────────────────────────────
 
+  /** Navigue vers le mode draft. */
   startDraft(): void {
     void this.router.navigate(['/draft']);
   }
 
+  /** Navigue vers le Duel de Base Stats. */
   startStatDuel(): void {
     void this.router.navigate(['/stat-duel']);
   }
 
+  /** Cree une nouvelle partie. */
   async createGame(): Promise<void> {
     this.isCreating = true;
     this.createError = '';
@@ -296,6 +317,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Deconnecte l'utilisateur courant. */
   async logout(): Promise<void> {
     await this.supabaseService.signOut();
     this.router.navigate(['/login']);
@@ -303,6 +325,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // ─── Compte ──────────────────────────────────────────────────────────────────
 
+  /** Change le mot de passe de l'utilisateur courant. */
   async changePassword(): Promise<void> {
     const current = this.currentPassword.trim();
     const newPwd = this.newPassword.trim();
@@ -330,6 +353,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Change le pseudo de l'utilisateur courant. */
   async changeUsername(): Promise<void> {
     const trimmed = this.newUsernameInput.trim();
     if (!trimmed || trimmed.length < 3) { this.usernameError = 'Le pseudo doit faire au moins 3 caractères.'; return; }
@@ -352,6 +376,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Met a jour l'avatar avec le fichier selectionne. */
   async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;

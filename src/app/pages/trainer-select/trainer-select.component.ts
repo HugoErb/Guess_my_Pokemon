@@ -35,6 +35,7 @@ export class TrainerSelectComponent implements OnInit {
     initialValue: []
   });
 
+  /** Lifecycle Angular : initialise le composant. */
   async ngOnInit() {
     try {
       const res = await fetch('/assets/trainers.json');
@@ -53,50 +54,60 @@ export class TrainerSelectComponent implements OnInit {
     }
   }
 
+  /** Retourne true si le dresseur est verrouille. */
   isLocked(index: number): boolean {
     if (index === 0) return false;
     // Un dresseur est verrouillé si le précédent n'a pas été battu
     return !this.defeatedIndices().includes(index - 1);
   }
 
+  /** Retourne true si le dresseur a deja ete battu. */
   isDefeated(index: number): boolean {
     return this.defeatedIndices().includes(index);
   }
 
+  /** Retourne l'URL du sprite d'un Pokemon. */
   getPokemonSprite(id: number): string {
     const p = this.allPokemon().find(p => p.id === id);
     return p ? p.sprite : '';
   }
 
+  /** Retourne le nom d'un Pokemon. */
   getPokemonName(id: number): string {
     const p = this.allPokemon().find(p => p.id === id);
     return p ? p.name : 'Inconnu';
   }
 
+  /** Selectionne un dresseur et lance le draft correspondant. */
   async selectTrainer(index: number) {
     if (this.isLocked(index)) return;
     await this.preloadDuelIntro(index);
     void this.router.navigate(['/draft-trainer', index]);
   }
 
+  /** Revient a la page precedente. */
   goBack() {
     void this.router.navigate(['/draft']);
   }
 
+  /** Navigue vers la page d'accueil. */
   goHome() {
     void this.router.navigate(['/home']);
   }
 
+  /** Ouvre la modal de reinitialisation. */
   openResetModal() {
     if (this.isResettingProgress()) return;
     this.showResetModal.set(true);
   }
 
+  /** Ferme la modal de reinitialisation. */
   closeResetModal() {
     if (this.isResettingProgress()) return;
     this.showResetModal.set(false);
   }
 
+  /** Reinitialise la progression des dresseurs. */
   async resetProgress() {
     const user = this.supabaseService.getCurrentUser();
     if (!user || this.isResettingProgress()) return;
@@ -111,6 +122,7 @@ export class TrainerSelectComponent implements OnInit {
     }
   }
 
+  /** Precharge les donnees et images de l'intro de duel. */
   private async preloadDuelIntro(index: number): Promise<void> {
     const trainer = this.trainers()[index];
     if (!trainer) return;

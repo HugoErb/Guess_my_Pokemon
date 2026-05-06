@@ -42,6 +42,7 @@ export class PokemonCardComponent {
     return `${Math.min(100, Math.round((value / 200) * 100))}%`;
   }
 
+  /** Retourne le total des statistiques du Pokemon affiche. */
   getTotalStats(stats: Pokemon['stats']): number {
     return stats.pv + stats.attaque + stats.defense + stats.atq_spe + stats.def_spe + stats.vitesse;
   }

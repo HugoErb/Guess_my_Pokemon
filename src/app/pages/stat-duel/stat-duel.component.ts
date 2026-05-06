@@ -167,6 +167,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     private confettiFired = false;
 
 
+    /** Lifecycle Angular : initialise le composant. */
     ngOnInit(): void {
         this.supabaseService.trackPresence('in_game');
         this.roomId = this.route.snapshot.paramMap.get('roomId');
@@ -196,6 +197,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }
     }
 
+    /** Lifecycle Angular : nettoie les abonnements et timers du composant. */
     ngOnDestroy(): void {
         this.stopClock();
         this.roomSub?.unsubscribe();
@@ -204,6 +206,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         this.stopWaitingPoll();
     }
 
+    /** Lance l'animation de confettis. */
     private launchConfetti(): void {
         if (this.confettiFired) return;
         this.confettiFired = true;
@@ -213,6 +216,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     // --- Mode select -------------------------------------------------------------
 
+    /** Demarre une partie solo. */
     async startSolo(): Promise<void> {
         this.isSolo.set(true);
         const allPokemon = await this.loadAll();
@@ -225,11 +229,13 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         this.startPokemonAnimation(() => this.startSoloClock());
     }
 
+    /** Cree une room multijoueur. */
     async createMultiRoom(): Promise<void> {
         const roomId = await this.supabaseService.createStatDuelRoom();
         void this.router.navigate(['/lobby', roomId], { queryParams: { mode: 'stat_duel' } });
     }
 
+    /** Demarre le mode developpement. */
     async startDevMode(): Promise<void> {
         const roomId = await this.supabaseService.createStatDuelRoom();
         void this.router.navigate(['/stat-duel', roomId], { queryParams: { dev: '1' } });
@@ -237,6 +243,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     // --- Multi init --------------------------------------------------------------
 
+    /** Initialise une partie multijoueur. */
     private async initMulti(roomId: string): Promise<void> {
         const me = this.supabaseService.getCurrentUser();
         if (!me) return;
@@ -301,6 +308,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         this.startWaitingPoll(roomId);
     }
 
+    /** Demarre le polling d'attente. */
     private startWaitingPoll(roomId: string): void {
         this.waitingPollInterval = setInterval(async () => {
             if (this.phase() !== 'waiting') {
@@ -320,6 +328,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }, 3000);
     }
 
+    /** Arrete le polling d'attente. */
     private stopWaitingPoll(): void {
         if (this.waitingPollInterval) {
             clearInterval(this.waitingPollInterval);
@@ -327,6 +336,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }
     }
 
+    /** Charge les Pokemon puis demarre la partie multijoueur. */
     private async loadPokemonAndStartMulti(room: StatDuelRoom): Promise<void> {
         if (this.phase() === 'playing') return;
         const allPokemon = await this.loadAll();
@@ -364,6 +374,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     protected isLaunching = signal(false);
 
+    /** Lance une partie multijoueur. */
     async launchMultiGame(): Promise<void> {
         if (this.isLaunching() || !this.roomId) return;
         const currentRoom = this.room();
@@ -399,6 +410,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     // --- Horloges ----------------------------------------------------------------
 
+    /** Demarre le chronometre solo. */
     private startSoloClock(): void {
         this.stopClock();
         this.nextRoundCountdown.set(null);
@@ -417,6 +429,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }, 200);
     }
 
+    /** Demarre la transition entre deux manches solo. */
     private startSoloTransition(): void {
         this.stopClock();
         const startTime = Date.now();
@@ -432,6 +445,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }, 200);
     }
 
+    /** Demarre le chronometre de choix multijoueur. */
     private startMultiPickClock(): void {
         this.stopClock();
         this.nextRoundCountdown.set(null);
@@ -458,6 +472,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }, 200);
     }
 
+    /** Demarre la transition entre deux manches multijoueur. */
     private startMultiTransition(): void {
         this.stopClock();
         const startTime = Date.now();
@@ -477,6 +492,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }, 200);
     }
 
+    /** Demarre le chronometre multijoueur. */
     private startMultiClock(roundStartAt: string): void {
         this.stopClock();
         const startMs = new Date(roundStartAt).getTime();
@@ -566,6 +582,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
     }
 
 
+    /** Arrete le chronometre en cours. */
     private stopClock(): void {
         if (this.clockInterval) {
             clearInterval(this.clockInterval);
@@ -573,6 +590,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }
     }
 
+    /** Declenche la revelation du Pokemon courant. */
     private triggerReveal(): void {
         this.waitingForReveal.set(false);
         this.pendingMyPickStat.set(null);
@@ -610,6 +628,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     // --- Pick stat ---------------------------------------------------------------
 
+    /** Selectionne une statistique pour la manche courante. */
     pickStat(statKey: keyof Pokemon['stats']): void {
         if (this.hasPickedThisRound()) return;
         const pokemon = this.currentPokemon();
@@ -639,6 +658,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }
     }
 
+    /** Selectionne automatiquement une statistique disponible. */
     private autoPickStat(): void {
         const available = STAT_DEFS.map(s => s.key).filter(k => !this.pickedStatKeys().has(k));
         if (available.length === 0) return;
@@ -648,6 +668,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     // --- Avancer (solo) ----------------------------------------------------------
 
+    /** Passe a la manche solo suivante. */
     private advanceSoloRound(): void {
         const next = this.currentRound() + 1;
         if (next >= ROUND_COUNT) {
@@ -661,6 +682,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     // --- Fin de partie multi -----------------------------------------------------
 
+    /** Termine la partie multijoueur. */
     private endMultiGame(room: StatDuelRoom): void {
         this.stopClock();
         if (!this.isPlayer1() || !this.roomId || room.status === 'finished') {
@@ -679,6 +701,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         if (iWon) setTimeout(() => this.launchConfetti(), 300);
     }
 
+    /** Lance les confettis si le resultat multijoueur le justifie. */
     private maybeFireMultiConfetti(room: StatDuelRoom): void {
         const me = this.supabaseService.getCurrentUser();
         if (!me || !room?.winner || room.winner === 'draw') return;
@@ -689,6 +712,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     // --- Bot (dev mode) ----------------------------------------------------------
 
+    /** Planifie le choix automatique du bot. */
     private scheduleBotPick(roundIndex: number): void {
         const botDelay = 1500 + Math.random() * 6500; // 1.5s to 8s dans la manche
 
@@ -717,6 +741,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     // --- Duel intro --------------------------------------------------------------
 
+    /** Declenche l'intro de duel si ses donnees sont disponibles. */
     private async triggerDuelIntro(room: StatDuelRoom): Promise<void> {
         if (!this.roomId) return;
         const introKey = `stat-duel-intro-shown-${this.roomId}`;
@@ -742,6 +767,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }
     }
 
+    /** Lit les donnees de l'intro de duel depuis le cache local. */
     private readDuelIntroCache(key: string): { username: string; avatar_url?: string }[] | null {
         try {
             const cached = sessionStorage.getItem(key);
@@ -753,6 +779,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     // --- Rejouer / Navigation ----------------------------------------------------
 
+    /** Relance une partie. */
     replay(): void {
         if (this.isSolo()) {
             this.resetGameState();
@@ -762,6 +789,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         void this.requestStatDuelReplay();
     }
 
+    /** Reinitialise l'etat local de la partie. */
     private resetGameState(): void {
         this.myPicks.set([]);
         this.opponentPicks.set([]);
@@ -787,6 +815,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }
     }
 
+    /** Demande une revanche en Duel de Base Stats. */
     private async requestStatDuelReplay(): Promise<void> {
         if (!this.roomId) return;
         const isP1 = this.isPlayer1();
@@ -808,6 +837,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }
     }
 
+    /** Lance la partie de revanche. */
     private async launchReplayGame(): Promise<void> {
         if (!this.roomId) return;
         const currentRoom = this.room();
@@ -839,6 +869,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         });
     }
 
+    /** Navigue vers la page d'accueil. */
     goHome(): void {
         void this.supabaseService.broadcastPlayerLeft().catch(() => { });
         void this.router.navigate(['/home']);
@@ -846,6 +877,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     // --- Partage lien multi ------------------------------------------------------
 
+    /** Copie le lien de la room dans le presse-papiers. */
     async copyRoomLink(): Promise<void> {
         if (!this.inviteLink) return;
         try {
@@ -864,6 +896,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     // --- Utilitaires -------------------------------------------------------------
 
+    /** Precharge les images donnees. */
     private preloadImages(pokemons: Pokemon[]): void {
         this.preloadedImages = pokemons.map(p => {
             const img = new Image();
@@ -872,6 +905,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         });
     }
 
+    /** Demarre l'animation du Pokemon courant. */
     private startPokemonAnimation(callback?: () => void): void {
         this.pokemonVisible.set(false);
         this.pokemonAnimating.set(true);
@@ -884,12 +918,14 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         }, 50);
     }
 
+    /** Charge tous les Pokemon. */
     private loadAll(): Promise<Pokemon[]> {
         return new Promise(resolve => {
             this.pokemonService.loadAll().subscribe(all => resolve(all));
         });
     }
 
+    /** Retourne une copie melangee du tableau donne. */
     private shuffle<T>(arr: T[]): T[] {
         const a = [...arr];
         for (let i = a.length - 1; i > 0; i--) {
@@ -899,19 +935,23 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         return a;
     }
 
+    /** Retourne la largeur CSS d'une barre de statistique. */
     getStatBarWidth(value: number): string {
         return `${Math.min(100, Math.round((value / 200) * 100))}%`;
     }
 
+    /** Retourne true si le Pokemon courant est revele. */
     isCurrentPokemonRevealed(): boolean {
         if (this.isSolo()) return this.hasPickedThisRound();
         return this.myPicks().length > this.currentRound() && this.opponentPicks().length > this.currentRound();
     }
 
+    /** Retourne true si les statistiques du Pokemon courant doivent etre affichees. */
     shouldShowCurrentPokemonStats(): boolean {
         return this.pokemonVisible() && this.isCurrentPokemonRevealed();
     }
 
+    /** Retourne true si la statistique donnee est la plus haute du Pokemon courant. */
     isCurrentPokemonHighestStat(statKey: keyof Pokemon['stats']): boolean {
         const pokemon = this.currentPokemon();
         if (!pokemon) return false;
@@ -920,6 +960,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         return pokemon.stats[statKey] === max;
     }
 
+    /** Retourne la classe CSS de couleur du timer. */
     getTimerColor(): string {
         const t = this.timerValue();
         if (t <= 3) return 'text-red-400';
@@ -927,6 +968,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         return 'text-green-400';
     }
 
+    /** Retourne la classe CSS de fond du timer. */
     getTimerBg(): string {
         const t = this.timerValue();
         if (t <= 3) return 'bg-red-500';
@@ -934,6 +976,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         return 'bg-green-500';
     }
 
+    /** Retourne les classes CSS du bouton de statistique. */
     getStatButtonClass(statKey: keyof Pokemon['stats'], alreadyPicked: boolean): string {
         const base = 'flex flex-col items-center gap-1 px-4 py-3 rounded-xl border transition-all font-bold relative';
         if (!this.isSolo() && this.pendingMyPickStat() === statKey) return `${base} bg-blue-500/15 border-blue-500/50 cursor-not-allowed`;
@@ -943,6 +986,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         return `${base} bg-slate-700 border-slate-600 hover:border-yellow-500/60 hover:bg-slate-600 cursor-pointer active:scale-95`;
     }
 
+    /** Retourne les classes CSS de la ligne de statistique. */
     getStatRowClass(alreadyPicked: boolean, justPicked: boolean, canPick: boolean): string {
         const base = 'flex items-center gap-2 rounded-xl px-2 py-2 transition-all border';
         if (justPicked) return `${base} border-yellow-500/30 bg-yellow-500/5`;
@@ -950,6 +994,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         return `${base} border-transparent`;
     }
 
+    /** Retourne le resultat du joueur courant en multijoueur. */
     isMultiWinner(): boolean | null {
         const me = this.supabaseService.getCurrentUser();
         const room = this.room();
@@ -958,6 +1003,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         return (room.winner === 'player1' && isMeP1) || (room.winner === 'player2' && !isMeP1);
     }
 
+    /** Retourne le libelle du resultat de partie. */
     getResultLabel(): string {
         const me = this.supabaseService.getCurrentUser();
         const room = this.room();
@@ -968,6 +1014,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         return iWon ? 'Victoire !' : 'Défaite';
     }
 
+    /** Retourne la classe CSS de couleur du resultat. */
     getResultColor(): string {
         const me = this.supabaseService.getCurrentUser();
         const room = this.room();
@@ -978,18 +1025,22 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         return iWon ? 'text-yellow-400' : 'text-red-400';
     }
 
+    /** Retourne mon pick pour une statistique. */
     getMyPickForStat(statKey: string): StatPick | undefined {
         return this.myPicks().find(p => p.stat === statKey);
     }
 
+    /** Retourne mon pick revele pour une statistique. */
     getMyRevealedPickForStat(statKey: string): StatPick | undefined {
         return this.myRevealedPicks().find(p => p.stat === statKey);
     }
 
+    /** Retourne le pick adverse pour une statistique. */
     getOpponentPickForStat(statKey: string): StatPick | undefined {
         return this.opponentPicks().find(p => p.stat === statKey);
     }
 
+    /** Retourne le pick adverse revele pour une statistique. */
     getOpponentRevealedPickForStat(statKey: string): StatPick | undefined {
         return this.opponentRevealedPicks().find(p => p.stat === statKey);
     }

@@ -50,6 +50,7 @@ export class FriendsCardComponent implements OnInit, OnDestroy {
 	private presenceSub?: Subscription;
 	private friendshipsSub?: Subscription;
 
+	/** Lifecycle Angular : initialise le composant. */
 	async ngOnInit(): Promise<void> {
 		await this.reload();
 		this.friendshipsSub = this.supabaseService.subscribeToFriendships().subscribe(() => {
@@ -57,11 +58,13 @@ export class FriendsCardComponent implements OnInit, OnDestroy {
 		});
 	}
 
+	/** Lifecycle Angular : nettoie les abonnements et timers du composant. */
 	ngOnDestroy(): void {
 		this.presenceSub?.unsubscribe();
 		this.friendshipsSub?.unsubscribe();
 	}
 
+	/** Recharge les amis et demandes d'amitie. */
 	private async reload(showSpinner = true): Promise<void> {
 		if (showSpinner) this.isLoadingFriends.set(true);
 		const [friends, requests] = await Promise.all([
@@ -88,6 +91,7 @@ export class FriendsCardComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** Envoie une demande d'ami. */
 	async sendFriendRequest(): Promise<void> {
 		const username = this.addFriendInput.trim();
 		if (!username) return;
@@ -105,27 +109,33 @@ export class FriendsCardComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** Accepte une demande d'ami. */
 	async acceptRequest(friendshipId: string): Promise<void> {
 		await this.supabaseService.acceptFriendRequest(friendshipId);
 	}
 
+	/** Refuse une demande d'ami. */
 	async declineRequest(friendshipId: string): Promise<void> {
 		await this.supabaseService.declineFriendRequest(friendshipId);
 	}
 
+	/** Emet une demande d'invitation de jeu pour un ami. */
 	inviteFriend(friend: FriendWithStatus, gameMode: 'guess_my_pokemon' | 'stat_duel' | 'draft_duo'): void {
 		if (friend.status !== 'online') return;
 		this.inviteRequested.emit({ friendId: friend.friendId, username: friend.username, gameMode });
 	}
 
+	/** Ouvre la confirmation de suppression d'ami. */
 	askRemoveFriend(friend: FriendWithStatus): void {
 		this.confirmDeleteFriend.set(friend);
 	}
 
+	/** Annule la suppression d'ami. */
 	cancelRemove(): void {
 		this.confirmDeleteFriend.set(null);
 	}
 
+	/** Confirme la suppression de l'ami selectionne. */
 	async confirmRemove(): Promise<void> {
 		const friend = this.confirmDeleteFriend();
 		if (!friend) return;
@@ -134,12 +144,14 @@ export class FriendsCardComponent implements OnInit, OnDestroy {
 		await this.reload();
 	}
 
+	/** Ferme le menu contextuel lors d'un clic document. */
 	@HostListener('document:click')
 	onDocumentClick(): void {
 		this.openMenuFriend.set(null);
 		this.menuPosition.set(null);
 	}
 
+	/** Ouvre ou ferme le menu d'un ami. */
 	toggleMenu(friend: FriendWithStatus, event: Event): void {
 		event.stopPropagation();
 		if (this.openMenuFriend()?.id === friend.id) {
@@ -153,29 +165,34 @@ export class FriendsCardComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	/** Ferme le menu d'ami ouvert. */
 	closeMenu(): void {
 		this.openMenuFriend.set(null);
 		this.menuPosition.set(null);
 	}
 
+	/** Active l'onglet selectionne. */
 	setTab(tab: 'friends' | 'requests' | 'add'): void {
 		this.activeTab.set(tab);
 		this.addFriendError = '';
 		this.addFriendSuccess = '';
 	}
 
+	/** Retourne le libelle d'un statut d'ami. */
 	statusLabel(status: FriendStatus): string {
 		if (status === 'online') return 'En ligne';
 		if (status === 'in_game') return 'En jeu';
 		return 'Hors ligne';
 	}
 
+	/** Retourne la classe CSS du point de statut d'ami. */
 	statusDotClass(status: FriendStatus): string {
 		if (status === 'online') return 'bg-green-500';
 		if (status === 'in_game') return 'bg-yellow-500';
 		return 'bg-gray-500';
 	}
 
+	/** Retourne la classe CSS du texte de statut d'ami. */
 	statusTextClass(status: FriendStatus): string {
 		if (status === 'online') return 'text-green-400';
 		if (status === 'in_game') return 'text-yellow-400';
