@@ -1,0 +1,68 @@
+import { TestBed } from '@angular/core/testing';
+
+import { GameService } from './game.service';
+import { SupabaseService } from './supabase.service';
+import { PokemonService } from './pokemon.service';
+import { Room } from '../models/room.model';
+
+describe('GameService', () => {
+  const user = { id: 'player-2' };
+  let service: GameService;
+  let supabaseService: jasmine.SpyObj<SupabaseService>;
+
+  function room(overrides: Partial<Room>): Room {
+    return {
+      id: 'room-1',
+      player1_id: 'player-1',
+      player2_id: 'player-2',
+      pokemon_p1: 25,
+      pokemon_p2: 4,
+      p1_ready: false,
+      p2_ready: false,
+      current_turn: 'player-1',
+      status: 'playing',
+      winner_id: null,
+      created_at: '2026-05-07T00:00:00.000Z',
+      settings: null,
+      last_guess: null,
+      ...overrides,
+    };
+  }
+
+  beforeEach(() => {
+    supabaseService = jasmine.createSpyObj<SupabaseService>('SupabaseService', [
+      'getCurrentUser',
+      'getRoomById',
+      'updateRoom',
+      'broadcastGuess',
+    ]);
+    supabaseService.getCurrentUser.and.returnValue(user as any);
+    supabaseService.updateRoom.and.resolveTo();
+    supabaseService.broadcastGuess.and.resolveTo();
+    (supabaseService as any).currentUserSignal = jasmine.createSpy('currentUserSignal').and.returnValue(user);
+    (supabaseService as any).broadcastEvents$ = { subscribe: () => ({ unsubscribe: () => undefined }) };
+
+    TestBed.configureTestingModule({
+      providers: [
+        GameService,
+        { provide: SupabaseService, useValue: supabaseService },
+        { provide: PokemonService, useValue: {} },
+      ],
+    });
+
+    service = TestBed.inject(GameService);
+  });
+
+  it('relit la room avant de refuser un guess pour eviter un tour local obsolete', async () => {
+    service.currentRoom.set(room({ current_turn: 'player-1' }));
+    supabaseService.getRoomById.and.resolveTo(room({ current_turn: 'player-2' }));
+
+    const result = await service.guess('room-1', 25);
+
+    expect(result).toBe('correct');
+    expect(supabaseService.updateRoom).toHaveBeenCalledWith('room-1', jasmine.objectContaining({
+      winner_id: 'player-2',
+      status: 'finished',
+    }));
+  });
+});

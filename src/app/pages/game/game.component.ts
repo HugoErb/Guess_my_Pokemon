@@ -330,8 +330,6 @@ export class GameComponent implements OnInit, OnDestroy {
 	 * Si incorrect, ajoute le Pokémon à la liste des tentatives et affiche la modal "Raté".
 	 */
 	async onGuess(pokemonId: number): Promise<void> {
-		if (!this.isMyTurn()) return;
-
 		try {
 			const result = await this.gameService.guess(this.roomId(), pokemonId);
 			if (result === 'incorrect') {

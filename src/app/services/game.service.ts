@@ -223,8 +223,11 @@ export class GameService implements OnDestroy {
         const user = this.supabaseService.getCurrentUser();
         if (!user) throw new Error('Utilisateur non connecté');
 
-        const room = this.currentRoom();
-        if (!room) throw new Error('Aucune room active');
+        const localRoom = this.currentRoom();
+        if (!localRoom) throw new Error('Aucune room active');
+
+        const room = await this.supabaseService.getRoomById(roomId);
+        this.currentRoom.set(room);
         if (room.status !== 'playing') throw new Error('La partie n’est pas en cours');
         if (room.current_turn !== user.id) throw new Error('Ce n’est pas ton tour');
 
