@@ -31,4 +31,16 @@ export class EndGameActionsComponent {
 	protected isMultiReplay(): boolean {
 		return this.replayMode() === 'multi';
 	}
+
+	protected onReplayClick(event: Event): void {
+		event.preventDefault();
+		event.stopPropagation();
+		this.replay.emit();
+	}
+
+	protected onGoHomeClick(event: Event): void {
+		event.preventDefault();
+		event.stopPropagation();
+		this.goHome.emit();
+	}
 }

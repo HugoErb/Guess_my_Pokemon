@@ -165,6 +165,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
     // --- Animation & Effects --------------------------------------------------
     private confettiFired = false;
+    private replayLaunchInProgress = false;
 
 
     /** Lifecycle Angular : initialise le composant. */
@@ -253,6 +254,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         const room = await this.supabaseService.getStatDuelRoom(roomId);
         this.room.set(room);
         this.isPlayer1.set(room.player1_id === me.id);
+        void this.launchReplayIfReady(room);
 
         // Rejoindre en tant que P2 si la place est libre et qu'on n'est pas P1
         if (!room.player2_id && room.player1_id !== me.id) {
@@ -268,6 +270,7 @@ export class StatDuelComponent implements OnInit, OnDestroy {
 
         this.roomSub = this.supabaseService.subscribeToStatDuelRoom(roomId).subscribe(async (updated) => {
             this.room.set(updated);
+            if (await this.launchReplayIfReady(updated)) return;
             if (updated.player2_id) this.stopWaitingPoll();
 
             if (updated.status === 'finished') {
@@ -832,8 +835,19 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         await this.supabaseService.updateStatDuelRoom(this.roomId, isP1 ? { p1_ready: true } : { p2_ready: true });
         const refreshed = await this.supabaseService.getStatDuelRoom(this.roomId);
         this.room.set(refreshed);
-        if (refreshed.p1_ready && refreshed.p2_ready && refreshed.status === 'finished') {
+        await this.launchReplayIfReady(refreshed);
+    }
+
+    private async launchReplayIfReady(room: StatDuelRoom): Promise<boolean> {
+        if (!this.isPlayer1() || this.replayLaunchInProgress) return false;
+        if (room.status !== 'finished' || !room.p1_ready || !room.p2_ready) return false;
+
+        this.replayLaunchInProgress = true;
+        try {
             await this.launchReplayGame();
+            return true;
+        } finally {
+            this.replayLaunchInProgress = false;
         }
     }
 

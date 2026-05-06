@@ -11,6 +11,7 @@ export class GameService implements OnDestroy {
     private readonly supabaseService = inject(SupabaseService);
     private readonly pokemonService = inject(PokemonService);
     private pollInterval: any;
+    private replayLaunchInProgress = false;
 
     /** Signal Angular : room en cours de jeu, null si aucune. */
     currentRoom = signal<Room | null>(null, {
@@ -51,6 +52,7 @@ export class GameService implements OnDestroy {
         this.roomSubscription = this.supabaseService.subscribeToRoom(roomId).subscribe({
             next: (updatedRoom) => {
                 this.currentRoom.set(updatedRoom);
+                void this.launchReplayIfReady(roomId, updatedRoom);
             },
             error: () => {
                 // Si on perd la connexion, on tente quand même de rafraîchir une fois manuellement
@@ -60,6 +62,7 @@ export class GameService implements OnDestroy {
         // 2. Charger l'état initial ensuite
         const room = await this.supabaseService.getRoomById(roomId);
         this.currentRoom.set(room);
+        void this.launchReplayIfReady(roomId, room);
 
         this.pollInterval && clearInterval(this.pollInterval);
         this.pollInterval = setInterval(() => {
@@ -310,46 +313,8 @@ export class GameService implements OnDestroy {
 
         const refreshed = await this.supabaseService.getRoomById(roomId);
 
-        if (refreshed.p1_ready && refreshed.p2_ready && refreshed.status === 'finished') {
-            const settings = refreshed.settings ?? DEFAULT_SETTINGS;
-            if (settings.randomPokemon) {
-                let pokemons = await firstValueFrom(this.pokemonService.loadAll());
-                if (settings.generations.length > 0) {
-                    pokemons = pokemons.filter((p) => settings.generations.includes(p.generation));
-                }
-                if (settings.categories.length > 0) {
-                    pokemons = pokemons.filter((p) => settings.categories.includes(p.category));
-                }
-                const [p1, p2] = this.pickTwoDifferent(pokemons);
-                await this.supabaseService.updateRoom(roomId, {
-                    status: 'playing',
-                    pokemon_p1: p1.id,
-                    pokemon_p2: p2.id,
-                    p1_ready: false,
-                    p2_ready: false,
-                    winner_id: null,
-                    current_turn: this.resolveFirstTurn({ ...refreshed, settings }),
-                    last_guess: null,
-                });
-            } else {
-                await this.supabaseService.updateRoom(roomId, {
-                    status: 'selecting',
-                    pokemon_p1: null,
-                    pokemon_p2: null,
-                    p1_ready: false,
-                    p2_ready: false,
-                    winner_id: null,
-                    current_turn: null,
-                    last_guess: null,
-                });
-            }
-
-            const finalRoom = await this.supabaseService.getRoomById(roomId);
-            this.currentRoom.set(finalRoom);
-            return;
-        }
-
         this.currentRoom.set(refreshed);
+        await this.launchReplayIfReady(roomId, refreshed);
     }
 
     /**
@@ -385,6 +350,7 @@ export class GameService implements OnDestroy {
         try {
             const room = await this.supabaseService.getRoomById(roomId);
             this.currentRoom.set(room);
+            void this.launchReplayIfReady(roomId, room);
         } catch {
             // ignore les erreurs de rafraîchissement
         }
@@ -420,6 +386,53 @@ export class GameService implements OnDestroy {
         await this.supabaseService.updateRoom(roomId, patch);
         const refreshed = await this.supabaseService.getRoomById(roomId);
         this.currentRoom.set(refreshed);
+    }
+
+    private async launchReplayIfReady(roomId: string, room: Room): Promise<void> {
+        const user = this.supabaseService.getCurrentUser();
+        if (!user || user.id !== room.player1_id) return;
+        if (this.replayLaunchInProgress || room.status !== 'finished' || !room.p1_ready || !room.p2_ready) return;
+
+        this.replayLaunchInProgress = true;
+        try {
+            const settings = room.settings ?? DEFAULT_SETTINGS;
+            if (settings.randomPokemon) {
+                let pokemons = await firstValueFrom(this.pokemonService.loadAll());
+                if (settings.generations.length > 0) {
+                    pokemons = pokemons.filter((p) => settings.generations.includes(p.generation));
+                }
+                if (settings.categories.length > 0) {
+                    pokemons = pokemons.filter((p) => settings.categories.includes(p.category));
+                }
+                const [p1, p2] = this.pickTwoDifferent(pokemons);
+                await this.supabaseService.updateRoom(roomId, {
+                    status: 'playing',
+                    pokemon_p1: p1.id,
+                    pokemon_p2: p2.id,
+                    p1_ready: false,
+                    p2_ready: false,
+                    winner_id: null,
+                    current_turn: this.resolveFirstTurn({ ...room, settings }),
+                    last_guess: null,
+                });
+            } else {
+                await this.supabaseService.updateRoom(roomId, {
+                    status: 'selecting',
+                    pokemon_p1: null,
+                    pokemon_p2: null,
+                    p1_ready: false,
+                    p2_ready: false,
+                    winner_id: null,
+                    current_turn: null,
+                    last_guess: null,
+                });
+            }
+
+            const finalRoom = await this.supabaseService.getRoomById(roomId);
+            this.currentRoom.set(finalRoom);
+        } finally {
+            this.replayLaunchInProgress = false;
+        }
     }
 
     // ─── Helpers d'état ──────────────────────────────────────────────────────────

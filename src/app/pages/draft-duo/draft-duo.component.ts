@@ -174,6 +174,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
   private enteringComplete = false;
   private confettiFired = false;
   private isLockingPick = false;
+  private replayLaunchInProgress = false;
 
   // ─── Cycle de vie ────────────────────────────────────────────────────────────
 
@@ -187,6 +188,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
       const currentUser = this.supabaseService.getCurrentUser();
       if (!currentUser) { this.router.navigate(['/login']); return; }
       this.isPlayer1.set(room.player1_id === currentUser.id);
+      void this.launchReplayIfReady(room);
 
       // Subscription Realtime
       this.roomSub = this.supabaseService.subscribeToDraftDuoRoom(this.roomId()).subscribe(updated => {
@@ -245,6 +247,8 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
   private async onRoomUpdated(updated: DraftDuoRoom): Promise<void> {
     const prev = this.room();
     this.room.set(updated);
+
+    if (await this.launchReplayIfReady(updated)) return;
 
     // P2 vient de rejoindre
     if (!prev?.player2_id && updated.player2_id && this.phase() === 'waiting') {
@@ -612,20 +616,31 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
       const refreshed = await this.supabaseService.getDraftDuoRoom(this.roomId());
       this.room.set(refreshed);
 
-      if (refreshed.p1_ready && refreshed.p2_ready && refreshed.status === 'finished') {
-        await this.supabaseService.updateDraftDuoRoom(this.roomId(), {
-          status: 'playing',
-          p1_team: [],
-          p2_team: [],
-          winner: null,
-          p1_ready: false,
-          p2_ready: false,
-        });
-        
-        const finalRoom = await this.supabaseService.getDraftDuoRoom(this.roomId());
-        await this.onRoomUpdated(finalRoom);
-      }
+      await this.launchReplayIfReady(refreshed);
     } catch { /* silencieux */ }
+  }
+
+  private async launchReplayIfReady(room: DraftDuoRoom): Promise<boolean> {
+    if (!this.isPlayer1() || this.replayLaunchInProgress) return false;
+    if (room.status !== 'finished' || !room.p1_ready || !room.p2_ready) return false;
+
+    this.replayLaunchInProgress = true;
+    try {
+      await this.supabaseService.updateDraftDuoRoom(this.roomId(), {
+        status: 'playing',
+        p1_team: [],
+        p2_team: [],
+        winner: null,
+        p1_ready: false,
+        p2_ready: false,
+      });
+
+      const finalRoom = await this.supabaseService.getDraftDuoRoom(this.roomId());
+      await this.onRoomUpdated(finalRoom);
+      return true;
+    } finally {
+      this.replayLaunchInProgress = false;
+    }
   }
 
   /** Reinitialise l'etat local pour une revanche. */
