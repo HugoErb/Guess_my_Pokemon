@@ -342,6 +342,15 @@
 		"pokemons": [25, 149, 94, 448, 865, 882]
 	},
 	{
+		"nom": "Ichigoat",
+		"region": "Toutes régions",
+		"generation": "Toutes",
+		"role": "Champion PokéLudik",
+		"version": "PokéLudik",
+		"image": "https://play.pokemonshowdown.com/sprites/trainers/acetrainer-gen4dp.png",
+		"pokemons": [461, 162, 719, 644, 791, 802]
+	},
+	{
 		"nom": "Pato",
 		"region": "Toutes régions",
 		"generation": "Toutes",
