@@ -7,6 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:schema-security": "node scripts/validate-security-schema.mjs",
     "generate:pokemon": "node scripts/fetch-pokemon.mjs",
     "add:ratings": "node scripts/add-ratings.js"
   },

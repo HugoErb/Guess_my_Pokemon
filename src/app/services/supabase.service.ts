@@ -223,14 +223,14 @@ export class SupabaseService implements OnDestroy {
         if (room.status !== 'waiting') throw new Error('Room non joignable');
         if (room.player1_id === user.id) throw new Error('Le créateur ne peut pas rejoindre sa propre room');
 
-        const { error } = await this.supabase.from('guess_pokemon_rooms').update({ player2_id: user.id, status: 'ready' }).eq('id', roomId).select('*');
+        const { error } = await this.supabase.rpc('join_guess_pokemon_room', { p_room_id: roomId });
 
         if (error) throw error;
     }
 
     /** Lance la partie en passant la room au statut 'selecting'. */
     async launchGame(roomId: string, settings: GameSettings): Promise<void> {
-        const { error } = await this.supabase.from('guess_pokemon_rooms').update({ status: 'selecting', settings }).eq('id', roomId);
+        const { error } = await this.supabase.rpc('update_guess_pokemon_room', { p_room_id: roomId, p_patch: { status: 'selecting', settings } });
 
         if (error) throw error;
     }
@@ -279,16 +279,9 @@ export class SupabaseService implements OnDestroy {
      * Lance une erreur si la mise à jour est refusée ou n'affecte aucune ligne.
      */
     async updateRoom(roomId: string, patch: RoomPatch): Promise<void> {
-        const { data, error } = await this.supabase
-            .from('guess_pokemon_rooms')
-            .update(patch)
-            .eq('id', roomId)
-            .select('*');
+        const { error } = await this.supabase.rpc('update_guess_pokemon_room', { p_room_id: roomId, p_patch: patch });
 
         if (error) throw error;
-        if (!data || data.length === 0) {
-            throw new Error('UPDATE guess_pokemon_rooms refusé ou aucune ligne modifiée');
-        }
     }
 
     /** Supprime une room (Guess my Pokémon) de la base de données. */
@@ -337,43 +330,21 @@ export class SupabaseService implements OnDestroy {
         if (room.player2_id) throw new Error('Room déjà complète');
         if (room.status !== 'waiting') throw new Error('Room non joignable');
 
-        const { error } = await this.supabase
-            .from('stat_duel_rooms')
-            .update({ player2_id: user.id })
-            .eq('id', roomId)
-            .eq('status', 'waiting')
-            .is('player2_id', null);
+        const { error } = await this.supabase.rpc('join_stat_duel_room', { p_room_id: roomId });
 
         if (error) throw error;
     }
 
     /** Met à jour les données d'une room Duel de Base Stats. */
     async updateStatDuelRoom(roomId: string, patch: Partial<StatDuelRoom>): Promise<void> {
-        const { error } = await this.supabase
-            .from('stat_duel_rooms')
-            .update(patch)
-            .eq('id', roomId);
+        const { error } = await this.supabase.rpc('update_stat_duel_room', { p_room_id: roomId, p_patch: patch });
 
         if (error) throw error;
     }
 
     /** Ajoute un pick de stat dans p1_picks ou p2_picks via concaténation JSON. */
     async appendStatPick(roomId: string, column: 'p1_picks' | 'p2_picks', pick: StatPick): Promise<void> {
-        const { data: current, error: fetchError } = await this.supabase
-            .from('stat_duel_rooms')
-            .select(column)
-            .eq('id', roomId)
-            .single();
-
-        if (fetchError) throw fetchError;
-
-        const existing: StatPick[] = (current as any)[column] ?? [];
-        const updated = [...existing, pick];
-
-        const { error } = await this.supabase
-            .from('stat_duel_rooms')
-            .update({ [column]: updated })
-            .eq('id', roomId);
+        const { error } = await this.supabase.rpc('append_stat_pick', { p_room_id: roomId, p_column: column, p_pick: pick });
 
         if (error) throw error;
     }
@@ -452,22 +423,14 @@ export class SupabaseService implements OnDestroy {
         if (room.player2_id) throw new Error('Room déjà complète');
         if (room.status !== 'waiting') throw new Error('Room non joignable');
 
-        const { error } = await this.supabase
-            .from('draft_duo_rooms')
-            .update({ player2_id: user.id })
-            .eq('id', roomId)
-            .eq('status', 'waiting')
-            .is('player2_id', null);
+        const { error } = await this.supabase.rpc('join_draft_duo_room', { p_room_id: roomId });
 
         if (error) throw error;
     }
 
     /** Met à jour les données d'une room Draft Duo. */
     async updateDraftDuoRoom(roomId: string, patch: Partial<DraftDuoRoom>): Promise<void> {
-        const { error } = await this.supabase
-            .from('draft_duo_rooms')
-            .update(patch)
-            .eq('id', roomId);
+        const { error } = await this.supabase.rpc('update_draft_duo_room', { p_room_id: roomId, p_patch: patch });
 
         if (error) throw error;
     }
