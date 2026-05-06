@@ -131,6 +131,8 @@ export class PokedexComponent implements OnInit {
     // Données constantes
     readonly generations = GENERATIONS;
     readonly allTypes = ALL_TYPES;
+    readonly desktopTypeFirstRow = ALL_TYPES.slice(0, 9);
+    readonly desktopTypeSecondRow = ALL_TYPES.slice(9);
     readonly mobileAllTypes = [
         'Normal', 'Feu', 'Eau', 'Électrik', 'Fée', 'Plante', 'Glace',
         'Combat', 'Vol', 'Insecte', 'Poison', 'Psy', 'Sol',
@@ -167,16 +169,24 @@ export class PokedexComponent implements OnInit {
     );
 
     hasCategoryFilter = computed(() => this.selectedCategories().length !== this.categories.length);
+    private readonly selectedGenerationSet = computed(() => new Set(this.selectedGenerations()));
+    private readonly selectedTypeSet = computed(() => new Set(this.selectedTypes()));
+    private readonly selectedCategorySet = computed(() => new Set(this.selectedCategories()));
+    private readonly selectedEvoStageSet = computed(() => new Set(this.selectedEvoStages()));
+    private readonly restrictedGenerationSet = computed(() => new Set(this.restrictedGenerations()));
+    private readonly guessedPokemonIdSet = computed(() => new Set(this.guessedPokemonIds()));
+    private readonly manuallyDimmedIdSet = computed(() => new Set(this.manuallyDimmedIds()));
 
     // Logic de filtrage réactive (Computed)
     filteredPokemons = computed(() => {
         const list = this.allPokemons();
         const q = this.searchQuery().trim().toLowerCase();
-        const restricted = this.restrictedGenerations();
-        const gens = this.selectedGenerations();
-        const types = this.selectedTypes();
-        const cats = this.selectedCategories();
-        const evos = this.selectedEvoStages();
+        const restricted = this.restrictedGenerationSet();
+        const hasRestrictedGenerations = restricted.size > 0;
+        const gens = this.selectedGenerationSet();
+        const types = this.selectedTypeSet();
+        const cats = this.selectedCategorySet();
+        const evos = this.selectedEvoStageSet();
         const isDualOnly = this.onlyDualType();
         const isDualOnlyStrict = this.onlyDualTypeStrict();
         const isMonoOnly = this.onlyMonoType();
@@ -195,17 +205,17 @@ export class PokedexComponent implements OnInit {
         const minTotal   = this.minStatTotal();   const maxTotal   = this.maxStatTotal();
 
         return list.filter(p => {
-            if (restricted.length > 0 && !restricted.includes(p.generation)) return false;
+            if (hasRestrictedGenerations && !restricted.has(p.generation)) return false;
             if (q && !p.name.toLowerCase().includes(q)) return false;
-            if (!gens.includes(p.generation)) return false;
+            if (!gens.has(p.generation)) return false;
 
             if ((isDualOnly || isDualOnlyStrict) && p.types.length !== 2) return false;
             if (isMonoOnly && p.types.length !== 1) return false;
 
-            if (isDualOnlyStrict ? !p.types.every(t => types.includes(t)) : !p.types.some(t => types.includes(t))) return false;
+            if (isDualOnlyStrict ? !p.types.every(t => types.has(t)) : !p.types.some(t => types.has(t))) return false;
 
-            if (!cats.includes(p.category)) return false;
-            if (!evos.includes(p._stage ?? 1)) return false;
+            if (!cats.has(p.category)) return false;
+            if (!evos.has(p._stage ?? 1)) return false;
 
             if (minW !== null && p.weight < minW) return false;
             if (maxW !== null && p.weight > maxW) return false;
@@ -360,13 +370,13 @@ export class PokedexComponent implements OnInit {
 
     /** Retourne true si la génération donnée est actuellement sélectionnée dans le filtre. */
     isGenSelected(gen: number): boolean {
-        return this.selectedGenerations().includes(gen);
+        return this.selectedGenerationSet().has(gen);
     }
 
     /** Retourne true si la génération est hors des générations autorisées par les paramètres de la room. */
     isGenRestricted(gen: number): boolean {
-        const restricted = this.restrictedGenerations();
-        return restricted.length > 0 && !restricted.includes(gen);
+        const restricted = this.restrictedGenerationSet();
+        return restricted.size > 0 && !restricted.has(gen);
     }
 
     /** Ajoute ou retire un type du filtre actif. */
@@ -404,7 +414,7 @@ export class PokedexComponent implements OnInit {
 
     /** Retourne true si le type donné est actuellement sélectionné dans le filtre. */
     isTypeSelected(type: string): boolean {
-        return this.selectedTypes().includes(type);
+        return this.selectedTypeSet().has(type);
     }
 
     selectAllTypes(): void {
@@ -447,7 +457,7 @@ export class PokedexComponent implements OnInit {
 
     /** Retourne true si la catégorie donnée est actuellement sélectionnée dans le filtre. */
     isCategorySelected(catId: string): boolean {
-        return this.selectedCategories().includes(catId);
+        return this.selectedCategorySet().has(catId);
     }
 
     /** Ajoute ou retire un stade d'évolution du filtre actif. */
@@ -460,7 +470,7 @@ export class PokedexComponent implements OnInit {
 
     /** Retourne true si le stade d'évolution donné est actuellement sélectionné dans le filtre. */
     isEvoStageSelected(stage: number): boolean {
-        return this.selectedEvoStages().includes(stage);
+        return this.selectedEvoStageSet().has(stage);
     }
 
     /** Réinitialise les filtres de stats à null. */
@@ -530,7 +540,15 @@ export class PokedexComponent implements OnInit {
 
     /** Retourne true si le Pokémon a été grisé manuellement par le joueur. */
     isManuallyDimmed(id: number): boolean {
-        return this.manuallyDimmedIds().includes(id);
+        return this.manuallyDimmedIdSet().has(id);
+    }
+
+    isPokemonGuessed(id: number): boolean {
+        return this.guessedPokemonIdSet().has(id);
+    }
+
+    isPokemonUnavailable(id: number): boolean {
+        return this.guessedPokemonIdSet().has(id) || this.manuallyDimmedIdSet().has(id);
     }
 
     /** Bascule le grisage manuel d'un Pokémon et arrête la propagation du clic. */

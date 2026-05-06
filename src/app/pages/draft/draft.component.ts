@@ -29,6 +29,17 @@ import { ModeSelectCardComponent } from '../../components/mode-select-card/mode-
 import { ModeSelectComponent } from '../../components/mode-select-card/mode-select.component';
 import { EndGameActionsComponent } from '../../components/end-game-actions/end-game-actions.component';
 import { AppHeaderComponent } from '../../components/app-header/app-header.component';
+import {
+  computeRating as computePokemonRating,
+  computeTotal as computePokemonTotal,
+  getRatingWidth as getPokemonRatingWidth,
+  getScoreBarColor as getPokemonScoreBarColor,
+  getScoreColor as getPokemonScoreColor,
+  pickNUnique as pickNUniquePokemon,
+  pickOneLegendary as pickOneLegendaryPokemon,
+  pickOneStarter as pickOneStarterPokemon,
+  preloadImages as preloadPokemonImages,
+} from '../../utils/draft-utils';
 
 type SlotState = 'idle' | 'leaving' | 'entering';
 
@@ -297,14 +308,7 @@ export class DraftComponent implements OnInit {
   }
 
   private preloadImages(urls: string[]): Promise<void[]> {
-    return Promise.all(
-      urls.map(url => new Promise<void>(resolve => {
-        const img = new Image();
-        img.onload = () => resolve();
-        img.onerror = () => resolve();
-        img.src = url;
-      }))
-    );
+    return preloadPokemonImages(urls);
   }
 
   replay(): void {
@@ -341,29 +345,19 @@ export class DraftComponent implements OnInit {
   // ─── Calculs rating ──────────────────────────────────────────────────────────
 
   getScoreColor(score: number): string {
-    if (score >= 8) return 'text-yellow-400';
-    if (score >= 6) return 'text-green-400';
-    if (score >= 4) return 'text-blue-400';
-    return 'text-slate-400';
+    return getPokemonScoreColor(score);
   }
 
   getScoreBarColor(score: number): string {
-    if (score >= 8) return 'bg-yellow-400';
-    if (score >= 6) return 'bg-green-400';
-    if (score >= 4) return 'bg-blue-400';
-    return 'bg-slate-500';
+    return getPokemonScoreBarColor(score);
   }
 
   private computeTotal(p: Pokemon): number {
-    const s = p.stats;
-    return s.pv + s.attaque + s.defense + s.atq_spe + s.def_spe + s.vitesse;
+    return computePokemonTotal(p);
   }
 
   private computeRating(p: Pokemon, range: { min: number; max: number }): number {
-    if (p.rating !== undefined) return p.rating;
-    const total = this.computeTotal(p);
-    const raw = ((total - range.min) / (range.max - range.min)) * 10;
-    return Math.round(raw * 10) / 10;
+    return computePokemonRating(p, range);
   }
 
   getRating(p: Pokemon): number {
@@ -371,21 +365,15 @@ export class DraftComponent implements OnInit {
   }
 
   getRatingColor(rating: number): string {
-    if (rating >= 8) return 'text-yellow-400';
-    if (rating >= 6) return 'text-green-400';
-    if (rating >= 4) return 'text-blue-400';
-    return 'text-slate-400';
+    return getPokemonScoreColor(rating);
   }
 
   getRatingBarColor(rating: number): string {
-    if (rating >= 8) return 'bg-yellow-400';
-    if (rating >= 6) return 'bg-green-400';
-    if (rating >= 4) return 'bg-blue-400';
-    return 'bg-slate-500';
+    return getPokemonScoreBarColor(rating);
   }
 
   getRatingWidth(rating: number): string {
-    return `${(rating / 10) * 100}%`;
+    return getPokemonRatingWidth(rating);
   }
 
   getTypeColor(type: string): string {
@@ -399,52 +387,15 @@ export class DraftComponent implements OnInit {
   // ─── Sélection aléatoire sans doublons ───────────────────────────────────────
 
   private pickOneStarter(pool: Pokemon[], exclude: Set<number>): Pokemon {
-    const starters = pool.filter(p => p.category === 'starter');
-    if (starters.length === 0) {
-      // Fallback total si aucun starter dans le pool (ne devrait pas arriver)
-      const fallback = pool.filter(p => !exclude.has(p.id));
-      return (fallback.length > 0 ? fallback : pool)[0];
-    }
-
-    const available = starters.filter(p => !exclude.has(p.id));
-    if (available.length > 0) {
-      return available[Math.floor(Math.random() * available.length)];
-    }
-
-    // Si épuisé, on pioche dans tous les starters en évitant l'affichage actuel si possible
-    const currentIds = new Set(this.slots().filter(p => p !== null).map(p => p!.id));
-    const secondary = starters.filter(p => !currentIds.has(p.id));
-    const finalSource = secondary.length > 0 ? secondary : starters;
-    return finalSource[Math.floor(Math.random() * finalSource.length)];
+    return pickOneStarterPokemon(pool, exclude, this.slots());
   }
 
   private pickOneLegendary(pool: Pokemon[], exclude: Set<number>): Pokemon {
-    const legends = pool.filter(p => p.category === 'légendaire' || p.category === 'fabuleux');
-    if (legends.length === 0) {
-      // Fallback total si aucune légende dans le pool
-      const fallback = pool.filter(p => !exclude.has(p.id));
-      return (fallback.length > 0 ? fallback : pool)[0];
-    }
-
-    const available = legends.filter(p => !exclude.has(p.id));
-    if (available.length > 0) {
-      return available[Math.floor(Math.random() * available.length)];
-    }
-
-    // Si épuisé, on pioche dans toutes les légendes en évitant l'affichage actuel si possible
-    const currentIds = new Set(this.slots().filter(p => p !== null).map(p => p!.id));
-    const secondary = legends.filter(p => !currentIds.has(p.id));
-    const finalSource = secondary.length > 0 ? secondary : legends;
-    return finalSource[Math.floor(Math.random() * finalSource.length)];
+    return pickOneLegendaryPokemon(pool, exclude, this.slots());
   }
 
   private pickNUnique(pool: Pokemon[], exclude: Set<number>, n: number): Pokemon[] {
-    const available = pool.filter(p => !exclude.has(p.id));
-    for (let i = available.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [available[i], available[j]] = [available[j], available[i]];
-    }
-    return available.slice(0, n);
+    return pickNUniquePokemon(pool, exclude, n);
   }
 
   // ─── Confetti ────────────────────────────────────────────────────────────────

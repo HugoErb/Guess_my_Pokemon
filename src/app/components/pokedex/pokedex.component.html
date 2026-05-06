@@ -293,7 +293,7 @@
           <!-- Types : version bureau (deux rangées de 9, identique à l'original) -->
           <div class="hidden md:flex flex-col gap-1">
             <div class="flex flex-wrap gap-1">
-              @for (type of allTypes.slice(0, 9); track type) {
+              @for (type of desktopTypeFirstRow; track type) {
                 <button
                   (click)="toggleType(type)"
                   [class]="isTypeSelected(type)
@@ -306,7 +306,7 @@
               }
             </div>
             <div class="flex flex-wrap gap-1">
-              @for (type of allTypes.slice(9); track type) {
+              @for (type of desktopTypeSecondRow; track type) {
                 <button
                   (click)="toggleType(type)"
                   [class]="isTypeSelected(type)
@@ -373,21 +373,24 @@
           <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 pb-2">
             @for (pokemon of visiblePokemons(); track pokemon.id) {
               <div class="relative w-full h-full group">
+                @let pokemonUnavailable = isPokemonUnavailable(pokemon.id);
+                @let pokemonGuessed = isPokemonGuessed(pokemon.id);
+                @let pokemonDimmed = isManuallyDimmed(pokemon.id);
 
                 <!-- Bouton grisage manuel (toujours visible, sauf sur les guessés) -->
-                @if (!guessedPokemonIds().includes(pokemon.id)) {
+                @if (!pokemonGuessed) {
                   <button
                     (click)="toggleManualDim(pokemon.id, $event)"
                     class="absolute top-1 right-1 z-10 w-6 h-6 flex items-center justify-center rounded-full transition-colors border border-slate-600 shadow-sm bg-slate-800/90 text-slate-300 hover:bg-red-600 hover:text-white"
                   >
-                    <iconify-icon [icon]="isManuallyDimmed(pokemon.id) ? ICONS.eye : ICONS.eyeOff" class="text-xs"></iconify-icon>
+                    <iconify-icon [icon]="pokemonDimmed ? ICONS.eye : ICONS.eyeOff" class="text-xs"></iconify-icon>
                   </button>
                 }
 
 <button
-                  (click)="!guessedPokemonIds().includes(pokemon.id) && !isManuallyDimmed(pokemon.id) && openPokemonDetails(pokemon)"
-                  [disabled]="guessedPokemonIds().includes(pokemon.id) || isManuallyDimmed(pokemon.id)"
-                  [class]="guessedPokemonIds().includes(pokemon.id) || isManuallyDimmed(pokemon.id)
+                  (click)="!pokemonUnavailable && openPokemonDetails(pokemon)"
+                  [disabled]="pokemonUnavailable"
+                  [class]="pokemonUnavailable
                     ? 'w-full h-full flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-800/40 border-2 border-slate-700 opacity-40 cursor-not-allowed transition-all'
                     : selectedPokemonDetails?.id === pokemon.id
                       ? 'w-full h-full flex flex-col items-center gap-1 p-2 rounded-xl bg-red-900/40 border-2 border-red-500 transition-all'
@@ -398,15 +401,15 @@
                       [src]="pokemon.sprite"
                       [alt]="pokemon.name"
                       class="w-12 h-12 object-contain"
-                      [class.grayscale]="guessedPokemonIds().includes(pokemon.id) || isManuallyDimmed(pokemon.id)"
+                      [class.grayscale]="pokemonUnavailable"
                       loading="lazy"
                     />
                   } @else {
                     <div class="w-12 h-12 flex items-center justify-center text-3xl text-slate-500">?</div>
                   }
                   <span class="text-xs text-center capitalize leading-tight truncate w-full"
-                    [class.text-slate-500]="guessedPokemonIds().includes(pokemon.id) || isManuallyDimmed(pokemon.id)"
-                    [class.text-slate-300]="!guessedPokemonIds().includes(pokemon.id) && !isManuallyDimmed(pokemon.id)"
+                    [class.text-slate-500]="pokemonUnavailable"
+                    [class.text-slate-300]="!pokemonUnavailable"
                   >
                     {{ pokemon.name }}
                   </span>
