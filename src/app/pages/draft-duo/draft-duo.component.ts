@@ -160,6 +160,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
   private pollInterval: ReturnType<typeof setInterval> | null = null;
   private enteringComplete = false;
   private confettiFired = false;
+  private isLockingPick = false;
 
   // ─── Cycle de vie ────────────────────────────────────────────────────────────
 
@@ -349,16 +350,18 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
     this.lockedIndices.set(new Set());
     this.lockedPokemon.set([null, null, null, null, null, null]);
     this.slotStates.set(['idle', 'idle', 'idle', 'idle', 'idle', 'idle']);
+    this.isLockingPick = false;
   }
 
   async onSlotClick(index: number): Promise<void> {
-    if (this.lockedIndices().has(index) || this.phase() !== 'playing') return;
+    if (this.isLockingPick || this.lockedIndices().has(index) || this.phase() !== 'playing') return;
     const picked = this.slots()[index];
     if (!picked) return;
     await this.lockPokemon(index, picked);
   }
 
   private async autoPickSlot(): Promise<void> {
+    if (this.isLockingPick) return;
     const unlocked = [0, 1, 2, 3, 4, 5].filter(i => !this.lockedIndices().has(i));
     if (unlocked.length === 0) return;
     const randomIndex = unlocked[Math.floor(Math.random() * unlocked.length)];
@@ -367,6 +370,8 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
   }
 
   private async lockPokemon(index: number, picked: Pokemon): Promise<void> {
+    if (this.isLockingPick) return;
+    this.isLockingPick = true;
     this.stopTimer();
 
     this.lockedIndices.update(s => new Set([...s, index]));
@@ -399,6 +404,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
       } else {
         this.phase.set('waiting-opponent');
       }
+      this.isLockingPick = false;
       return;
     }
 
@@ -460,6 +466,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
           return next;
         });
         // Relancer le timer pour le prochain pick
+        this.isLockingPick = false;
         if (this.phase() === 'playing') this.startTimer();
       }, unlocked.length * 60 + 400);
     });
@@ -591,6 +598,7 @@ export class DraftDuoComponent implements OnInit, OnDestroy {
   }
 
   private resetForReplay(): void {
+    this.isLockingPick = false;
     this.enteringComplete = false;
     this.confettiFired = false;
     this.showScores.set(false);

@@ -73,6 +73,7 @@ export class DraftComponent implements OnInit {
   readonly lockedCount = computed(() => this.lockedIndices().size);
   readonly selectedPokemon = signal<Pokemon | null>(null);
   private confettiFired = false;
+  private isLockingPick = false;
 
   readonly statsScore = computed((): number => {
     const locked = this.lockedPokemon();
@@ -194,12 +195,14 @@ export class DraftComponent implements OnInit {
     this.lockedPokemon.set([null, null, null, null, null, null]);
     this.slotStates.set(['idle', 'idle', 'idle', 'idle', 'idle', 'idle']);
     this.showScore.set(false);
+    this.isLockingPick = false;
     this.phase.set('draft');
     this.saveState();
   }
 
   onSlotClick(index: number): void {
-    if (this.lockedIndices().has(index) || this.phase() !== 'draft') return;
+    if (this.isLockingPick || this.lockedIndices().has(index) || this.phase() !== 'draft') return;
+    this.isLockingPick = true;
 
     const picked = this.slots()[index];
     if (!picked) return;
@@ -222,6 +225,7 @@ export class DraftComponent implements OnInit {
         this.showScore.set(true);
         this.saveState();
       }, 700);
+      this.isLockingPick = false;
       return;
     }
 
@@ -286,6 +290,7 @@ export class DraftComponent implements OnInit {
           unlocked.forEach(i => (next[i] = 'idle'));
           return next;
         });
+        this.isLockingPick = false;
         this.saveState();
       }, unlocked.length * 60 + 400);
     });
@@ -305,12 +310,14 @@ export class DraftComponent implements OnInit {
   replay(): void {
     this.clearSavedState();
     this.confettiFired = false;
+    this.isLockingPick = false;
     this.phase.set('loading');
   }
 
   resetTeam(): void {
     if (this.phase() !== 'draft') return;
     this.clearSavedState();
+    this.isLockingPick = false;
     this.isResetting.set(true);
     setTimeout(() => {
       this.initDraft();

@@ -131,6 +131,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
   readonly timerProgress = signal(1.0);
   private timerInterval: ReturnType<typeof setInterval> | null = null;
   private startTimerAfterIntro = false;
+  private isLockingPick = false;
 
   readonly timerColor = computed(() => {
     const v = this.timerValue();
@@ -231,6 +232,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     this.lockedIndices.set(new Set());
     this.lockedPokemon.set([null, null, null, null, null, null]);
     this.slotStates.set(['idle', 'idle', 'idle', 'idle', 'idle', 'idle']);
+    this.isLockingPick = false;
     
     this.phase.set('playing');
     const introShown = await this.triggerDuelIntro();
@@ -286,13 +288,14 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
   }
 
   async onSlotClick(index: number): Promise<void> {
-    if (this.lockedIndices().has(index) || this.phase() !== 'playing') return;
+    if (this.isLockingPick || this.lockedIndices().has(index) || this.phase() !== 'playing') return;
     const picked = this.slots()[index];
     if (!picked) return;
     await this.lockPokemon(index, picked);
   }
 
   private async autoPickSlot(): Promise<void> {
+    if (this.isLockingPick) return;
     const unlocked = [0, 1, 2, 3, 4, 5].filter(i => !this.lockedIndices().has(i));
     if (unlocked.length === 0) return;
     const randomIndex = unlocked[Math.floor(Math.random() * unlocked.length)];
@@ -301,6 +304,8 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
   }
 
   private async lockPokemon(index: number, picked: Pokemon): Promise<void> {
+    if (this.isLockingPick) return;
+    this.isLockingPick = true;
     this.stopTimer();
 
     this.lockedIndices.update(s => new Set([...s, index]));
@@ -315,6 +320,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
 
     if (unlocked.length === 0) {
       await this.enterCompletePhase();
+      this.isLockingPick = false;
       return;
     }
 
@@ -374,6 +380,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
           unlocked.forEach(i => (next[i] = 'idle'));
           return next;
         });
+        this.isLockingPick = false;
         if (this.phase() === 'playing') this.startTimer();
       }, unlocked.length * 60 + 400);
     });
@@ -438,6 +445,7 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     this.phase.set('loading');
     this.showScores.set(false);
     this.confettiFired = false;
+    this.isLockingPick = false;
     this.myTeamPokemons.set([]);
     
     // Petit délai pour l'effet visuel
