@@ -1,0 +1,95 @@
+		<div
+			class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-start md:items-center justify-center z-50 p-3 md:p-4 overflow-y-auto"
+			(click)="close.emit()"
+			[@modalAnimation]
+		>
+			<div
+				class="bg-slate-800 border border-slate-600 rounded-2xl p-4 md:p-6 max-w-lg w-full shadow-2xl flex flex-col gap-4 md:gap-5 modal-content max-h-[calc(100dvh-1.5rem)] md:max-h-[90vh] overflow-y-auto relative my-auto"
+				(click)="$event.stopPropagation()"
+			>
+				<button (click)="close.emit()" class="absolute top-4 right-4 z-10 bg-slate-900/60 hover:bg-red-600 rounded-full w-8 h-8 flex items-center justify-center text-slate-300 hover:text-white transition-colors">
+					<iconify-icon [icon]="ICONS.close" class="text-lg"></iconify-icon>
+				</button>
+
+				<div class="flex items-center gap-3 pr-10">
+					<div class="w-10 h-10 rounded-xl flex items-center justify-center border shrink-0"
+						[ngClass]="mode() === 'guess' ? 'bg-cyan-600/20 border-cyan-500/30' : 'bg-yellow-600/20 border-yellow-500/30'">
+						<iconify-icon
+							[icon]="mode() === 'guess' ? ICONS.help : ICONS.statDuel"
+							class="text-2xl"
+							[ngClass]="mode() === 'guess' ? 'text-cyan-400' : 'text-yellow-400'"
+						></iconify-icon>
+					</div>
+					<div>
+						<h2 class="text-lg font-bold text-white uppercase tracking-wider">
+							{{ mode() === 'guess' ? 'Guess my Pokémon' : 'Duel de Base Stats' }}
+						</h2>
+						<p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.1em]">Aide du mode</p>
+					</div>
+				</div>
+
+				@if (mode() === 'guess') {
+					<section class="space-y-3">
+						<app-help-section-title label="Déroulement"></app-help-section-title>
+						<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4">
+							<ol class="space-y-3 text-sm text-slate-300 list-none">
+								<li class="flex gap-3"><span class="text-red-500 font-bold shrink-0">1.</span><span>Chaque joueur choisit secrètement un Pokémon, sauf si le mode Pokémon aléatoire est actif.</span></li>
+								<li class="flex gap-3"><span class="text-red-500 font-bold shrink-0">2.</span><span>À ton tour, tu poses une question à l'oral sur le Pokémon adverse.</span></li>
+								<li class="flex gap-3"><span class="text-red-500 font-bold shrink-0">3.</span><span>L'adversaire répond uniquement par oui ou non, en disant la vérité.</span></li>
+								<li class="flex gap-3"><span class="text-red-500 font-bold shrink-0">4.</span><span>Quand tu penses avoir trouvé, sélectionne le Pokémon dans le Pokédex et tente ta réponse.</span></li>
+								<li class="flex gap-3"><span class="text-red-500 font-bold shrink-0">5.</span><span>Le premier joueur qui devine le bon Pokémon gagne la partie.</span></li>
+							</ol>
+						</div>
+					</section>
+
+					@if (showFilters()) {
+						<section class="space-y-3">
+							<app-help-section-title label="Filtres du Pokédex"></app-help-section-title>
+							<div class="grid gap-2">
+								<app-help-card title="Recherche" text="Filtre par nom." example="'pika' affiche Pikachu et les noms contenant ce texte."></app-help-card>
+								<app-help-card title="Génération" text="Inclut uniquement les générations sélectionnées." example="Décocher 8 masque les Pokémon de Galar."></app-help-card>
+								<app-help-card title="Stade Évo." text="Filtre par stade d'évolution 1, 2 ou 3." example="Stade 1 garde les Pokémon de base."></app-help-card>
+								<app-help-card title="Catégorie" text="Filtre par catégorie : Classique, Starter, Bébé, Fossile, Paradoxe, Ultra-Chimère, Pseudo-Légendaire, Légendaire ou Fabuleux." example="Légendaire garde Mewtwo, mais pas Pikachu."></app-help-card>
+								<app-help-card title="Poids" text="Filtre avec un minimum et/ou maximum en kg. Les bornes sont incluses : min 100 garde 100 kg et plus, max 100 garde 100 kg et moins. Les décimales sont acceptées." example="Min 12.5 garde les Pokémon pesant au moins 12,5 kg."></app-help-card>
+								<app-help-card title="Taille" text="Filtre avec un minimum et/ou maximum en mètres. Les bornes sont incluses : min 1 garde 1 m et plus, max 1 garde 1 m et moins. Les décimales sont acceptées." example="Max 1.7 garde les Pokémon mesurant au plus 1,7 m."></app-help-card>
+								<app-help-card title="Stats" text="Filtre PV, ATQ, DEF, ATQ S, DEF S, VIT ou TOTAL avec min/max." example="VIT min 100 garde les Pokémon rapides."></app-help-card>
+								<app-help-card title="Type" text="Un Pokémon reste visible s'il possède au moins un type sélectionné." example="Garder Feu affiche les Pokémon Feu ou partiellement Feu."></app-help-card>
+								<app-help-card title="Mono type seul." text="Garde uniquement les Pokémon avec un seul type." example="Un Pokémon Eau pur reste visible, Eau/Vol est masqué."></app-help-card>
+								<app-help-card title="Double type seul." text="Garde uniquement les Pokémon à deux types ayant au moins un type sélectionné." example="Feu sélectionné affiche Feu/Vol."></app-help-card>
+								<app-help-card title="Double type strict seul." text="Garde uniquement les Pokémon à deux types dont les deux types sont sélectionnés." example="Feu + Vol affiche Feu/Vol, mais masque Feu pur."></app-help-card>
+								<app-help-card title="Réinitialiser" text="Remet les filtres à leur état par défaut."></app-help-card>
+							</div>
+						</section>
+					}
+				} @else {
+					<section class="space-y-3">
+						<app-help-section-title label="Déroulement"></app-help-section-title>
+						<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4">
+							<ol class="space-y-3 text-sm text-slate-300 list-none">
+								<li class="flex gap-3"><span class="text-yellow-400 font-bold shrink-0">1.</span><span>Un Pokémon est révélé au début de chaque manche.</span></li>
+								<li class="flex gap-3"><span class="text-yellow-400 font-bold shrink-0">2.</span><span>Tu choisis une stat disponible avant la fin du chrono de 10 secondes.</span></li>
+								<li class="flex gap-3"><span class="text-yellow-400 font-bold shrink-0">3.</span><span>La valeur de cette stat est ajoutée à ton score total.</span></li>
+								<li class="flex gap-3"><span class="text-yellow-400 font-bold shrink-0">4.</span><span>Si tu ne choisis pas à temps, une stat disponible est choisie automatiquement.</span></li>
+								<li class="flex gap-3"><span class="text-yellow-400 font-bold shrink-0">5.</span><span>Le joueur avec le total le plus élevé à la fin gagne.</span></li>
+							</ol>
+						</div>
+					</section>
+
+					<section class="space-y-3">
+						<app-help-section-title label="Sous-modes"></app-help-section-title>
+						<div class="grid gap-2">
+							<app-help-card title="Un joueur" text="Tu joues seul sur 6 Pokémon et tu cherches à maximiser ton total de Base Stats. Timer : 10 secondes par manche."></app-help-card>
+							<app-help-card title="Deux joueurs en ligne" text="Tu affrontes un ami sur les mêmes 6 Pokémon. Chaque joueur choisit ses stats de son côté. Timer : 10 secondes par manche."></app-help-card>
+						</div>
+					</section>
+
+				}
+
+				<button
+					(click)="close.emit()"
+					class="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-bold text-white transition-colors"
+				>
+					Fermer
+				</button>
+			</div>
+		</div>

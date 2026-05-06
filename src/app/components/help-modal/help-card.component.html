@@ -1,0 +1,9 @@
+		<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 space-y-1.5">
+			<div class="text-xs font-black text-white uppercase tracking-wider">{{ title() }}</div>
+			<p class="text-sm text-slate-300 leading-relaxed">{{ text() }}</p>
+			@if (example()) {
+				<div class="border-t border-slate-700/60 pt-2 mt-2 text-xs text-slate-400 leading-relaxed">
+					<span class="font-bold text-slate-300">Exemple :</span> {{ example() }}
+				</div>
+			}
+		</div>

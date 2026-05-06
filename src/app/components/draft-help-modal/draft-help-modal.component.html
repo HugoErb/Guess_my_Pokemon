@@ -1,0 +1,83 @@
+		<div
+			class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-start md:items-center justify-center z-50 p-3 md:p-4 overflow-y-auto"
+			(click)="close.emit()"
+			[@modalAnimation]
+		>
+			<div
+				class="bg-slate-800 border border-slate-600 rounded-2xl p-4 md:p-6 max-w-lg w-full shadow-2xl flex flex-col gap-4 md:gap-5 modal-content max-h-[calc(100dvh-1.5rem)] md:max-h-[90vh] overflow-y-auto relative my-auto"
+				(click)="$event.stopPropagation()"
+			>
+				<button (click)="close.emit()" class="absolute top-4 right-4 z-10 bg-slate-900/60 hover:bg-red-600 rounded-full w-8 h-8 flex items-center justify-center text-slate-300 hover:text-white transition-colors">
+					<iconify-icon [icon]="ICONS.close" class="text-lg"></iconify-icon>
+				</button>
+
+				<div class="flex items-center gap-3 pr-10">
+					<div class="w-10 h-10 rounded-xl bg-yellow-600/20 flex items-center justify-center border border-yellow-500/30 shrink-0">
+						<iconify-icon [icon]="ICONS.help" class="text-2xl text-yellow-400"></iconify-icon>
+					</div>
+					<div>
+						<h2 class="text-lg font-bold text-white uppercase tracking-wider">Team Builder</h2>
+						<p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.1em]">Aide du mode</p>
+					</div>
+				</div>
+
+				<section class="space-y-3">
+					<app-draft-help-section-title label="Déroulement"></app-draft-help-section-title>
+					<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4">
+						<ol class="space-y-3 text-sm text-slate-300 list-none">
+							<li class="flex gap-3"><span class="text-yellow-400 font-bold shrink-0">1.</span><span>Six Pokémon sont proposés à chaque tirage : un Starter, quatre classiques et un Légendaire.</span></li>
+							<li class="flex gap-3"><span class="text-yellow-400 font-bold shrink-0">2.</span><span>Tu choisis un Pokémon pour le garder dans ton équipe. En mode chronométré, sans action, un choix automatique est fait.</span></li>
+							<li class="flex gap-3"><span class="text-yellow-400 font-bold shrink-0">3.</span><span>Répète l'opération jusqu'à verrouiller 6 Pokémon.</span></li>
+							<li class="flex gap-3"><span class="text-yellow-400 font-bold shrink-0">4.</span><span>L'équipe complète est notée, puis le résultat du mode est affiché.</span></li>
+						</ol>
+					</div>
+				</section>
+
+				<section class="space-y-3">
+					<app-draft-help-section-title label="Sous-modes"></app-draft-help-section-title>
+					<div class="grid gap-2">
+						<app-draft-help-card title="Solo" text="Tu construis seul ton équipe. Timer : aucun, tu peux choisir sans limite de temps. La note finale correspond à la note de Base Stats."></app-draft-help-card>
+						<app-draft-help-card title="Vs Dresseur" text="Tu affrontes une équipe de dresseur déjà définie. Timer : 10 secondes par choix. Les Pokémon proposés sont limités à la génération du dresseur adverse."></app-draft-help-card>
+						<app-draft-help-card title="2 joueurs en ligne" text="Deux joueurs construisent chacun leur équipe en parallèle. Timer : 10 secondes par choix. Les résultats s'affichent quand les deux équipes sont terminées."></app-draft-help-card>
+					</div>
+				</section>
+
+				<section class="space-y-3">
+					<app-draft-help-section-title label="Note Base Stats"></app-draft-help-section-title>
+					<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 space-y-3">
+						<p class="text-sm text-slate-300">Mesure la puissance brute de l'équipe à partir du total des 6 stats de base de chaque Pokémon.</p>
+						<div class="grid gap-2 text-xs text-slate-300">
+							<div><strong class="text-white">Étape 1 :</strong> PV + Attaque + Défense + Attaque Spé. + Défense Spé. + Vitesse.</div>
+							<div><strong class="text-white">Étape 2 :</strong> le total est normalisé sur 0-10 avec les valeurs min et max du jeu.</div>
+							<div><strong class="text-white">Étape 3 :</strong> la note d'équipe est la moyenne des 6 notes individuelles.</div>
+						</div>
+						<div class="bg-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-slate-200">note = (total - min) / (max - min) x 10</div>
+					</div>
+				</section>
+
+				<section class="space-y-3">
+					<app-draft-help-section-title label="Couverture de types"></app-draft-help-section-title>
+					<div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 space-y-3">
+						<p class="text-sm text-slate-300">Évalue l'efficacité offensive et défensive de ton équipe contre l'équipe adverse.</p>
+						<div class="grid gap-2">
+							<app-draft-help-card title="50% - Couverture offensive" text="Part des types adverses que ton équipe peut toucher en super-efficace."></app-draft-help-card>
+							<app-draft-help-card title="30% - Pokémon exploités" text="Part des Pokémon adverses touchables en super-efficace par au moins un type de ton équipe."></app-draft-help-card>
+							<app-draft-help-card title="20% - Résilience défensive" text="Part des types adverses auxquels au moins un de tes Pokémon résiste."></app-draft-help-card>
+						</div>
+						<p class="text-xs text-slate-400">La couverture de types sert aux modes avec adversaire. Cas spécial : Arceus obtient une couverture maximale grâce à sa capacité à changer de type.</p>
+					</div>
+				</section>
+
+				<div class="bg-amber-900/20 border border-amber-700/40 rounded-xl px-4 py-3 flex gap-2 items-start">
+					<iconify-icon [icon]="ICONS.alert" class="text-amber-400 text-base shrink-0 mt-0.5"></iconify-icon>
+					<p class="text-xs text-amber-300">La note finale dépend du sous-mode : Base Stats seule en solo, ou moyenne Base Stats + couverture de types avec adversaire.</p>
+				</div>
+
+				<button
+					(click)="close.emit()"
+					class="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-bold text-white transition-colors"
+				>
+					Fermer
+				</button>
+			</div>
+		</div>

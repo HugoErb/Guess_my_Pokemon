@@ -7,17 +7,7 @@ import { NgClass } from '@angular/common';
   imports: [NgClass],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   host: { '[attr.title]': 'null' },
-  template: `
-    <div class="flex flex-col items-center gap-8 px-4">
-      <div class="hidden sm:flex items-center gap-3">
-        <iconify-icon [icon]="icon" [ngClass]="[iconSize, iconColor]"></iconify-icon>
-        <h2 class="text-4xl font-black text-white tracking-wide">{{ title }}</h2>
-      </div>
-      <div class="flex flex-col sm:flex-row gap-6 w-full" [ngClass]="maxWidth">
-        <ng-content />
-      </div>
-    </div>
-  `,
+  templateUrl: './mode-select.component.html',
 })
 export class ModeSelectComponent {
   @Input() title = '';

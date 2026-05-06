@@ -4,53 +4,7 @@ import { Component, input, output, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angul
 	selector: 'app-duel-intro',
 	standalone: true,
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
-	template: `
-		<div class="duel-overlay fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/95 px-4">
-
-			<!-- Joueur 1 (gauche) -->
-			<div class="player-left flex flex-col items-center gap-3 min-w-0">
-				@if (player1().avatar_url) {
-					<img [src]="player1().avatar_url" alt="" class="w-16 h-16 md:w-24 md:h-24 rounded-full object-cover border-2 border-red-500 shadow-lg shadow-red-500/30" />
-				} @else {
-					<div class="w-16 h-16 md:w-24 md:h-24 rounded-full bg-red-700 border-2 border-red-500 flex items-center justify-center text-2xl md:text-4xl font-black text-white shadow-lg shadow-red-500/30">
-						{{ player1().username.charAt(0).toUpperCase() }}
-					</div>
-				}
-				<span class="text-sm md:text-base font-bold text-white text-center max-w-[90px] md:max-w-[130px] truncate">{{ player1().username }}</span>
-			</div>
-
-			<!-- Zone centrale : épées + VS -->
-			<div class="flex flex-col items-center gap-3 mx-6 md:mx-16 shrink-0">
-				<div class="relative w-32 h-20 md:w-44 md:h-28 flex items-center justify-center">
-					<!-- Épée gauche -->
-					<div class="sword-left absolute inset-0 flex items-center justify-center">
-						<iconify-icon icon="mdi:sword" style="font-size:3.4rem; color:#f87171; display:block;"></iconify-icon>
-					</div>
-					<!-- Flash d'impact au centre -->
-					<div class="flash-burst absolute inset-0 flex items-center justify-center pointer-events-none">
-						<div class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-yellow-200" style="box-shadow: 0 0 32px 18px rgba(253,224,71,0.85);"></div>
-					</div>
-					<!-- Épée droite (miroir horizontal de la gauche) -->
-					<div class="sword-right absolute inset-0 flex items-center justify-center">
-						<iconify-icon icon="mdi:sword" style="font-size:3.4rem; color:#f87171; display:block; transform: scaleX(-1);"></iconify-icon>
-					</div>
-				</div>
-				<p class="vs-text text-2xl md:text-3xl font-black text-yellow-400 tracking-widest uppercase italic">VS</p>
-			</div>
-
-			<!-- Joueur 2 (droite) -->
-			<div class="player-right flex flex-col items-center gap-3 min-w-0">
-				@if (player2().avatar_url) {
-					<img [src]="player2().avatar_url" alt="" class="w-16 h-16 md:w-24 md:h-24 rounded-full object-cover border-2 border-blue-500 shadow-lg shadow-blue-500/30" />
-				} @else {
-					<div class="w-16 h-16 md:w-24 md:h-24 rounded-full bg-blue-700 border-2 border-blue-500 flex items-center justify-center text-2xl md:text-4xl font-black text-white shadow-lg shadow-blue-500/30">
-						{{ player2().username.charAt(0).toUpperCase() }}
-					</div>
-				}
-				<span class="text-sm md:text-base font-bold text-white text-center max-w-[90px] md:max-w-[130px] truncate">{{ player2().username }}</span>
-			</div>
-		</div>
-	`,
+	templateUrl: './duel-intro.component.html',
 	styles: [`
 		/* Overlay : fade in puis fade out */
 		.duel-overlay {

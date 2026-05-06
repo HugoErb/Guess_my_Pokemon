@@ -10,46 +10,7 @@ import { EndGameActionsComponent } from '../end-game-actions/end-game-actions.co
 	imports: [EndGameActionsComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA],
 	animations: [modalAnimation],
-	template: `
-		<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4" [@modalAnimation]>
-			<div
-				class="bg-slate-800 border border-slate-600 rounded-2xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center gap-6 text-center modal-content"
-			>
-				<div class="flex flex-col items-center gap-2">
-					@if (isWinner()) {
-						<iconify-icon [icon]="ICONS.trophy" class="text-6xl text-yellow-400 animate-bounce"></iconify-icon>
-						<h2 class="text-2xl font-bold text-yellow-400 uppercase tracking-tight">Victoire !</h2>
-						<p class="text-slate-300">Tu as trouvé le Pokémon de ton adversaire !</p>
-					} @else {
-						<iconify-icon [icon]="ICONS.skull" class="text-6xl text-red-500 animate-pulse"></iconify-icon>
-						<h2 class="text-2xl font-bold text-red-500 uppercase tracking-tight">Défaite</h2>
-						<p class="text-slate-300">Ton adversaire a trouvé ton Pokémon !</p>
-					}
-				</div>
-
-				@if (opponentPokemon()) {
-					<div class="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 flex flex-col items-center gap-2">
-						@if (!isWinner()) {
-							<p class="text-slate-400 text-sm">Le pokémon de l'adversaire était :</p>
-						}
-						<div class="flex flex-col items-center gap-1">
-							<img [src]="opponentPokemon()!.sprite" [alt]="opponentPokemon()!.name" class="w-24 h-24 object-contain" />
-							<h3 class="text-lg font-bold text-white capitalize">{{ opponentPokemon()!.name }}</h3>
-						</div>
-					</div>
-				}
-
-				<app-end-game-actions
-					replayMode="multi"
-					[iWantReplay]="iWantReplay()"
-					[opponentWantsReplay]="opponentWantsReplay()"
-					[opponentLeft]="opponentLeft()"
-					(replay)="replay.emit()"
-					(goHome)="goHome.emit()"
-				/>
-			</div>
-		</div>
-	`,
+	templateUrl: './end-game-modal.component.html',
 })
 export class EndGameModalComponent {
 	isWinner = input<boolean>(false);
