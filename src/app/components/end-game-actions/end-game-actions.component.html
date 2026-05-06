@@ -12,20 +12,14 @@
 				>
 					<div class="flex items-center gap-2">
 						<iconify-icon [icon]="ICONS.dice" class="text-xl"></iconify-icon>
-						<span>
-							@if (isMultiReplay() && iWantReplay()) {
-								En attente...
-							} @else if (isMultiReplay() && opponentWantsReplay()) {
-								L'adversaire veut rejouer !
-							} @else {
-								Rejouer
-							}
-						</span>
+						<span>Rejouer</span>
 					</div>
 					@if (isMultiReplay() && opponentLeft()) {
 						<span class="text-[9px] font-medium uppercase tracking-wider opacity-80 italic">L'adversaire a quitté la partie</span>
 					} @else if (isMultiReplay() && iWantReplay() && !opponentWantsReplay()) {
 						<span class="text-[9px] font-medium uppercase tracking-wider opacity-80 italic">En attente de l'adversaire</span>
+					} @else if (isMultiReplay() && opponentWantsReplay()) {
+						<span class="text-[9px] font-medium uppercase tracking-wider opacity-80 italic">L'adversaire veut rejouer</span>
 					}
 				</button>
 			}
