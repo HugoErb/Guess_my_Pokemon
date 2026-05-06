@@ -212,7 +212,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 				take(1),
 			)
 			.subscribe(() => {
-				this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
+				void this.navigateToPlay();
 			});
 
 		// 3. Lancer joinAndWatch (Realtime)
@@ -325,7 +325,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 			this.isReady = true;
 			// Navigation directe si la partie démarre (ne pas attendre le Realtime)
 			if (this.room()?.status === 'playing') {
-				void this.router.navigate(['/game', this.roomId()]);
+				void this.navigateToPlay();
 			}
 		} finally {
 			this.isSettingReady = false;
@@ -388,6 +388,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 					p1_ready: false,
 					p2_ready: false,
 				});
+				await this.preloadDuelIntroForRoom();
 				void this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
 			} else if (this.gameMode === 'draft_duo') {
 				await this.supabaseService.updateDraftDuoRoom(this.roomId(), {
@@ -538,7 +539,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 			const randomPokemon = pokemons[Math.floor(Math.random() * pokemons.length)];
 			await this.gameService.simulateOpponentReady(this.roomId(), randomPokemon.id);
 			// Navigation directe : simulateOpponentReady passe toujours à 'playing'
-			void this.router.navigate(['/game', this.roomId()]);
+			void this.navigateToPlay();
 		} finally {
 			this.isSimulatingReady = false;
 		}
@@ -616,10 +617,10 @@ export class LobbyComponent implements OnInit, OnDestroy {
 			this.inviteLink = `${globalThis.location.origin}/invite/${this.roomId()}?mode=stat_duel`;
 			this.supabaseService.trackPresence('in_game');
 			this.subscribeInviteDecline();
-			if (room.status !== 'waiting') void this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
+			if (room.status !== 'waiting') void this.navigateToPlay();
 			this.multiRoomSub = this.supabaseService.subscribeToStatDuelRoom(this.roomId()).subscribe((updated) => {
 				this.statDuelRoom.set(updated);
-				if (updated.status !== 'waiting') void this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
+				if (updated.status !== 'waiting') void this.navigateToPlay();
 			});
 			this.startMultiPoll();
 		} catch {
@@ -640,10 +641,10 @@ export class LobbyComponent implements OnInit, OnDestroy {
 			this.inviteLink = `${globalThis.location.origin}/invite/${this.roomId()}?mode=draft_duo`;
 			this.supabaseService.trackPresence('in_game');
 			this.subscribeInviteDecline();
-			if (room.status !== 'waiting') void this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
+			if (room.status !== 'waiting') void this.navigateToPlay();
 			this.multiRoomSub = this.supabaseService.subscribeToDraftDuoRoom(this.roomId()).subscribe((updated) => {
 				this.draftDuoRoom.set(updated);
-				if (updated.status !== 'waiting') void this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
+				if (updated.status !== 'waiting') void this.navigateToPlay();
 			});
 			this.startMultiPoll();
 		} catch {
@@ -669,11 +670,11 @@ export class LobbyComponent implements OnInit, OnDestroy {
 				if (this.gameMode === 'stat_duel') {
 					const room = await this.supabaseService.getStatDuelRoom(this.roomId());
 					this.statDuelRoom.set(room);
-					if (room.status !== 'waiting') void this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
+					if (room.status !== 'waiting') void this.navigateToPlay();
 				} else if (this.gameMode === 'draft_duo') {
 					const room = await this.supabaseService.getDraftDuoRoom(this.roomId());
 					this.draftDuoRoom.set(room);
-					if (room.status !== 'waiting') void this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
+					if (room.status !== 'waiting') void this.navigateToPlay();
 				}
 			} catch {
 				// ignore les erreurs de polling
@@ -688,5 +689,49 @@ export class LobbyComponent implements OnInit, OnDestroy {
 			[a[i], a[j]] = [a[j], a[i]];
 		}
 		return a;
+	}
+
+	private async navigateToPlay(): Promise<void> {
+		await this.preloadDuelIntroForRoom();
+		void this.router.navigate([this.modeConfig.playRoute, this.roomId()]);
+	}
+
+	private async preloadDuelIntroForRoom(): Promise<void> {
+		const room = this.room();
+		if (!room || this.gameMode === 'draft_duo') return;
+
+		const key = this.gameMode === 'stat_duel'
+			? `stat-duel-intro-data-${this.roomId()}`
+			: `duel-intro-data-${this.roomId()}`;
+
+		const fetchProfile = (id: string | null, fallback: string) =>
+			id
+				? this.supabaseService.getProfile(id).catch(() => ({ username: fallback, avatar_url: undefined }))
+				: Promise.resolve({ username: fallback, avatar_url: undefined });
+
+		const [p1, p2] = await Promise.all([
+			fetchProfile(room.player1_id, 'Joueur 1'),
+			fetchProfile(room.player2_id ?? null, 'Bot'),
+		]);
+
+		const players = [
+			{ username: p1.username, avatar_url: p1.avatar_url },
+			{ username: p2.username, avatar_url: p2.avatar_url },
+		];
+
+		sessionStorage.setItem(key, JSON.stringify(players));
+		await this.preloadIntroImages(players);
+	}
+
+	private preloadIntroImages(players: { avatar_url?: string }[]): Promise<void[]> {
+		return Promise.all(
+			players
+				.filter(p => p.avatar_url)
+				.map(p => new Promise<void>(resolve => {
+					const img = new Image();
+					img.onload = img.onerror = () => resolve();
+					img.src = p.avatar_url!;
+				}))
+		);
 	}
 }

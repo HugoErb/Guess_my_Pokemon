@@ -253,6 +253,12 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
     const trainer = this.trainer();
     if (!trainer) return false;
 
+    const idParam = this.route.snapshot.paramMap.get('id');
+    const cached = this.readDuelIntroCache(`draft-trainer-intro-data-${idParam ?? '0'}`);
+    this.duelPlayer1.set(cached?.[0] ?? { username: 'Moi', avatar_url: undefined });
+    this.duelPlayer2.set(cached?.[1] ?? { username: trainer.nom, avatar_url: trainer.image });
+    this.showDuelIntro.set(true);
+
     try {
       const user = this.supabaseService.getCurrentUser();
       const profile = user
@@ -262,22 +268,20 @@ export class DraftTrainerComponent implements OnInit, OnDestroy {
       const player1 = { username: profile.username, avatar_url: profile.avatar_url };
       const player2 = { username: trainer.nom, avatar_url: trainer.image };
 
-      await Promise.all(
-        [player1, player2]
-          .filter(p => p.avatar_url)
-          .map(p => new Promise<void>(resolve => {
-            const img = new Image();
-            img.onload = img.onerror = () => resolve();
-            img.src = p.avatar_url!;
-          }))
-      );
-
       this.duelPlayer1.set(player1);
       this.duelPlayer2.set(player2);
-      this.showDuelIntro.set(true);
       return true;
     } catch {
-      return false;
+      return true;
+    }
+  }
+
+  private readDuelIntroCache(key: string): { username: string; avatar_url?: string }[] | null {
+    try {
+      const cached = sessionStorage.getItem(key);
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
     }
   }
 

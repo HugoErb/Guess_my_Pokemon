@@ -723,6 +723,10 @@ export class StatDuelComponent implements OnInit, OnDestroy {
         if (this.duelShown || sessionStorage.getItem(introKey)) return;
         this.duelShown = true;
         sessionStorage.setItem(introKey, '1');
+        const cached = this.readDuelIntroCache(`stat-duel-intro-data-${this.roomId}`);
+        this.duelPlayer1.set(cached?.[0] ?? { username: 'Joueur 1', avatar_url: undefined });
+        this.duelPlayer2.set(cached?.[1] ?? { username: room.player2_id ? 'Joueur 2' : '?', avatar_url: undefined });
+        this.showDuelIntro.set(true);
         try {
             const fetchProfile = (id: string | null) =>
                 id
@@ -731,20 +735,19 @@ export class StatDuelComponent implements OnInit, OnDestroy {
             const [p1, p2] = await Promise.all([fetchProfile(room.player1_id), fetchProfile(room.player2_id ?? null)]);
             const p1Data = { username: p1.username, avatar_url: p1.avatar_url };
             const p2Data = { username: p2.username, avatar_url: p2.avatar_url };
-            await Promise.all(
-                [p1Data, p2Data]
-                    .filter(p => p.avatar_url)
-                    .map(p => new Promise<void>(resolve => {
-                        const img = new Image();
-                        img.onload = img.onerror = () => resolve();
-                        img.src = p.avatar_url!;
-                    }))
-            );
             this.duelPlayer1.set(p1Data);
             this.duelPlayer2.set(p2Data);
-            this.showDuelIntro.set(true);
         } catch {
-            // skip l'animation si les profils sont indisponibles
+            // L'intro reste visible avec les libellés de secours.
+        }
+    }
+
+    private readDuelIntroCache(key: string): { username: string; avatar_url?: string }[] | null {
+        try {
+            const cached = sessionStorage.getItem(key);
+            return cached ? JSON.parse(cached) : null;
+        } catch {
+            return null;
         }
     }
 

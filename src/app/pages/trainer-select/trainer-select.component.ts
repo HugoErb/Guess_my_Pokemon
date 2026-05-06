@@ -73,8 +73,9 @@ export class TrainerSelectComponent implements OnInit {
     return p ? p.name : 'Inconnu';
   }
 
-  selectTrainer(index: number) {
+  async selectTrainer(index: number) {
     if (this.isLocked(index)) return;
+    await this.preloadDuelIntro(index);
     void this.router.navigate(['/draft-trainer', index]);
   }
 
@@ -108,5 +109,31 @@ export class TrainerSelectComponent implements OnInit {
       this.isResettingProgress.set(false);
       window.alert(error instanceof Error ? error.message : 'Impossible de réinitialiser la progression.');
     }
+  }
+
+  private async preloadDuelIntro(index: number): Promise<void> {
+    const trainer = this.trainers()[index];
+    if (!trainer) return;
+
+    const user = this.supabaseService.getCurrentUser();
+    const profile = user
+      ? await this.supabaseService.getProfile(user.id).catch(() => ({ username: 'Moi', avatar_url: undefined }))
+      : { username: 'Moi', avatar_url: undefined };
+
+    const players = [
+      { username: profile.username, avatar_url: profile.avatar_url },
+      { username: trainer.nom, avatar_url: trainer.image },
+    ];
+
+    sessionStorage.setItem(`draft-trainer-intro-data-${index}`, JSON.stringify(players));
+    await Promise.all(
+      players
+        .filter(p => p.avatar_url)
+        .map(p => new Promise<void>(resolve => {
+          const img = new Image();
+          img.onload = img.onerror = () => resolve();
+          img.src = p.avatar_url!;
+        }))
+    );
   }
 }
