@@ -9,12 +9,12 @@ import { modalAnimation } from '../../constants/animations';
 	animations: [modalAnimation],
 	template: `
 		<div
-			class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+			class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-start md:items-center justify-center z-50 p-3 md:p-4 overflow-y-auto"
 			(click)="close.emit()"
 			[@modalAnimation]
 		>
 			<div
-				class="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-lg w-full shadow-2xl flex flex-col gap-5 modal-content max-h-[90vh] overflow-y-auto relative"
+				class="bg-slate-800 border border-slate-600 rounded-2xl p-4 md:p-6 max-w-lg w-full shadow-2xl flex flex-col gap-4 md:gap-5 modal-content max-h-[calc(100dvh-1.5rem)] md:max-h-[90vh] overflow-y-auto relative my-auto"
 				(click)="$event.stopPropagation()"
 			>
 				<button (click)="close.emit()" class="absolute top-4 right-4 z-10 bg-slate-900/60 hover:bg-red-600 rounded-full w-8 h-8 flex items-center justify-center text-slate-300 hover:text-white transition-colors">

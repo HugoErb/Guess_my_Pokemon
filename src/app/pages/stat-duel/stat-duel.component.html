@@ -200,10 +200,10 @@
 
 			<!-- â•â• SOLO : layout colonne unique â•â• -->
 			@if (isSolo()) {
-				<div class="flex-1 flex flex-col items-center justify-center overflow-y-auto px-4 py-6">
-					<div class="w-full max-w-lg flex flex-col gap-5">
+				<div class="flex-1 flex flex-col items-center justify-start md:justify-center overflow-y-auto px-3 md:px-4 py-3 md:py-6">
+					<div class="w-full max-w-lg flex flex-col gap-3 md:gap-5">
 						@if (currentPokemon()) {
-							<div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 sm:p-6 flex flex-col items-center gap-4">
+							<div class="bg-slate-800 border border-slate-700 rounded-2xl p-3 md:p-6 flex flex-col items-center gap-3 md:gap-4">
 								<!-- Image -->
 								<div class="w-20 h-20 sm:w-32 sm:h-32 flex items-center justify-center">
 									@if (pokemonVisible()) {
@@ -500,8 +500,8 @@
 
 		<!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Phase : result â”€â”€â”€ -->
 		@if (phase() === "result") {
-			<div class="flex-1 overflow-y-auto flex flex-col items-center justify-center px-4 pt-8 pb-24">
-				<div class="w-full max-w-lg md:max-w-3xl flex flex-col gap-6">
+			<div class="flex-1 overflow-y-auto flex flex-col items-center justify-start md:justify-center px-4 pt-4 md:pt-8 pb-8 md:pb-24">
+				<div class="w-full max-w-lg md:max-w-3xl flex flex-col gap-4 md:gap-6">
 					<!-- Titre -->
 					<div class="text-center flex flex-col items-center gap-2">
 						@if (isSolo()) {
