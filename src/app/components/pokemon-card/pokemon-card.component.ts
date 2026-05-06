@@ -1,6 +1,7 @@
-import { Component, input } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, input } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { Pokemon } from '../../models/pokemon.model';
+import { TYPE_ICONS } from '../../constants/type-chart';
 
 const TYPE_COLORS: Record<string, string> = {
   'Normal': 'bg-gray-400',
@@ -27,6 +28,7 @@ const TYPE_COLORS: Record<string, string> = {
   selector: 'app-pokemon-card',
   imports: [NgClass],
   templateUrl: './pokemon-card.component.html',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class PokemonCardComponent {
   readonly pokemon = input.required<Pokemon>();
@@ -35,6 +37,11 @@ export class PokemonCardComponent {
   /** Retourne la classe CSS Tailwind de couleur de fond pour un type Pokémon donné. */
   getTypeColor(type: string): string {
     return TYPE_COLORS[type] ?? 'bg-gray-500';
+  }
+
+  /** Retourne l'icone associee a un type Pokemon. */
+  getTypeIcon(type: string): string {
+    return TYPE_ICONS[type] ?? 'mdi:circle-outline';
   }
 
   /** Calcule la largeur de la barre de statistique en pourcentage (max = 200 → 100%). */

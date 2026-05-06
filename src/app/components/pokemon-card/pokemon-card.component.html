@@ -14,9 +14,10 @@
         <div class="flex flex-wrap gap-1 justify-center">
           @for (type of pokemon().types; track type) {
             <span
-              class="px-2 py-0.5 rounded-full text-xs font-semibold text-white type-text-outline"
+              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold text-white type-text-outline"
               [ngClass]="getTypeColor(type)"
             >
+              <iconify-icon [icon]="getTypeIcon(type)" class="text-sm type-icon-outline"></iconify-icon>
               {{ type }}
             </span>
           }
