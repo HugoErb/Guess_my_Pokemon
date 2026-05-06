@@ -27,10 +27,6 @@
 	<!-- Phase 1 : En attente du 2ème joueur / ready -->
 	@if (room()?.status === 'waiting' || room()?.status === 'ready') {
 		<div class="flex-1 flex flex-col items-center justify-center overflow-y-auto p-4 md:p-6">
-			<div class="flex items-center gap-3 mb-8">
-				<iconify-icon [icon]="modeConfig.icon" [class]="'text-4xl ' + modeConfig.iconClass"></iconify-icon>
-				<h1 class="text-3xl md:text-4xl font-black text-white tracking-wide">{{ modeConfig.title }}</h1>
-			</div>
 			<div class="bg-slate-800 rounded-2xl p-4 md:p-6 max-w-md w-full text-center shadow-xl border border-slate-700 max-h-[90dvh] overflow-y-auto">
 				@if (hasOpponent()) {
 					<iconify-icon [icon]="ICONS.checkCircle" class="text-5xl mb-1 text-green-400"></iconify-icon>
