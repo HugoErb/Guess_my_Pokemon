@@ -271,7 +271,21 @@
 									[ngClass]="winner() === 'opponent' ? 'bg-slate-800/60 border-slate-700/50' : 'bg-slate-800 border-slate-700'"
 									(click)="openPokemonDetails(p)"
 								>
-									<img [src]="p.sprite" [alt]="p.name" class="w-14 h-14 object-contain" [ngClass]="winner() === 'opponent' ? 'opacity-80' : ''" />
+									@if (p.id === 493) {
+										<span tabindex="0" aria-label="Arceus, divinité originelle, change de type à volonté : aucune attaque ne le touche en super efficace, tandis qu'il frappe chaque type dans sa faiblesse." class="group/arceus absolute right-1 top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-yellow-400 text-slate-950 shadow ring-1 ring-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-200">
+											<iconify-icon [icon]="ICONS.crown" class="text-sm"></iconify-icon>
+											<span class="pointer-events-none absolute bottom-7 right-0 z-20 flex w-64 flex-col gap-1.5 rounded-xl border border-slate-600 bg-slate-800 px-3 py-2.5 text-left text-xs leading-snug text-slate-300 opacity-0 shadow-2xl transition-opacity group-hover/arceus:opacity-100 group-focus/arceus:opacity-100">
+												<span class="flex items-center gap-1.5 whitespace-nowrap text-[10px] font-black uppercase tracking-wider text-yellow-400 leading-none">
+													<iconify-icon [icon]="ICONS.crown" class="text-sm"></iconify-icon>
+													Couverture divine
+												</span>
+												<span>Arceus, divinité originelle, change de type à volonté. Aucune attaque ne le touche en super efficace, et il frappe chaque type dans sa faiblesse.</span>
+											</span>
+										</span>
+									}
+									<div class="relative">
+										<img [src]="p.sprite" [alt]="p.name" class="w-14 h-14 object-contain" [ngClass]="winner() === 'opponent' ? 'opacity-80' : ''" />
+									</div>
 									<p class="text-[9px] font-bold capitalize text-center w-full truncate" [ngClass]="winner() === 'opponent' ? 'text-slate-400' : 'text-white'">{{ p.name }}</p>
 									<div class="flex gap-0.5">
 										@for (type of p.types; track type) {
@@ -298,7 +312,21 @@
 									[ngClass]="winner() === 'me' ? 'bg-slate-800/60 border-slate-700/50' : 'bg-slate-800 border-slate-700'"
 									(click)="openPokemonDetails(p)"
 								>
-									<img [src]="p.sprite" [alt]="p.name" class="w-14 h-14 object-contain" [ngClass]="winner() === 'me' ? 'opacity-80' : ''" />
+									@if (p.id === 493) {
+										<span tabindex="0" aria-label="Arceus, divinité originelle, change de type à volonté : aucune attaque ne le touche en super efficace, tandis qu'il frappe chaque type dans sa faiblesse." class="group/arceus absolute right-1 top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-yellow-400 text-slate-950 shadow ring-1 ring-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-200">
+											<iconify-icon [icon]="ICONS.crown" class="text-sm"></iconify-icon>
+											<span class="pointer-events-none absolute bottom-7 right-0 z-20 flex w-64 flex-col gap-1.5 rounded-xl border border-slate-600 bg-slate-800 px-3 py-2.5 text-left text-xs leading-snug text-slate-300 opacity-0 shadow-2xl transition-opacity group-hover/arceus:opacity-100 group-focus/arceus:opacity-100">
+												<span class="flex items-center gap-1.5 whitespace-nowrap text-[10px] font-black uppercase tracking-wider text-yellow-400 leading-none">
+													<iconify-icon [icon]="ICONS.crown" class="text-sm"></iconify-icon>
+													Couverture divine
+												</span>
+												<span>Arceus, divinité originelle, change de type à volonté. Aucune attaque ne le touche en super efficace, et il frappe chaque type dans sa faiblesse.</span>
+											</span>
+										</span>
+									}
+									<div class="relative">
+										<img [src]="p.sprite" [alt]="p.name" class="w-14 h-14 object-contain" [ngClass]="winner() === 'me' ? 'opacity-80' : ''" />
+									</div>
 									<p class="text-[9px] font-bold capitalize text-center w-full truncate" [ngClass]="winner() === 'me' ? 'text-slate-400' : 'text-white'">{{ p.name }}</p>
 									<div class="flex gap-0.5">
 										@for (type of p.types; track type) {
@@ -345,3 +373,4 @@
 	}
 
 </div>
+

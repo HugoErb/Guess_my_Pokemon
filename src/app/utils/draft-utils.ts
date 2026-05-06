@@ -1,6 +1,8 @@
 import { Pokemon } from '../models/pokemon.model';
 import { TYPE_OFFENSIVE, effectiveMultiplier } from '../constants/type-chart';
 
+const ARCEUS_ID = 493;
+
 export interface RatingRange {
   min: number;
   max: number;
@@ -30,8 +32,13 @@ export function computeStatsScore(team: Pokemon[], range: RatingRange): number {
 export function computeDuoCoverageScore(myTeam: Pokemon[], opponentTeam: Pokemon[]): number {
   if (myTeam.length === 0 || opponentTeam.length === 0) return 0;
 
+  const hasArceus = myTeam.some(pokemon => pokemon.id === ARCEUS_ID);
+  if (hasArceus) return 10;
+
   const myTypes = new Set(myTeam.flatMap(pokemon => pokemon.types));
-  const opponentTypes = new Set(opponentTeam.flatMap(pokemon => pokemon.types));
+  const opponentHasArceus = opponentTeam.some(pokemon => pokemon.id === ARCEUS_ID);
+  const standardOpponentTeam = opponentTeam.filter(pokemon => pokemon.id !== ARCEUS_ID);
+  const opponentTypes = new Set(standardOpponentTeam.flatMap(pokemon => pokemon.types));
   const myTypeList = [...myTypes];
 
   let coveredOpponentTypes = 0;
@@ -44,6 +51,8 @@ export function computeDuoCoverageScore(myTeam: Pokemon[], opponentTeam: Pokemon
 
   let exploitedPokemon = 0;
   for (const opponentPokemon of opponentTeam) {
+    if (opponentPokemon.id === ARCEUS_ID) continue;
+
     const canHit = myTypeList.some(myType =>
       opponentPokemon.types.some(opponentType => (TYPE_OFFENSIVE[myType] ?? []).includes(opponentType))
     );
@@ -52,15 +61,16 @@ export function computeDuoCoverageScore(myTeam: Pokemon[], opponentTeam: Pokemon
   const pokemonScore = (exploitedPokemon / opponentTeam.length) * 10;
 
   let resistedTypes = 0;
-  for (const opponentType of opponentTypes) {
-    if (myTeam.some(pokemon => effectiveMultiplier(pokemon.types, opponentType) < 1)) {
-      resistedTypes++;
+  if (!opponentHasArceus) {
+    for (const opponentType of opponentTypes) {
+      if (myTeam.some(pokemon => effectiveMultiplier(pokemon.types, opponentType) < 1)) {
+        resistedTypes++;
+      }
     }
   }
   const defensiveScore = opponentTypes.size > 0 ? (resistedTypes / opponentTypes.size) * 10 : 0;
 
-  const hasArceus = myTeam.some(pokemon => pokemon.id === 493);
-  const raw = hasArceus ? 10 : (0.5 * offensiveScore + 0.3 * pokemonScore + 0.2 * defensiveScore);
+  const raw = 0.5 * offensiveScore + 0.3 * pokemonScore + 0.2 * defensiveScore;
   return Math.round(raw * 10) / 10;
 }
 

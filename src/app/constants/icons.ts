@@ -15,6 +15,7 @@ export const ICONS = {
   game: 'mdi:gamepad-variant',
   dice: 'mdi:dice-multiple',    // animé : animate-bounce
   trophy: 'mdi:trophy',
+  crown: 'mdi:crown',
   skull: 'mdi:skull',
   pokedex: 'mdi:book-open-page-variant',
   timer: 'mdi:timer-sand',      // animé : animate-pulse
