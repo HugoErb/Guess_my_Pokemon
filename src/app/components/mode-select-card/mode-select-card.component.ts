@@ -20,7 +20,7 @@ const ACCENT_CLASSES: Record<Accent, {
   standalone: true,
   imports: [NgClass],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  host: { class: 'flex flex-1' },
+  host: { class: 'flex flex-1', '[attr.title]': 'null' },
   template: `
     <button
       (click)="selected.emit()"
@@ -51,7 +51,7 @@ const ACCENT_CLASSES: Record<Accent, {
 export class ModeSelectCardComponent {
   protected readonly ICONS = ICONS;
 
-  @Input() title = '';
+  @Input({ alias: 'cardTitle' }) title = '';
   @Input() description = '';
   @Input() icon = '';
   @Input() accent: Accent = 'purple';

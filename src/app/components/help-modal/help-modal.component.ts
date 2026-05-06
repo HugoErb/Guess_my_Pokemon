@@ -123,6 +123,14 @@ export class HelpCardComponent {
 						</div>
 					</section>
 
+					<section class="space-y-3">
+						<app-help-section-title label="Sous-modes"></app-help-section-title>
+						<div class="grid gap-2">
+							<app-help-card title="Un joueur" text="Tu joues seul sur 6 Pokémon et tu cherches à maximiser ton total de Base Stats. Timer : 10 secondes par manche."></app-help-card>
+							<app-help-card title="Deux joueurs en ligne" text="Tu affrontes un ami sur les mêmes 6 Pokémon. Chaque joueur choisit ses stats de son côté. Timer : 10 secondes par manche."></app-help-card>
+						</div>
+					</section>
+
 				}
 
 				<button

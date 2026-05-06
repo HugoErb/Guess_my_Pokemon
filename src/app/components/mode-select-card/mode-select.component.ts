@@ -6,6 +6,7 @@ import { NgClass } from '@angular/common';
   standalone: true,
   imports: [NgClass],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  host: { '[attr.title]': 'null' },
   template: `
     <div class="flex flex-col items-center gap-8 px-4">
       <div class="hidden sm:flex items-center gap-3">
