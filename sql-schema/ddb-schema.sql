@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict f2zMNlcTdWehrzem644GTulIpt77zccV4oAZ0NxWTQYUWCvqlmfpsYGtGqXvwPJ
+\restrict 1884JYz1nq4BdhxZihRzA6x9HuEKEMpRhAxUwOzV7esvUzGxBF94PT5LrkEMAC8
 
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 18.3
@@ -47,17 +47,45 @@ CREATE TYPE public.room_status AS ENUM (
 
 
 --
+-- Name: append_stat_pick(uuid, text, jsonb); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.append_stat_pick(p_room_id uuid, p_column text, p_pick jsonb) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+DECLARE
+  v_user uuid := auth.uid();
+  v_room public.stat_duel_rooms;
+BEGIN
+  IF v_user IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
+  IF p_column NOT IN ('p1_picks','p2_picks') THEN RAISE EXCEPTION 'invalid_pick_column'; END IF;
+  SELECT * INTO v_room FROM public.stat_duel_rooms WHERE id = p_room_id FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'room_not_found'; END IF;
+  IF v_room.status <> 'playing' THEN RAISE EXCEPTION 'room_not_playing'; END IF;
+  IF p_column = 'p1_picks' AND v_user <> v_room.player1_id THEN RAISE EXCEPTION 'forbidden_p1_picks'; END IF;
+  IF p_column = 'p2_picks' AND v_user IS DISTINCT FROM v_room.player2_id AND NOT (v_user = v_room.player1_id AND v_room.player2_id IS NULL) THEN RAISE EXCEPTION 'forbidden_p2_picks'; END IF;
+  IF jsonb_typeof(p_pick) <> 'object' OR NOT (p_pick ? 'stat') OR NOT (p_pick ? 'value') THEN RAISE EXCEPTION 'invalid_pick'; END IF;
+  IF p_column = 'p1_picks' THEN
+    IF jsonb_array_length(v_room.p1_picks) >= 6 THEN RAISE EXCEPTION 'too_many_picks'; END IF;
+    UPDATE public.stat_duel_rooms SET p1_picks = v_room.p1_picks || jsonb_build_array(p_pick) WHERE id = p_room_id;
+  ELSE
+    IF jsonb_array_length(v_room.p2_picks) >= 6 THEN RAISE EXCEPTION 'too_many_picks'; END IF;
+    UPDATE public.stat_duel_rooms SET p2_picks = v_room.p2_picks || jsonb_build_array(p_pick) WHERE id = p_room_id;
+  END IF;
+END;
+$$;
+
+
+--
 -- Name: delete_old_rooms(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.delete_old_rooms() RETURNS void
     LANGUAGE sql
     AS $$
-
   delete from public.rooms
-
   where created_at <= now() - interval '3 hours';
-
 $$;
 
 
@@ -69,23 +97,80 @@ CREATE FUNCTION public.handle_new_user() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'public'
     AS $$
-
 BEGIN
-
   INSERT INTO public.profiles (id, username)
-
   VALUES (
-
     NEW.id,
-
     COALESCE(NEW.raw_user_meta_data->>'username', split_part(NEW.email, '@', 1))
-
   );
-
   RETURN NEW;
-
 END;
+$$;
 
+
+--
+-- Name: join_draft_duo_room(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.join_draft_duo_room(p_room_id uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+DECLARE
+  v_user uuid := auth.uid();
+  v_room public.draft_duo_rooms;
+BEGIN
+  IF v_user IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
+  SELECT * INTO v_room FROM public.draft_duo_rooms WHERE id = p_room_id FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'room_not_found'; END IF;
+  IF v_room.player1_id = v_user THEN RAISE EXCEPTION 'creator_cannot_join'; END IF;
+  IF v_room.player2_id IS NOT NULL OR v_room.status <> 'waiting' THEN RAISE EXCEPTION 'room_not_joinable'; END IF;
+  UPDATE public.draft_duo_rooms SET player2_id = v_user WHERE id = p_room_id;
+END;
+$$;
+
+
+--
+-- Name: join_guess_pokemon_room(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.join_guess_pokemon_room(p_room_id uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+DECLARE
+  v_user uuid := auth.uid();
+  v_room public.guess_pokemon_rooms;
+BEGIN
+  IF v_user IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
+  SELECT * INTO v_room FROM public.guess_pokemon_rooms WHERE id = p_room_id FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'room_not_found'; END IF;
+  IF v_room.player1_id = v_user THEN RAISE EXCEPTION 'creator_cannot_join'; END IF;
+  IF v_room.player2_id IS NOT NULL OR v_room.status <> 'waiting' THEN RAISE EXCEPTION 'room_not_joinable'; END IF;
+  UPDATE public.guess_pokemon_rooms SET player2_id = v_user, status = 'ready' WHERE id = p_room_id;
+END;
+$$;
+
+
+--
+-- Name: join_stat_duel_room(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.join_stat_duel_room(p_room_id uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+DECLARE
+  v_user uuid := auth.uid();
+  v_room public.stat_duel_rooms;
+BEGIN
+  IF v_user IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
+  SELECT * INTO v_room FROM public.stat_duel_rooms WHERE id = p_room_id FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'room_not_found'; END IF;
+  IF v_room.player1_id = v_user THEN RAISE EXCEPTION 'creator_cannot_join'; END IF;
+  IF v_room.player2_id IS NOT NULL OR v_room.status <> 'waiting' THEN RAISE EXCEPTION 'room_not_joinable'; END IF;
+  UPDATE public.stat_duel_rooms SET player2_id = v_user WHERE id = p_room_id;
+END;
 $$;
 
 
@@ -130,23 +215,144 @@ CREATE FUNCTION public.set_defeated_trainer_username() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'public'
     AS $$
-
 begin
-
   select p.username
-
   into new.username
-
   from public.profiles p
-
   where p.id = new.user_id;
 
-
-
   return new;
-
 end;
+$$;
 
+
+--
+-- Name: update_draft_duo_room(uuid, jsonb); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.update_draft_duo_room(p_room_id uuid, p_patch jsonb) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+DECLARE
+  v_user uuid := auth.uid();
+  v_room public.draft_duo_rooms;
+  v_bad_keys text[];
+BEGIN
+  IF v_user IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
+  SELECT * INTO v_room FROM public.draft_duo_rooms WHERE id = p_room_id FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'room_not_found'; END IF;
+  IF v_user IS DISTINCT FROM v_room.player1_id AND v_user IS DISTINCT FROM v_room.player2_id THEN RAISE EXCEPTION 'not_room_player'; END IF;
+
+  SELECT array_agg(key) INTO v_bad_keys
+  FROM jsonb_object_keys(p_patch) AS key
+  WHERE key <> ALL (ARRAY['status','p1_team','p2_team','winner','p1_ready','p2_ready','player2_id']);
+  IF v_bad_keys IS NOT NULL THEN RAISE EXCEPTION 'forbidden_fields: %', v_bad_keys; END IF;
+  IF p_patch ? 'p1_team' AND v_user <> v_room.player1_id THEN RAISE EXCEPTION 'forbidden_p1_team'; END IF;
+  IF p_patch ? 'p2_team' AND v_user IS DISTINCT FROM v_room.player2_id AND NOT (v_user = v_room.player1_id AND p_patch->'p2_team' = '[]'::jsonb) THEN RAISE EXCEPTION 'forbidden_p2_team'; END IF;
+  IF p_patch ? 'p1_ready' AND v_user <> v_room.player1_id THEN RAISE EXCEPTION 'forbidden_p1_ready'; END IF;
+  IF p_patch ? 'p2_ready' AND v_user IS DISTINCT FROM v_room.player2_id AND NOT (v_user = v_room.player1_id AND ((p_patch->>'p2_ready')::boolean = false OR v_room.player2_id IS NULL)) THEN RAISE EXCEPTION 'forbidden_p2_ready'; END IF;
+  IF p_patch ? 'player2_id' AND NOT (v_user = v_room.player1_id AND p_patch->>'player2_id' IS NULL AND v_room.status = 'waiting') THEN RAISE EXCEPTION 'forbidden_player2_update'; END IF;
+
+  UPDATE public.draft_duo_rooms
+  SET
+    status = CASE WHEN p_patch ? 'status' THEN p_patch->>'status' ELSE status END,
+    p1_team = CASE WHEN p_patch ? 'p1_team' THEN ARRAY(SELECT jsonb_array_elements_text(p_patch->'p1_team')::integer) ELSE p1_team END,
+    p2_team = CASE WHEN p_patch ? 'p2_team' THEN ARRAY(SELECT jsonb_array_elements_text(p_patch->'p2_team')::integer) ELSE p2_team END,
+    winner = CASE WHEN p_patch ? 'winner' THEN p_patch->>'winner' ELSE winner END,
+    p1_ready = CASE WHEN p_patch ? 'p1_ready' THEN (p_patch->>'p1_ready')::boolean ELSE p1_ready END,
+    p2_ready = CASE WHEN p_patch ? 'p2_ready' THEN (p_patch->>'p2_ready')::boolean ELSE p2_ready END,
+    player2_id = CASE WHEN p_patch ? 'player2_id' THEN NULLIF(p_patch->>'player2_id','')::uuid ELSE player2_id END
+  WHERE id = p_room_id;
+END;
+$$;
+
+
+--
+-- Name: update_guess_pokemon_room(uuid, jsonb); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.update_guess_pokemon_room(p_room_id uuid, p_patch jsonb) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+DECLARE
+  v_user uuid := auth.uid();
+  v_room public.guess_pokemon_rooms;
+  v_bad_keys text[];
+BEGIN
+  IF v_user IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
+  SELECT * INTO v_room FROM public.guess_pokemon_rooms WHERE id = p_room_id FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'room_not_found'; END IF;
+  IF v_user IS DISTINCT FROM v_room.player1_id AND v_user IS DISTINCT FROM v_room.player2_id THEN RAISE EXCEPTION 'not_room_player'; END IF;
+
+  SELECT array_agg(key) INTO v_bad_keys
+  FROM jsonb_object_keys(p_patch) AS key
+  WHERE key <> ALL (ARRAY['settings','pokemon_p1','pokemon_p2','p1_ready','p2_ready','current_turn','status','winner_id','last_guess','player2_id']);
+  IF v_bad_keys IS NOT NULL THEN RAISE EXCEPTION 'forbidden_fields: %', v_bad_keys; END IF;
+  IF p_patch ? 'player2_id' AND NOT (v_user = v_room.player1_id AND p_patch->>'player2_id' IS NULL AND v_room.status IN ('waiting','ready')) THEN RAISE EXCEPTION 'forbidden_player2_update'; END IF;
+  IF (p_patch ? 'pokemon_p1' OR p_patch ? 'p1_ready') AND v_user <> v_room.player1_id THEN RAISE EXCEPTION 'forbidden_player1_fields'; END IF;
+  IF (p_patch ? 'pokemon_p2' OR p_patch ? 'p2_ready') AND v_user IS DISTINCT FROM v_room.player2_id AND v_user IS DISTINCT FROM v_room.player1_id THEN RAISE EXCEPTION 'forbidden_player2_fields'; END IF;
+
+  UPDATE public.guess_pokemon_rooms
+  SET
+    settings = CASE WHEN p_patch ? 'settings' THEN p_patch->'settings' ELSE settings END,
+    pokemon_p1 = CASE WHEN p_patch ? 'pokemon_p1' THEN NULLIF(p_patch->>'pokemon_p1','')::integer ELSE pokemon_p1 END,
+    pokemon_p2 = CASE WHEN p_patch ? 'pokemon_p2' THEN NULLIF(p_patch->>'pokemon_p2','')::integer ELSE pokemon_p2 END,
+    p1_ready = CASE WHEN p_patch ? 'p1_ready' THEN (p_patch->>'p1_ready')::boolean ELSE p1_ready END,
+    p2_ready = CASE WHEN p_patch ? 'p2_ready' THEN (p_patch->>'p2_ready')::boolean ELSE p2_ready END,
+    current_turn = CASE WHEN p_patch ? 'current_turn' THEN NULLIF(p_patch->>'current_turn','')::uuid ELSE current_turn END,
+    status = CASE WHEN p_patch ? 'status' THEN (p_patch->>'status')::public.room_status ELSE status END,
+    winner_id = CASE WHEN p_patch ? 'winner_id' THEN NULLIF(p_patch->>'winner_id','')::uuid ELSE winner_id END,
+    last_guess = CASE WHEN p_patch ? 'last_guess' THEN NULLIF(p_patch->>'last_guess','')::integer ELSE last_guess END,
+    player2_id = CASE WHEN p_patch ? 'player2_id' THEN NULLIF(p_patch->>'player2_id','')::uuid ELSE player2_id END
+  WHERE id = p_room_id;
+END;
+$$;
+
+
+--
+-- Name: update_stat_duel_room(uuid, jsonb); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.update_stat_duel_room(p_room_id uuid, p_patch jsonb) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+DECLARE
+  v_user uuid := auth.uid();
+  v_room public.stat_duel_rooms;
+  v_bad_keys text[];
+BEGIN
+  IF v_user IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
+  SELECT * INTO v_room FROM public.stat_duel_rooms WHERE id = p_room_id FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'room_not_found'; END IF;
+  IF v_user IS DISTINCT FROM v_room.player1_id AND v_user IS DISTINCT FROM v_room.player2_id THEN RAISE EXCEPTION 'not_room_player'; END IF;
+
+  SELECT array_agg(key) INTO v_bad_keys
+  FROM jsonb_object_keys(p_patch) AS key
+  WHERE key <> ALL (ARRAY['status','pokemon_ids','p1_picks','p2_picks','round_start_at','winner','p1_ready','p2_ready','player2_id']);
+  IF v_bad_keys IS NOT NULL THEN RAISE EXCEPTION 'forbidden_fields: %', v_bad_keys; END IF;
+  IF (p_patch ? 'pokemon_ids' OR p_patch ? 'round_start_at') AND v_user <> v_room.player1_id THEN RAISE EXCEPTION 'only_player1_can_launch'; END IF;
+  IF p_patch ? 'p1_picks' AND v_user <> v_room.player1_id THEN RAISE EXCEPTION 'forbidden_p1_picks'; END IF;
+  IF p_patch ? 'p2_picks' AND v_user IS DISTINCT FROM v_room.player2_id AND NOT (v_user = v_room.player1_id AND p_patch->'p2_picks' = '[]'::jsonb) THEN RAISE EXCEPTION 'forbidden_p2_picks'; END IF;
+  IF p_patch ? 'p1_ready' AND v_user <> v_room.player1_id THEN RAISE EXCEPTION 'forbidden_p1_ready'; END IF;
+  IF p_patch ? 'p2_ready' AND v_user IS DISTINCT FROM v_room.player2_id AND NOT (v_user = v_room.player1_id AND ((p_patch->>'p2_ready')::boolean = false OR v_room.player2_id IS NULL)) THEN RAISE EXCEPTION 'forbidden_p2_ready'; END IF;
+  IF p_patch ? 'player2_id' AND NOT (v_user = v_room.player1_id AND p_patch->>'player2_id' IS NULL AND v_room.status = 'waiting') THEN RAISE EXCEPTION 'forbidden_player2_update'; END IF;
+
+  UPDATE public.stat_duel_rooms
+  SET
+    status = CASE WHEN p_patch ? 'status' THEN p_patch->>'status' ELSE status END,
+    pokemon_ids = CASE WHEN p_patch ? 'pokemon_ids' THEN ARRAY(SELECT jsonb_array_elements_text(p_patch->'pokemon_ids')::integer) ELSE pokemon_ids END,
+    p1_picks = CASE WHEN p_patch ? 'p1_picks' THEN p_patch->'p1_picks' ELSE p1_picks END,
+    p2_picks = CASE WHEN p_patch ? 'p2_picks' THEN p_patch->'p2_picks' ELSE p2_picks END,
+    round_start_at = CASE WHEN p_patch ? 'round_start_at' THEN NULLIF(p_patch->>'round_start_at','')::timestamp with time zone ELSE round_start_at END,
+    winner = CASE WHEN p_patch ? 'winner' THEN p_patch->>'winner' ELSE winner END,
+    p1_ready = CASE WHEN p_patch ? 'p1_ready' THEN (p_patch->>'p1_ready')::boolean ELSE p1_ready END,
+    p2_ready = CASE WHEN p_patch ? 'p2_ready' THEN (p_patch->>'p2_ready')::boolean ELSE p2_ready END,
+    player2_id = CASE WHEN p_patch ? 'player2_id' THEN NULLIF(p_patch->>'player2_id','')::uuid ELSE player2_id END
+  WHERE id = p_room_id;
+END;
 $$;
 
 
@@ -349,6 +555,69 @@ ALTER TABLE ONLY public.stat_duel_rooms
 
 
 --
+-- Name: idx_draft_duo_rooms_player1_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_draft_duo_rooms_player1_id ON public.draft_duo_rooms USING btree (player1_id);
+
+
+--
+-- Name: idx_draft_duo_rooms_player2_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_draft_duo_rooms_player2_id ON public.draft_duo_rooms USING btree (player2_id);
+
+
+--
+-- Name: idx_draft_duo_rooms_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_draft_duo_rooms_status ON public.draft_duo_rooms USING btree (status);
+
+
+--
+-- Name: idx_friendships_pair_unique; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_friendships_pair_unique ON public.friendships USING btree (LEAST(requester_id, recipient_id), GREATEST(requester_id, recipient_id));
+
+
+--
+-- Name: idx_friendships_recipient_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_friendships_recipient_status ON public.friendships USING btree (recipient_id, status);
+
+
+--
+-- Name: idx_friendships_requester_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_friendships_requester_status ON public.friendships USING btree (requester_id, status);
+
+
+--
+-- Name: idx_game_invites_recipient_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_game_invites_recipient_status ON public.game_invites USING btree (recipient_id, status);
+
+
+--
+-- Name: idx_game_invites_sender_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_game_invites_sender_status ON public.game_invites USING btree (sender_id, status);
+
+
+--
+-- Name: idx_profiles_lower_username; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_profiles_lower_username ON public.profiles USING btree (lower(username));
+
+
+--
 -- Name: idx_rooms_player1_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -367,6 +636,27 @@ CREATE INDEX idx_rooms_player2_id ON public.guess_pokemon_rooms USING btree (pla
 --
 
 CREATE INDEX idx_rooms_status ON public.guess_pokemon_rooms USING btree (status);
+
+
+--
+-- Name: idx_stat_duel_rooms_player1_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_stat_duel_rooms_player1_id ON public.stat_duel_rooms USING btree (player1_id);
+
+
+--
+-- Name: idx_stat_duel_rooms_player2_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_stat_duel_rooms_player2_id ON public.stat_duel_rooms USING btree (player2_id);
+
+
+--
+-- Name: idx_stat_duel_rooms_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_stat_duel_rooms_status ON public.stat_duel_rooms USING btree (status);
 
 
 --
@@ -515,38 +805,10 @@ CREATE POLICY "Profiles lisibles par tous les authentifiés" ON public.profiles 
 
 
 --
--- Name: guess_pokemon_rooms Room modifiable par ses joueurs; Type: POLICY; Schema: public; Owner: -
---
-
-CREATE POLICY "Room modifiable par ses joueurs" ON public.guess_pokemon_rooms FOR UPDATE TO authenticated USING (((auth.uid() = player1_id) OR (auth.uid() = player2_id) OR ((status = 'waiting'::public.room_status) AND (player2_id IS NULL)))) WITH CHECK (((auth.uid() = player1_id) OR (auth.uid() = player2_id) OR ((status = 'ready'::public.room_status) AND (player2_id = auth.uid()))));
-
-
---
 -- Name: guess_pokemon_rooms Room visible par ses joueurs; Type: POLICY; Schema: public; Owner: -
 --
 
 CREATE POLICY "Room visible par ses joueurs" ON public.guess_pokemon_rooms FOR SELECT TO authenticated USING (((auth.uid() = player1_id) OR (auth.uid() = player2_id) OR (status = 'waiting'::public.room_status)));
-
-
---
--- Name: friendships Users see own friendships; Type: POLICY; Schema: public; Owner: -
---
-
-CREATE POLICY "Users see own friendships" ON public.friendships USING (((auth.uid() = requester_id) OR (auth.uid() = recipient_id)));
-
-
---
--- Name: game_invites Users see own invites; Type: POLICY; Schema: public; Owner: -
---
-
-CREATE POLICY "Users see own invites" ON public.game_invites USING (((auth.uid() = sender_id) OR (auth.uid() = recipient_id)));
-
-
---
--- Name: stat_duel_rooms all_access; Type: POLICY; Schema: public; Owner: -
---
-
-CREATE POLICY all_access ON public.stat_duel_rooms USING (true);
 
 
 --
@@ -576,17 +838,38 @@ CREATE POLICY draft_duo_rooms_select ON public.draft_duo_rooms FOR SELECT USING 
 
 
 --
--- Name: draft_duo_rooms draft_duo_rooms_update; Type: POLICY; Schema: public; Owner: -
---
-
-CREATE POLICY draft_duo_rooms_update ON public.draft_duo_rooms FOR UPDATE USING (((auth.uid() = player1_id) OR (auth.uid() = player2_id) OR ((player2_id IS NULL) AND (status = 'waiting'::text))));
-
-
---
 -- Name: friendships; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
 ALTER TABLE public.friendships ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: friendships friendships_delete_own; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY friendships_delete_own ON public.friendships FOR DELETE TO authenticated USING (((auth.uid() = requester_id) OR (auth.uid() = recipient_id)));
+
+
+--
+-- Name: friendships friendships_insert; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY friendships_insert ON public.friendships FOR INSERT TO authenticated WITH CHECK (((auth.uid() = requester_id) AND (status = 'pending'::text) AND (requester_id <> recipient_id)));
+
+
+--
+-- Name: friendships friendships_select; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY friendships_select ON public.friendships FOR SELECT TO authenticated USING (((auth.uid() = requester_id) OR (auth.uid() = recipient_id)));
+
+
+--
+-- Name: friendships friendships_update_accept; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY friendships_update_accept ON public.friendships FOR UPDATE TO authenticated USING (((auth.uid() = recipient_id) AND (status = 'pending'::text))) WITH CHECK (((auth.uid() = recipient_id) AND (status = 'accepted'::text)));
+
 
 --
 -- Name: game_invites; Type: ROW SECURITY; Schema: public; Owner: -
@@ -595,10 +878,45 @@ ALTER TABLE public.friendships ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.game_invites ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: game_invites game_invites_insert; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY game_invites_insert ON public.game_invites FOR INSERT TO authenticated WITH CHECK (((auth.uid() = sender_id) AND (status = 'pending'::text) AND (sender_id <> recipient_id) AND (game_mode = ANY (ARRAY['guess_my_pokemon'::text, 'stat_duel'::text, 'draft_duo'::text]))));
+
+
+--
+-- Name: game_invites game_invites_select; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY game_invites_select ON public.game_invites FOR SELECT TO authenticated USING (((auth.uid() = sender_id) OR (auth.uid() = recipient_id)));
+
+
+--
+-- Name: game_invites game_invites_update_recipient; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY game_invites_update_recipient ON public.game_invites FOR UPDATE TO authenticated USING (((auth.uid() = recipient_id) AND (status = 'pending'::text))) WITH CHECK (((auth.uid() = recipient_id) AND (status = ANY (ARRAY['accepted'::text, 'declined'::text]))));
+
+
+--
+-- Name: game_invites game_invites_update_sender; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY game_invites_update_sender ON public.game_invites FOR UPDATE TO authenticated USING ((auth.uid() = sender_id)) WITH CHECK (((auth.uid() = sender_id) AND (status = ANY (ARRAY['pending'::text, 'declined'::text]))));
+
+
+--
 -- Name: guess_pokemon_rooms; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
 ALTER TABLE public.guess_pokemon_rooms ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: guess_pokemon_rooms guess_pokemon_rooms_delete_owner; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY guess_pokemon_rooms_delete_owner ON public.guess_pokemon_rooms FOR DELETE TO authenticated USING ((auth.uid() = player1_id));
+
 
 --
 -- Name: profiles; Type: ROW SECURITY; Schema: public; Owner: -
@@ -607,272 +925,35 @@ ALTER TABLE public.guess_pokemon_rooms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: profiles profiles_insert_own; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY profiles_insert_own ON public.profiles FOR INSERT TO authenticated WITH CHECK ((auth.uid() = id));
+
+
+--
 -- Name: stat_duel_rooms; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
 ALTER TABLE public.stat_duel_rooms ENABLE ROW LEVEL SECURITY;
 
 --
--- Security hardening added after the dump policies.
+-- Name: stat_duel_rooms stat_duel_rooms_insert; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.join_guess_pokemon_room(p_room_id uuid) RETURNS void
-    LANGUAGE plpgsql SECURITY DEFINER
-    SET search_path TO 'public'
-    AS $$
-DECLARE
-  v_user uuid := auth.uid();
-  v_room public.guess_pokemon_rooms;
-BEGIN
-  IF v_user IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
-  SELECT * INTO v_room FROM public.guess_pokemon_rooms WHERE id = p_room_id FOR UPDATE;
-  IF NOT FOUND THEN RAISE EXCEPTION 'room_not_found'; END IF;
-  IF v_room.player1_id = v_user THEN RAISE EXCEPTION 'creator_cannot_join'; END IF;
-  IF v_room.player2_id IS NOT NULL OR v_room.status <> 'waiting' THEN RAISE EXCEPTION 'room_not_joinable'; END IF;
-  UPDATE public.guess_pokemon_rooms SET player2_id = v_user, status = 'ready' WHERE id = p_room_id;
-END;
-$$;
+CREATE POLICY stat_duel_rooms_insert ON public.stat_duel_rooms FOR INSERT TO authenticated WITH CHECK ((auth.uid() = player1_id));
 
-CREATE OR REPLACE FUNCTION public.join_stat_duel_room(p_room_id uuid) RETURNS void
-    LANGUAGE plpgsql SECURITY DEFINER
-    SET search_path TO 'public'
-    AS $$
-DECLARE
-  v_user uuid := auth.uid();
-  v_room public.stat_duel_rooms;
-BEGIN
-  IF v_user IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
-  SELECT * INTO v_room FROM public.stat_duel_rooms WHERE id = p_room_id FOR UPDATE;
-  IF NOT FOUND THEN RAISE EXCEPTION 'room_not_found'; END IF;
-  IF v_room.player1_id = v_user THEN RAISE EXCEPTION 'creator_cannot_join'; END IF;
-  IF v_room.player2_id IS NOT NULL OR v_room.status <> 'waiting' THEN RAISE EXCEPTION 'room_not_joinable'; END IF;
-  UPDATE public.stat_duel_rooms SET player2_id = v_user WHERE id = p_room_id;
-END;
-$$;
 
-CREATE OR REPLACE FUNCTION public.join_draft_duo_room(p_room_id uuid) RETURNS void
-    LANGUAGE plpgsql SECURITY DEFINER
-    SET search_path TO 'public'
-    AS $$
-DECLARE
-  v_user uuid := auth.uid();
-  v_room public.draft_duo_rooms;
-BEGIN
-  IF v_user IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
-  SELECT * INTO v_room FROM public.draft_duo_rooms WHERE id = p_room_id FOR UPDATE;
-  IF NOT FOUND THEN RAISE EXCEPTION 'room_not_found'; END IF;
-  IF v_room.player1_id = v_user THEN RAISE EXCEPTION 'creator_cannot_join'; END IF;
-  IF v_room.player2_id IS NOT NULL OR v_room.status <> 'waiting' THEN RAISE EXCEPTION 'room_not_joinable'; END IF;
-  UPDATE public.draft_duo_rooms SET player2_id = v_user WHERE id = p_room_id;
-END;
-$$;
+--
+-- Name: stat_duel_rooms stat_duel_rooms_select; Type: POLICY; Schema: public; Owner: -
+--
 
-CREATE OR REPLACE FUNCTION public.update_guess_pokemon_room(p_room_id uuid, p_patch jsonb) RETURNS void
-    LANGUAGE plpgsql SECURITY DEFINER
-    SET search_path TO 'public'
-    AS $$
-DECLARE
-  v_user uuid := auth.uid();
-  v_room public.guess_pokemon_rooms;
-  v_bad_keys text[];
-BEGIN
-  IF v_user IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
-  SELECT * INTO v_room FROM public.guess_pokemon_rooms WHERE id = p_room_id FOR UPDATE;
-  IF NOT FOUND THEN RAISE EXCEPTION 'room_not_found'; END IF;
-  IF v_user IS DISTINCT FROM v_room.player1_id AND v_user IS DISTINCT FROM v_room.player2_id THEN RAISE EXCEPTION 'not_room_player'; END IF;
+CREATE POLICY stat_duel_rooms_select ON public.stat_duel_rooms FOR SELECT TO authenticated USING (((auth.uid() = player1_id) OR (auth.uid() = player2_id) OR (status = 'waiting'::text)));
 
-  SELECT array_agg(key) INTO v_bad_keys
-  FROM jsonb_object_keys(p_patch) AS key
-  WHERE key <> ALL (ARRAY['settings','pokemon_p1','pokemon_p2','p1_ready','p2_ready','current_turn','status','winner_id','last_guess','player2_id']);
-  IF v_bad_keys IS NOT NULL THEN RAISE EXCEPTION 'forbidden_fields: %', v_bad_keys; END IF;
-  IF p_patch ? 'player2_id' AND NOT (v_user = v_room.player1_id AND p_patch->>'player2_id' IS NULL AND v_room.status IN ('waiting','ready')) THEN RAISE EXCEPTION 'forbidden_player2_update'; END IF;
-  IF (p_patch ? 'pokemon_p1' OR p_patch ? 'p1_ready') AND v_user <> v_room.player1_id THEN RAISE EXCEPTION 'forbidden_player1_fields'; END IF;
-  IF (p_patch ? 'pokemon_p2' OR p_patch ? 'p2_ready') AND v_user IS DISTINCT FROM v_room.player2_id AND v_user IS DISTINCT FROM v_room.player1_id THEN RAISE EXCEPTION 'forbidden_player2_fields'; END IF;
-
-  UPDATE public.guess_pokemon_rooms
-  SET
-    settings = CASE WHEN p_patch ? 'settings' THEN p_patch->'settings' ELSE settings END,
-    pokemon_p1 = CASE WHEN p_patch ? 'pokemon_p1' THEN NULLIF(p_patch->>'pokemon_p1','')::integer ELSE pokemon_p1 END,
-    pokemon_p2 = CASE WHEN p_patch ? 'pokemon_p2' THEN NULLIF(p_patch->>'pokemon_p2','')::integer ELSE pokemon_p2 END,
-    p1_ready = CASE WHEN p_patch ? 'p1_ready' THEN (p_patch->>'p1_ready')::boolean ELSE p1_ready END,
-    p2_ready = CASE WHEN p_patch ? 'p2_ready' THEN (p_patch->>'p2_ready')::boolean ELSE p2_ready END,
-    current_turn = CASE WHEN p_patch ? 'current_turn' THEN NULLIF(p_patch->>'current_turn','')::uuid ELSE current_turn END,
-    status = CASE WHEN p_patch ? 'status' THEN (p_patch->>'status')::public.room_status ELSE status END,
-    winner_id = CASE WHEN p_patch ? 'winner_id' THEN NULLIF(p_patch->>'winner_id','')::uuid ELSE winner_id END,
-    last_guess = CASE WHEN p_patch ? 'last_guess' THEN NULLIF(p_patch->>'last_guess','')::integer ELSE last_guess END,
-    player2_id = CASE WHEN p_patch ? 'player2_id' THEN NULLIF(p_patch->>'player2_id','')::uuid ELSE player2_id END
-  WHERE id = p_room_id;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.update_stat_duel_room(p_room_id uuid, p_patch jsonb) RETURNS void
-    LANGUAGE plpgsql SECURITY DEFINER
-    SET search_path TO 'public'
-    AS $$
-DECLARE
-  v_user uuid := auth.uid();
-  v_room public.stat_duel_rooms;
-  v_bad_keys text[];
-BEGIN
-  IF v_user IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
-  SELECT * INTO v_room FROM public.stat_duel_rooms WHERE id = p_room_id FOR UPDATE;
-  IF NOT FOUND THEN RAISE EXCEPTION 'room_not_found'; END IF;
-  IF v_user IS DISTINCT FROM v_room.player1_id AND v_user IS DISTINCT FROM v_room.player2_id THEN RAISE EXCEPTION 'not_room_player'; END IF;
-
-  SELECT array_agg(key) INTO v_bad_keys
-  FROM jsonb_object_keys(p_patch) AS key
-  WHERE key <> ALL (ARRAY['status','pokemon_ids','p1_picks','p2_picks','round_start_at','winner','p1_ready','p2_ready','player2_id']);
-  IF v_bad_keys IS NOT NULL THEN RAISE EXCEPTION 'forbidden_fields: %', v_bad_keys; END IF;
-  IF (p_patch ? 'pokemon_ids' OR p_patch ? 'round_start_at') AND v_user <> v_room.player1_id THEN RAISE EXCEPTION 'only_player1_can_launch'; END IF;
-  IF p_patch ? 'p1_picks' AND v_user <> v_room.player1_id THEN RAISE EXCEPTION 'forbidden_p1_picks'; END IF;
-  IF p_patch ? 'p2_picks' AND v_user IS DISTINCT FROM v_room.player2_id AND NOT (v_user = v_room.player1_id AND p_patch->'p2_picks' = '[]'::jsonb) THEN RAISE EXCEPTION 'forbidden_p2_picks'; END IF;
-  IF p_patch ? 'p1_ready' AND v_user <> v_room.player1_id THEN RAISE EXCEPTION 'forbidden_p1_ready'; END IF;
-  IF p_patch ? 'p2_ready' AND v_user IS DISTINCT FROM v_room.player2_id AND NOT (v_user = v_room.player1_id AND ((p_patch->>'p2_ready')::boolean = false OR v_room.player2_id IS NULL)) THEN RAISE EXCEPTION 'forbidden_p2_ready'; END IF;
-  IF p_patch ? 'player2_id' AND NOT (v_user = v_room.player1_id AND p_patch->>'player2_id' IS NULL AND v_room.status = 'waiting') THEN RAISE EXCEPTION 'forbidden_player2_update'; END IF;
-
-  UPDATE public.stat_duel_rooms
-  SET
-    status = CASE WHEN p_patch ? 'status' THEN p_patch->>'status' ELSE status END,
-    pokemon_ids = CASE WHEN p_patch ? 'pokemon_ids' THEN ARRAY(SELECT jsonb_array_elements_text(p_patch->'pokemon_ids')::integer) ELSE pokemon_ids END,
-    p1_picks = CASE WHEN p_patch ? 'p1_picks' THEN p_patch->'p1_picks' ELSE p1_picks END,
-    p2_picks = CASE WHEN p_patch ? 'p2_picks' THEN p_patch->'p2_picks' ELSE p2_picks END,
-    round_start_at = CASE WHEN p_patch ? 'round_start_at' THEN NULLIF(p_patch->>'round_start_at','')::timestamp with time zone ELSE round_start_at END,
-    winner = CASE WHEN p_patch ? 'winner' THEN p_patch->>'winner' ELSE winner END,
-    p1_ready = CASE WHEN p_patch ? 'p1_ready' THEN (p_patch->>'p1_ready')::boolean ELSE p1_ready END,
-    p2_ready = CASE WHEN p_patch ? 'p2_ready' THEN (p_patch->>'p2_ready')::boolean ELSE p2_ready END,
-    player2_id = CASE WHEN p_patch ? 'player2_id' THEN NULLIF(p_patch->>'player2_id','')::uuid ELSE player2_id END
-  WHERE id = p_room_id;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.append_stat_pick(p_room_id uuid, p_column text, p_pick jsonb) RETURNS void
-    LANGUAGE plpgsql SECURITY DEFINER
-    SET search_path TO 'public'
-    AS $$
-DECLARE
-  v_user uuid := auth.uid();
-  v_room public.stat_duel_rooms;
-BEGIN
-  IF v_user IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
-  IF p_column NOT IN ('p1_picks','p2_picks') THEN RAISE EXCEPTION 'invalid_pick_column'; END IF;
-  SELECT * INTO v_room FROM public.stat_duel_rooms WHERE id = p_room_id FOR UPDATE;
-  IF NOT FOUND THEN RAISE EXCEPTION 'room_not_found'; END IF;
-  IF v_room.status <> 'playing' THEN RAISE EXCEPTION 'room_not_playing'; END IF;
-  IF p_column = 'p1_picks' AND v_user <> v_room.player1_id THEN RAISE EXCEPTION 'forbidden_p1_picks'; END IF;
-  IF p_column = 'p2_picks' AND v_user IS DISTINCT FROM v_room.player2_id AND NOT (v_user = v_room.player1_id AND v_room.player2_id IS NULL) THEN RAISE EXCEPTION 'forbidden_p2_picks'; END IF;
-  IF jsonb_typeof(p_pick) <> 'object' OR NOT (p_pick ? 'stat') OR NOT (p_pick ? 'value') THEN RAISE EXCEPTION 'invalid_pick'; END IF;
-  IF p_column = 'p1_picks' THEN
-    IF jsonb_array_length(v_room.p1_picks) >= 6 THEN RAISE EXCEPTION 'too_many_picks'; END IF;
-    UPDATE public.stat_duel_rooms SET p1_picks = v_room.p1_picks || jsonb_build_array(p_pick) WHERE id = p_room_id;
-  ELSE
-    IF jsonb_array_length(v_room.p2_picks) >= 6 THEN RAISE EXCEPTION 'too_many_picks'; END IF;
-    UPDATE public.stat_duel_rooms SET p2_picks = v_room.p2_picks || jsonb_build_array(p_pick) WHERE id = p_room_id;
-  END IF;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.update_draft_duo_room(p_room_id uuid, p_patch jsonb) RETURNS void
-    LANGUAGE plpgsql SECURITY DEFINER
-    SET search_path TO 'public'
-    AS $$
-DECLARE
-  v_user uuid := auth.uid();
-  v_room public.draft_duo_rooms;
-  v_bad_keys text[];
-BEGIN
-  IF v_user IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
-  SELECT * INTO v_room FROM public.draft_duo_rooms WHERE id = p_room_id FOR UPDATE;
-  IF NOT FOUND THEN RAISE EXCEPTION 'room_not_found'; END IF;
-  IF v_user IS DISTINCT FROM v_room.player1_id AND v_user IS DISTINCT FROM v_room.player2_id THEN RAISE EXCEPTION 'not_room_player'; END IF;
-
-  SELECT array_agg(key) INTO v_bad_keys
-  FROM jsonb_object_keys(p_patch) AS key
-  WHERE key <> ALL (ARRAY['status','p1_team','p2_team','winner','p1_ready','p2_ready','player2_id']);
-  IF v_bad_keys IS NOT NULL THEN RAISE EXCEPTION 'forbidden_fields: %', v_bad_keys; END IF;
-  IF p_patch ? 'p1_team' AND v_user <> v_room.player1_id THEN RAISE EXCEPTION 'forbidden_p1_team'; END IF;
-  IF p_patch ? 'p2_team' AND v_user IS DISTINCT FROM v_room.player2_id AND NOT (v_user = v_room.player1_id AND p_patch->'p2_team' = '[]'::jsonb) THEN RAISE EXCEPTION 'forbidden_p2_team'; END IF;
-  IF p_patch ? 'p1_ready' AND v_user <> v_room.player1_id THEN RAISE EXCEPTION 'forbidden_p1_ready'; END IF;
-  IF p_patch ? 'p2_ready' AND v_user IS DISTINCT FROM v_room.player2_id AND NOT (v_user = v_room.player1_id AND ((p_patch->>'p2_ready')::boolean = false OR v_room.player2_id IS NULL)) THEN RAISE EXCEPTION 'forbidden_p2_ready'; END IF;
-  IF p_patch ? 'player2_id' AND NOT (v_user = v_room.player1_id AND p_patch->>'player2_id' IS NULL AND v_room.status = 'waiting') THEN RAISE EXCEPTION 'forbidden_player2_update'; END IF;
-
-  UPDATE public.draft_duo_rooms
-  SET
-    status = CASE WHEN p_patch ? 'status' THEN p_patch->>'status' ELSE status END,
-    p1_team = CASE WHEN p_patch ? 'p1_team' THEN ARRAY(SELECT jsonb_array_elements_text(p_patch->'p1_team')::integer) ELSE p1_team END,
-    p2_team = CASE WHEN p_patch ? 'p2_team' THEN ARRAY(SELECT jsonb_array_elements_text(p_patch->'p2_team')::integer) ELSE p2_team END,
-    winner = CASE WHEN p_patch ? 'winner' THEN p_patch->>'winner' ELSE winner END,
-    p1_ready = CASE WHEN p_patch ? 'p1_ready' THEN (p_patch->>'p1_ready')::boolean ELSE p1_ready END,
-    p2_ready = CASE WHEN p_patch ? 'p2_ready' THEN (p_patch->>'p2_ready')::boolean ELSE p2_ready END,
-    player2_id = CASE WHEN p_patch ? 'player2_id' THEN NULLIF(p_patch->>'player2_id','')::uuid ELSE player2_id END
-  WHERE id = p_room_id;
-END;
-$$;
-
-CREATE INDEX IF NOT EXISTS idx_profiles_lower_username ON public.profiles USING btree (lower(username));
-CREATE UNIQUE INDEX IF NOT EXISTS idx_friendships_pair_unique ON public.friendships USING btree (LEAST(requester_id, recipient_id), GREATEST(requester_id, recipient_id));
-CREATE INDEX IF NOT EXISTS idx_friendships_requester_status ON public.friendships USING btree (requester_id, status);
-CREATE INDEX IF NOT EXISTS idx_friendships_recipient_status ON public.friendships USING btree (recipient_id, status);
-CREATE INDEX IF NOT EXISTS idx_game_invites_sender_status ON public.game_invites USING btree (sender_id, status);
-CREATE INDEX IF NOT EXISTS idx_game_invites_recipient_status ON public.game_invites USING btree (recipient_id, status);
-CREATE INDEX IF NOT EXISTS idx_stat_duel_rooms_player1_id ON public.stat_duel_rooms USING btree (player1_id);
-CREATE INDEX IF NOT EXISTS idx_stat_duel_rooms_player2_id ON public.stat_duel_rooms USING btree (player2_id);
-CREATE INDEX IF NOT EXISTS idx_stat_duel_rooms_status ON public.stat_duel_rooms USING btree (status);
-CREATE INDEX IF NOT EXISTS idx_draft_duo_rooms_player1_id ON public.draft_duo_rooms USING btree (player1_id);
-CREATE INDEX IF NOT EXISTS idx_draft_duo_rooms_player2_id ON public.draft_duo_rooms USING btree (player2_id);
-CREATE INDEX IF NOT EXISTS idx_draft_duo_rooms_status ON public.draft_duo_rooms USING btree (status);
-
-DROP POLICY IF EXISTS all_access ON public.stat_duel_rooms;
-DROP POLICY IF EXISTS draft_duo_rooms_update ON public.draft_duo_rooms;
-DROP POLICY IF EXISTS "Room modifiable par ses joueurs" ON public.guess_pokemon_rooms;
-DROP POLICY IF EXISTS "Users see own friendships" ON public.friendships;
-DROP POLICY IF EXISTS "Users see own invites" ON public.game_invites;
-DROP POLICY IF EXISTS guess_pokemon_rooms_delete_owner ON public.guess_pokemon_rooms;
-DROP POLICY IF EXISTS profiles_insert_own ON public.profiles;
-DROP POLICY IF EXISTS stat_duel_rooms_insert ON public.stat_duel_rooms;
-DROP POLICY IF EXISTS stat_duel_rooms_select ON public.stat_duel_rooms;
-DROP POLICY IF EXISTS friendships_select ON public.friendships;
-DROP POLICY IF EXISTS friendships_insert ON public.friendships;
-DROP POLICY IF EXISTS friendships_update_accept ON public.friendships;
-DROP POLICY IF EXISTS friendships_delete_own ON public.friendships;
-DROP POLICY IF EXISTS game_invites_select ON public.game_invites;
-DROP POLICY IF EXISTS game_invites_insert ON public.game_invites;
-DROP POLICY IF EXISTS game_invites_update_recipient ON public.game_invites;
-DROP POLICY IF EXISTS game_invites_update_sender ON public.game_invites;
-
-CREATE POLICY guess_pokemon_rooms_delete_owner ON public.guess_pokemon_rooms FOR DELETE TO authenticated USING (auth.uid() = player1_id);
-CREATE POLICY profiles_insert_own ON public.profiles FOR INSERT TO authenticated WITH CHECK (auth.uid() = id);
-
-CREATE POLICY stat_duel_rooms_insert ON public.stat_duel_rooms FOR INSERT TO authenticated WITH CHECK (auth.uid() = player1_id);
-CREATE POLICY stat_duel_rooms_select ON public.stat_duel_rooms FOR SELECT TO authenticated USING ((auth.uid() = player1_id) OR (auth.uid() = player2_id) OR (status = 'waiting'));
-
-CREATE POLICY friendships_select ON public.friendships FOR SELECT TO authenticated USING ((auth.uid() = requester_id) OR (auth.uid() = recipient_id));
-CREATE POLICY friendships_insert ON public.friendships FOR INSERT TO authenticated WITH CHECK ((auth.uid() = requester_id) AND (status = 'pending') AND (requester_id <> recipient_id));
-CREATE POLICY friendships_update_accept ON public.friendships FOR UPDATE TO authenticated USING ((auth.uid() = recipient_id) AND (status = 'pending')) WITH CHECK ((auth.uid() = recipient_id) AND (status = 'accepted'));
-CREATE POLICY friendships_delete_own ON public.friendships FOR DELETE TO authenticated USING ((auth.uid() = requester_id) OR (auth.uid() = recipient_id));
-
-CREATE POLICY game_invites_select ON public.game_invites FOR SELECT TO authenticated USING ((auth.uid() = sender_id) OR (auth.uid() = recipient_id));
-CREATE POLICY game_invites_insert ON public.game_invites FOR INSERT TO authenticated WITH CHECK ((auth.uid() = sender_id) AND (status = 'pending') AND (sender_id <> recipient_id) AND (game_mode = ANY (ARRAY['guess_my_pokemon','stat_duel','draft_duo'])));
-CREATE POLICY game_invites_update_recipient ON public.game_invites FOR UPDATE TO authenticated USING ((auth.uid() = recipient_id) AND (status = 'pending')) WITH CHECK ((auth.uid() = recipient_id) AND (status = ANY (ARRAY['accepted','declined'])));
-CREATE POLICY game_invites_update_sender ON public.game_invites FOR UPDATE TO authenticated USING (auth.uid() = sender_id) WITH CHECK ((auth.uid() = sender_id) AND (status = ANY (ARRAY['pending','declined'])));
-
-REVOKE ALL ON FUNCTION public.join_guess_pokemon_room(uuid) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.join_stat_duel_room(uuid) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.join_draft_duo_room(uuid) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.update_guess_pokemon_room(uuid,jsonb) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.update_stat_duel_room(uuid,jsonb) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.append_stat_pick(uuid,text,jsonb) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.update_draft_duo_room(uuid,jsonb) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.join_guess_pokemon_room(uuid) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.join_stat_duel_room(uuid) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.join_draft_duo_room(uuid) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.update_guess_pokemon_room(uuid,jsonb) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.update_stat_duel_room(uuid,jsonb) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.append_stat_pick(uuid,text,jsonb) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.update_draft_duo_room(uuid,jsonb) TO authenticated;
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict f2zMNlcTdWehrzem644GTulIpt77zccV4oAZ0NxWTQYUWCvqlmfpsYGtGqXvwPJ
+\unrestrict 1884JYz1nq4BdhxZihRzA6x9HuEKEMpRhAxUwOzV7esvUzGxBF94PT5LrkEMAC8
 
