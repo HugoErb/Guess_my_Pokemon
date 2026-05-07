@@ -67,7 +67,7 @@ export class GameService implements OnDestroy {
         this.pollInterval && clearInterval(this.pollInterval);
         this.pollInterval = setInterval(() => {
             void this.refreshRoom(roomId);
-        }, 1000);
+        }, 5000);
     }
 
     /** Arrête l'abonnement Realtime de la room courante et le polling de secours. */

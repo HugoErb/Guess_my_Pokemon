@@ -808,19 +808,8 @@ export class SupabaseService implements OnDestroy {
                 )
                 .subscribe();
 
-            // Polling de secours si Realtime n'est pas activé sur game_invites
-            const pollInterval = setInterval(async () => {
-                const { data } = await this.supabase
-                    .from('game_invites')
-                    .select('*')
-                    .eq('id', inviteId)
-                    .single();
-                if (data) observer.next(data as GameInvite);
-            }, 3000);
-
             return () => {
                 this.supabase.removeChannel(channel);
-                clearInterval(pollInterval);
             };
         });
     }
