@@ -251,7 +251,7 @@
 					</div>
 				</div>
 				<div class="flex gap-2 min-h-[2.5rem] md:min-h-[5rem]">
-					@for (p of opponentLockedPokemons(); track p.id) {
+					@for (p of opponentLockedPokemons(); track $index) {
 						<div class="w-10 h-10 md:w-20 md:h-20 bg-slate-800 border border-slate-600 rounded-xl flex items-center justify-center transition-all hover:scale-110 cursor-pointer" (click)="openPokemonDetails(p)">
 							<img [src]="p.sprite" [alt]="p.name" class="w-8 h-8 md:w-16 md:h-16 object-contain" [title]="p.name" />
 						</div>
@@ -289,7 +289,7 @@
 				<div class="flex flex-col items-center gap-2 mt-2">
 					<p class="text-slate-500 text-xs uppercase tracking-wider font-bold">Adversaire</p>
 					<div class="flex gap-2 flex-wrap justify-center">
-						@for (p of opponentLockedPokemons(); track p.id) {
+						@for (p of opponentLockedPokemons(); track $index) {
 							<div class="w-12 h-12 md:w-20 md:h-20 bg-slate-800 border border-slate-600 rounded-xl flex items-center justify-center">
 								<img [src]="p.sprite" [alt]="p.name" class="w-10 h-10 md:w-16 md:h-16 object-contain" />
 							</div>
@@ -389,7 +389,7 @@
 						Mon équipe
 					</h3>
 					<div class="grid grid-cols-3 gap-2">
-						@for (p of myTeamPokemons(); track p.id) {
+						@for (p of myTeamPokemons(); track $index) {
 							<div class="relative">
 								<div
 									class="rounded-xl p-2 flex flex-col items-center gap-1 cursor-pointer hover:border-slate-500 transition-colors border"
@@ -430,7 +430,7 @@
 						Équipe adverse
 					</h3>
 					<div class="grid grid-cols-3 gap-2">
-						@for (p of opponentTeamPokemons(); track p.id) {
+						@for (p of opponentTeamPokemons(); track $index) {
 							<div class="relative">
 								<div
 									class="rounded-xl p-2 flex flex-col items-center gap-1 cursor-pointer hover:border-slate-500 transition-colors border"

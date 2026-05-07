@@ -264,7 +264,7 @@
 						Mon équipe
 					</h3>
 					<div class="grid grid-cols-3 gap-2">
-						@for (p of myTeamPokemons(); track p.id) {
+						@for (p of myTeamPokemons(); track $index) {
 							<div class="relative">
 								<div
 									class="rounded-xl p-2 flex flex-col items-center gap-1 cursor-pointer hover:border-slate-500 transition-colors border"
@@ -305,7 +305,7 @@
 						{{ trainer()?.nom }} ({{ trainer()?.role }})
 					</h3>
 					<div class="grid grid-cols-3 gap-2">
-						@for (p of opponentTeamPokemons(); track p.id) {
+						@for (p of opponentTeamPokemons(); track $index) {
 							<div class="relative">
 								<div
 									class="rounded-xl p-2 flex flex-col items-center gap-1 cursor-pointer hover:border-slate-500 transition-colors border"
